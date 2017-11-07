@@ -1,0 +1,4 @@
+dsb_type : mysql
+db_name : test
+db_table_prefix : test_
+db_port : a1099

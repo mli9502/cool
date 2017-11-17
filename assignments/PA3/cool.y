@@ -133,7 +133,13 @@
     %type <program> program
     %type <classes> class_list
     %type <class_> class
-    
+    %type <feature> feature
+	%type <features> feature_list
+	%type <formal> formal
+	%type <formals> formal_list
+	%type <expression> expression
+	%type <expressions> expression_list
+	
     /* You will want to change the following line. */
     %type <features> dummy_feature_list
     
@@ -144,9 +150,45 @@
     /* 
     Save the root of the abstract syntax tree in a global variable.
     */
-    program	: class_list	{ @$ = @1; ast_root = program($1); }
-    ;
-    
+    program	: class_list	{
+								@$ = @1;
+								SET_NODELOC(@1);
+	 							ast_root = program($1);
+	 						}
+			;
+formal : OBJECTID ':' TYPEID {
+	$$ = formal_class($1, $3);
+}
+
+formal_list : /* empty */ {
+				$$ = nil_Formals();
+			}
+			| ',' formal formal_list {
+				$$ = append_Formals(single_Formals($2), $3);
+			}
+
+feature: OBJECTID '(' ')' ':' TYPEID '{' expression '}' {
+	@$ = @8;
+	SET_NODELOC(@8);
+	$$ = method_class($1, no_expr_class(), $5, $7);
+}
+| OBJECTID '(' formal formal_list ')' ':' TYPEID '{' expression '}' {
+	@$ = @10;
+	SET_NODELOC(@10);
+	$$ = method_class($1, append_Formals(single_Formals($3), $4), $7, $9);
+}
+| OBJECTID ':' TYPEID {
+	@$ = @3;
+	SET_NODELOC(@3);
+	$$ = attr_class($1, $3, no_expr_class());
+}
+| OBJECTID ':' TYPEID ASSIGN expression {
+	@$ = @3;
+	SET_NODELOC(@3);
+	$$ = attr_class($1, $3, $5);
+}
+
+
     class_list
     : class			/* single class */
     { $$ = single_Classes($1);
@@ -163,6 +205,8 @@
     | CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';'
     { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
     ;
+
+	
     
     /* Feature list may be empty, but no empty features in list. */
     dummy_feature_list:		/* empty */

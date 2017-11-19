@@ -134,7 +134,12 @@
     %type <classes> class_list
     %type <class_> class
     %type <feature> feature
+	/* This is the feature used by let. */
+	%type <feature> attr_feature
+	/* This is the feature list used by class. (feature;)* */
 	%type <features> feature_list
+	/* This is the feature list used by let statement. (,ID : TYPE [ <- expr])* */
+	%type <features> attr_feature_list
 	%type <formal> formal
 	%type <formals> formal_list
 	%type <expression> expression
@@ -157,7 +162,7 @@
 	 						}
 			;
 formal : OBJECTID ':' TYPEID {
-	$$ = formal_class($1, $3);
+	$$ = formal($1, $3);
 }
 
 formal_list : /* empty */ {
@@ -167,29 +172,47 @@ formal_list : /* empty */ {
 				$$ = append_Formals(single_Formals($2), $3);
 			}
 
-feature: OBJECTID '(' ')' ':' TYPEID '{' expression '}' {
-	@$ = @8;
-	SET_NODELOC(@8);
-	$$ = method_class($1, no_expr_class(), $5, $7);
-}
-| OBJECTID '(' formal formal_list ')' ':' TYPEID '{' expression '}' {
-	@$ = @10;
-	SET_NODELOC(@10);
-	$$ = method_class($1, append_Formals(single_Formals($3), $4), $7, $9);
-}
-| OBJECTID ':' TYPEID {
-	@$ = @3;
-	SET_NODELOC(@3);
-	$$ = attr_class($1, $3, no_expr_class());
-}
-| OBJECTID ':' TYPEID ASSIGN expression {
-	@$ = @3;
-	SET_NODELOC(@3);
-	$$ = attr_class($1, $3, $5);
+feature : OBJECTID '(' ')' ':' TYPEID '{' expression '}' {
+			@$ = @8;
+			SET_NODELOC(@8);
+			$$ = method($1, no_expr_class(), $5, $7);
+		}
+		| OBJECTID '(' formal formal_list ')' ':' TYPEID '{' expression '}' {
+			@$ = @10;
+			SET_NODELOC(@10);
+			$$ = method($1, append_Formals(single_Formals($3), $4), $7, $9);
+		}
+		| attr_feature {
+			$$ = $1;
+		}
+attr_feature : OBJECTID ':' TYPEID {
+				@$ = @3;
+				SET_NODELOC(@3);
+				$$ = attr($1, $3, no_expr_class());
+			}
+			| OBJECTID ':' TYPEID ASSIGN expression {
+				@$ = @3;
+				SET_NODELOC(@3);
+				$$ = attr($1, $3, $5);
+			}
+feature_list : /* empty */ {
+				$$ = nil_Features();
+			}
+			| feature ';' feature_list {
+				$$ = append_Features(single_Features($1), $3);
+			}
+attr_feature_list : /* empty */ {
+					$$ = nil_Features();
+				}
+				| ',' attr_feature attr_feature_list {
+					$$ = append_Features(single_Features($2), $3);
+				}
+
+class : CLASS TYPEID '{' feature_list '}' {
+	$$ = class_()
 }
 
-
-    class_list
+class_list
     : class			/* single class */
     { $$ = single_Classes($1);
     parse_results = $$; }

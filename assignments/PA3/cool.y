@@ -187,7 +187,7 @@ formal_list : /* empty */ {
 feature : OBJECTID '(' ')' ':' TYPEID '{' expression '}' {
 	@$ = @8;
 	SET_NODELOC(@8);
-	$$ = method($1, no_expr_class(), $5, $7);
+	$$ = method($1, nil_Formals(), $5, $7);
 }
 | OBJECTID '(' formal formal_list ')' ':' TYPEID '{' expression '}' {
 	@$ = @10;
@@ -200,7 +200,7 @@ feature : OBJECTID '(' ')' ':' TYPEID '{' expression '}' {
 attr_feature : OBJECTID ':' TYPEID {
 	@$ = @3;
 	SET_NODELOC(@3);
-	$$ = attr($1, $3, no_expr_class());
+	$$ = attr($1, $3, no_expr());
 }
 | OBJECTID ':' TYPEID ASSIGN expression {
 	@$ = @3;
@@ -220,7 +220,7 @@ attr_feature_list : /* empty */ {
 	$$ = append_Features(single_Features($2), $3);
 };
 /* If no parent is specified, the class inherits from the Object class. */
-class : CLASS TYPEID '{' feature_list '}' {
+class : CLASS TYPEID '{' feature_list '}' ';' {
 	$$ = class_($2, idtable.add_string("Object"), $4, stringtable.add_string(curr_filename));
 }
 | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' {
@@ -271,10 +271,10 @@ expression : OBJECTID ASSIGN expression { /* ID <- expr */
 	$$ = dispatch($1, $3, append_Expressions(single_Expressions($5), $6));
 }
 | OBJECTID '(' ')' { /* ID() */
-	$$ = dispatch(idtable.add_string("self"), $1, nil_Expressions());
+	$$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions());
 }
 | OBJECTID '(' expression comma_expression_list ')' { /* ID(expr[,expr]*) */
-	$$ = dispatch(idtable.add_string("self"), $1, append_Expressions(single_Expressions($3), $4));
+	$$ = dispatch(object(idtable.add_string("self")), $1, append_Expressions(single_Expressions($3), $4));
 }
 | expression '@' TYPEID '.' OBJECTID '(' ')' { /* expr@TYPE.ID() */
 	$$ = static_dispatch($1, $3, $5, nil_Expressions());
@@ -292,10 +292,11 @@ expression : OBJECTID ASSIGN expression { /* ID <- expr */
 	$$ = block($2);
 }
 | LET attr_feature attr_feature_list IN expression {
-	Symbol identifier = $2->get_name();
-	Symbol type_decl = $2->get_type_decl();
-	Expression init = $2->get_init();
-	$$ = let_helper(identifier, type_decl, append_Features(single_Features(attr_feature), $3), $5, 0);
+	attr_class* attr_ptr = static_cast<attr_class*>($2);
+	Symbol identifier = attr_ptr->get_name();
+	Symbol type_decl = attr_ptr->get_type_decl();
+	Expression init = attr_ptr->get_init();
+	$$ = let_helper(identifier, type_decl, append_Features(single_Features($2), $3), $5, 0);
 }
 | CASE expression OF branch_list ESAC {
 	$$ = typcase($2, $4);
@@ -337,7 +338,7 @@ expression : OBJECTID ASSIGN expression { /* ID <- expr */
 	$$ = $2;
 }
 | OBJECTID {
-	$$ = $1;
+	$$ = object($1);
 }
 | INT_CONST {
 	$$ = int_const($1);
@@ -369,7 +370,7 @@ void yyerror(char *s)
 
 Expression let_helper(Symbol identifier, Symbol type_decl, Features init_list, Expression body, int curr_idx) {
 	int list_len = init_list->len();
-	Expression init = init_list->nth(curr_idx)->get_init();
+	Expression init = static_cast<attr_class*>(init_list->nth(curr_idx))->get_init();
 	if(list_len - 1 == curr_idx) {
 		return let(identifier, type_decl, init, body);
 	} else {

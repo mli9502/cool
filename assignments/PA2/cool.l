@@ -104,7 +104,7 @@ SINGLE_LINE_COMMENT		"--".*
 \n				{
 					curr_lineno ++;
 				}
-[ \t\r\n\f\v]+		{};
+[ \t\r\f\v]+		{};
 {CLASS}			{ return CLASS; }
 {ELSE}			{ return ELSE; }
 {FI}			{ return FI; }

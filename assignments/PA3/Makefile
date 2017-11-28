@@ -66,7 +66,7 @@ ${HSRC}:
 	-ln -s ${CLASSDIR}/include/PA${ASSN}/$@ $@
 
 clean :
-	-rm -f ${OUTPUT} *.s core ${OBJS} ${CGEN} ${HGEN} lexer parser cgen semant *~ *.a *.o 
+	-rm -f ${OUTPUT} *.s core ${OBJS} ${CGEN} ${HGEN} parser cgen semant *~ *.a *.o 
 
 clean-compile:
 	@-rm -f core ${OBJS} ${CGEN} ${HGEN} ${LSRC}

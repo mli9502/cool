@@ -76,7 +76,7 @@
 
 	void yyerror(char *s);        /*  defined below; called for each parse error */
 	/* helper for let expression. */
-	Expression let_helper(Symbol identifier, Symbol type_decl, Features init_list, Expression body, int curr_idx);
+	Expression let_helper(Features init_list, Expression body, int curr_idx);
 	extern int yylex();           /*  the entry point to the lexer  */
 
 	/************************************************************************/
@@ -212,12 +212,18 @@ feature_list : /* empty */ {
 }
 | feature ';' feature_list {
 	$$ = append_Features(single_Features($1), $3);
+}
+| error ';' feature_list {
+	$$ = $3;
 };
 attr_feature_list : /* empty */ {
 	$$ = nil_Features();
 }
 | ',' attr_feature attr_feature_list {
 	$$ = append_Features(single_Features($2), $3);
+}
+| ',' error attr_feature_list {
+	$$ = $3;
 };
 /* If no parent is specified, the class inherits from the Object class. */
 class : CLASS TYPEID '{' feature_list '}' ';' {
@@ -225,6 +231,9 @@ class : CLASS TYPEID '{' feature_list '}' ';' {
 }
 | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' {
 	$$ = class_($2, $4, $6, stringtable.add_string(curr_filename));
+}
+| error ';' {
+	// Error recovery.
 };
 
 class_list : class { /* single class */
@@ -233,13 +242,17 @@ class_list : class { /* single class */
 | class_list class { /* several classes */
 	$$ = append_Classes($1, single_Classes($2));
 	parse_results = $$;
-};
+}
+;
 
 expression_list : expression ';' {
 	$$ = single_Expressions($1);
 }
 | expression ';' expression_list {
 	$$ = append_Expressions(single_Expressions($1), $3);
+}
+| error ';' expression_list {
+	$$ = $3;
 };
 
 comma_expression_list : /* empty */ {
@@ -247,6 +260,9 @@ comma_expression_list : /* empty */ {
 }
 | ',' expression comma_expression_list {
 	$$ = append_Expressions(single_Expressions($2), $3);
+}
+| ',' error comma_expression_list {
+	$$ = $3;
 };
 
 branch : OBJECTID ':' TYPEID DARROW expression ';' {
@@ -291,12 +307,22 @@ expression : OBJECTID ASSIGN expression { /* ID <- expr */
 | '{' expression_list '}' {
 	$$ = block($2);
 }
+| '{' error '}' {
+	// Error recovery.
+}
 | LET attr_feature attr_feature_list IN expression {
 	attr_class* attr_ptr = static_cast<attr_class*>($2);
 	Symbol identifier = attr_ptr->get_name();
 	Symbol type_decl = attr_ptr->get_type_decl();
 	Expression init = attr_ptr->get_init();
-	$$ = let_helper(identifier, type_decl, append_Features(single_Features($2), $3), $5, 0);
+	$$ = let_helper(append_Features(single_Features($2), $3), $5, 0);
+}
+| LET error attr_feature attr_feature_list IN expression {
+	attr_class* attr_ptr = static_cast<attr_class*>($3);
+	Symbol identifier = attr_ptr->get_name();
+	Symbol type_decl = attr_ptr->get_type_decl();
+	Expression init = attr_ptr->get_init();
+	$$ = let_helper(append_Features(single_Features($3), $4), $6, 0);	
 }
 | CASE expression OF branch_list ESAC {
 	$$ = typcase($2, $4);
@@ -368,16 +394,19 @@ void yyerror(char *s)
   if(omerrs>50) {fprintf(stdout, "More than 50 errors\n"); exit(1);}
 }
 
-Expression let_helper(Symbol identifier, Symbol type_decl, Features init_list, Expression body, int curr_idx) {
+Expression let_helper(Features init_list, Expression body, int curr_idx) {
 	int list_len = init_list->len();
-	Expression init = static_cast<attr_class*>(init_list->nth(curr_idx))->get_init();
+	attr_class* curr_attr = static_cast<attr_class*>(init_list->nth(curr_idx));
+	Expression curr_init = curr_attr->get_init();
+	Symbol curr_identifier = curr_attr->get_name();
+	Symbol curr_type_decl = curr_attr->get_type_decl();
 	if(list_len - 1 == curr_idx) {
-		return let(identifier, type_decl, init, body);
+		return let(curr_identifier, curr_type_decl, curr_init, body);
 	} else {
-		return let(identifier,
-				   type_decl,
-				   init,
-				   let_helper(identifier, type_decl, init_list, body, curr_idx + 1));
+		return let(curr_identifier,
+				   curr_type_decl,
+				   curr_init,
+				   let_helper(init_list, body, curr_idx + 1));
 	}
 }
     

@@ -135,6 +135,7 @@ public:
    }
    Program copy_Program();
    void dump(ostream& stream, int n);
+   Classes get_classes();
 
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
@@ -209,6 +210,9 @@ public:
       type_decl = a2;
       init = a3;
    }
+   Symbol get_name() { return name; }
+   Symbol get_type_decl() { return type_decl; }
+   Expression get_init() { return init; }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 

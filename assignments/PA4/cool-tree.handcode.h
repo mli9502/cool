@@ -56,11 +56,15 @@ void dump_with_types(ostream&, int);
 
 #define Class__EXTRAS                   \
 virtual Symbol get_filename() = 0;      \
+virtual Symbol get_classname() = 0;		\
+virtual Symbol get_parentname() = 0;	\
 virtual void dump_with_types(ostream&,int) = 0; 
 
 
 #define class__EXTRAS                                 \
 Symbol get_filename() { return filename; }             \
+Symbol get_classname() { return name; }					\
+Symbol get_parentname() { return parent; }				\
 void dump_with_types(ostream&,int);                    
 
 

@@ -326,4 +326,84 @@ Classes program_class::get_classes() {
     return this->classes;
 }
 
+// init_envs for Expressions:
+// FIXME: THIS IS NOT CORRECT!!!
+// Only feature needs to be put into Object and Method environment !!!
+// The following are actually not needed.
+void object_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    class_object_env_.addid(name->get_string(), &No_type);
+    return;
+}
 
+void no_expr_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+
+void isvoid_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return this->e1->init_envs(class_object_env_, class_method_env_);
+}
+
+void new__class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+
+void string_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void bool_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void int_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void comp_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void leq_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void eq_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void lt_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void neg_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void divide_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void mul_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void sub_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void plus_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void let_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void block_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void typcase_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void loop_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void cond_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void dispatch_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void static_dispatch_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}
+void assign_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
+    return;
+}

@@ -8,10 +8,9 @@
 //
 //////////////////////////////////////////////////////////
 
-
 #include "tree.h"
 #include "cool-tree.handcode.h"
-
+#include "symtab.h"
 
 // define the class for phylum
 // define simple phylum - Program
@@ -41,7 +40,7 @@ public:
 #endif
 };
 
-
+// TODO: Define init environment for Feature_class.
 // define simple phylum - Feature
 typedef class Feature_class *Feature;
 
@@ -171,7 +170,7 @@ public:
 #endif
 };
 
-
+// TODO: Update method environment here.
 // define constructor - method
 class method_class : public Feature_class {
 protected:
@@ -197,7 +196,7 @@ public:
 #endif
 };
 
-
+// TODO: Update object environment here.
 // define constructor - attr
 class attr_class : public Feature_class {
 protected:

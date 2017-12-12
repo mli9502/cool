@@ -4,10 +4,21 @@
 #ifndef COOL_TREE_HANDCODE_H
 #define COOL_TREE_HANDCODE_H
 
+#include <map>
+#include <vector>
+#include <utility>
+#include <string>
 #include <iostream>
 #include "tree.h"
 #include "cool.h"
 #include "stringtab.h"
+#include "symtab.h"
+
+template<typename T>
+using ObjectEnvType = SymbolTable<T, Symbol>;
+template<typename T>
+using MethodEnvType = std::map<T, std::vector<std::pair<T, Symbol>>>;
+
 #define yylineno curr_lineno;
 extern int yylineno;
 
@@ -47,8 +58,6 @@ typedef Cases_class *Cases;
 #define Program_EXTRAS                          \
 virtual void semant() = 0;			\
 virtual void dump_with_types(ostream&, int) = 0; 
-
-
 
 #define program_EXTRAS                          \
 void semant();     				\
@@ -100,10 +109,15 @@ Symbol type;                                 \
 Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
 virtual void dump_with_types(ostream&,int) = 0;  \
+virtual void init_envs(ObjectEnvType<std::string>& class_obejct_env_, \
+						MethodEnvType<std::string>& class_method_env_) = 0; \
 void dump_type(ostream&, int);               \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \
-void dump_with_types(ostream&,int); 
+void dump_with_types(ostream&,int); 	\
+void init_envs(ObjectEnvType<std::string>& class_object_env_, \
+				MethodEnvType<std::string>& class_method_env_);
+
 
 #endif

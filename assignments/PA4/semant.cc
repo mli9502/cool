@@ -92,13 +92,16 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr),
 
 void ClassTable::init_envs(Class_ c) {
     std::string class_name = c->get_classname()->get_string();
-    this->object_env_[class_name] = SymbolTable<std::string, Symbol>();
+    std::cerr << class_name << std::endl;
+    object_env_[class_name] = SymbolTable<std::string, Symbol>();
     // FIXME: May need to add a scope first before actually adding stuff to symbol table.
     // The symbol table used by class is not the same as the symbol table used when doing type checking.
     // A new symbol table is needed when doing type checking for each class.
     // FIXME: When constructing object and method environments, need to check for duplicate defination !!!
-    this->method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
+    method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
+    object_env_[class_name].enterscope();
     c->init_envs(object_env_[class_name], method_env_[class_name]);
+    object_env_[class_name].exitscope();
 } 
 
 void ClassTable::install_basic_classes() {
@@ -327,7 +330,11 @@ void program_class::semant()
     classtable->add_user_defined_classes(*this);
     /* some semantic analysis code may go here */
     // Initialize object environemnt and method environment here.
-
+    // FIXME: Should not use this->classes, need to use class map instead since it contains default classes.
+    for(int i = 0; i < this->classes->len(); i ++) {
+        std::cerr << "2" << std::endl;
+        classtable->init_envs(this->classes->nth(i));
+    }
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
 	exit(1);

@@ -5,3 +5,5 @@ cgen
 lexer
 parser
 semant
+core.*
+*.log

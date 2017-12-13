@@ -67,6 +67,7 @@ void dump_with_types(ostream&, int);
 virtual Symbol get_filename() = 0;      \
 virtual Symbol get_classname() = 0;		\
 virtual Symbol get_parentname() = 0;	\
+virtual void init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) = 0;	\
 virtual void dump_with_types(ostream&,int) = 0; 
 
 
@@ -74,26 +75,33 @@ virtual void dump_with_types(ostream&,int) = 0;
 Symbol get_filename() { return filename; }             \
 Symbol get_classname() { return name; }					\
 Symbol get_parentname() { return parent; }				\
+void init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env);	\
 void dump_with_types(ostream&,int);                    
 
 
 #define Feature_EXTRAS                                        \
-virtual void dump_with_types(ostream&,int) = 0; 
+virtual void dump_with_types(ostream&,int) = 0; 	\
+virtual void init_envs(ObjectEnvType<std::string>& class_object_env, \
+				MethodEnvType<std::string>& class_method_env);
 
 
-#define Feature_SHARED_EXTRAS                                       \
-void dump_with_types(ostream&,int);    
+#define Feature_SHARED_EXTRAS			\
+void dump_with_types(ostream&,int);		\
+void init_envs(ObjectEnvType<std::string>& class_object_env, \
+				MethodEnvType<std::string>& class_method_env);
 
 
 
 
 
 #define Formal_EXTRAS                              \
-virtual void dump_with_types(ostream&,int) = 0;
-
+virtual void dump_with_types(ostream&,int) = 0;	\
+virtual std::pair<std::string, Symbol> construct_id_type_pair() = 0;
 
 #define formal_EXTRAS                           \
-void dump_with_types(ostream&,int);
+void dump_with_types(ostream&,int);		\
+std::pair<std::string, Symbol> construct_id_type_pair();
+
 
 
 #define Case_EXTRAS                             \
@@ -109,15 +117,11 @@ Symbol type;                                 \
 Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
 virtual void dump_with_types(ostream&,int) = 0;  \
-virtual void init_envs(ObjectEnvType<std::string>& class_obejct_env_, \
-						MethodEnvType<std::string>& class_method_env_) = 0; \
 void dump_type(ostream&, int);               \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \
-void dump_with_types(ostream&,int); 	\
-void init_envs(ObjectEnvType<std::string>& class_object_env_, \
-				MethodEnvType<std::string>& class_method_env_);
+void dump_with_types(ostream&,int);
 
 
 #endif

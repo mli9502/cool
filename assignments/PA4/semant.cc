@@ -90,6 +90,17 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr),
     install_basic_classes();
 }
 
+void ClassTable::init_envs(Class_ c) {
+    std::string class_name = c->get_classname()->get_string();
+    this->object_env_[class_name] = SymbolTable<std::string, Symbol>();
+    // FIXME: May need to add a scope first before actually adding stuff to symbol table.
+    // The symbol table used by class is not the same as the symbol table used when doing type checking.
+    // A new symbol table is needed when doing type checking for each class.
+    // FIXME: When constructing object and method environments, need to check for duplicate defination !!!
+    this->method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
+    c->init_envs(object_env_[class_name], method_env_[class_name]);
+} 
+
 void ClassTable::install_basic_classes() {
 
     // The tree package uses these globals to annotate the classes built below.
@@ -315,6 +326,7 @@ void program_class::semant()
     ClassTable* classtable = new ClassTable(classes);
     classtable->add_user_defined_classes(*this);
     /* some semantic analysis code may go here */
+    // Initialize object environemnt and method environment here.
 
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
@@ -326,84 +338,25 @@ Classes program_class::get_classes() {
     return this->classes;
 }
 
-// init_envs for Expressions:
-// FIXME: THIS IS NOT CORRECT!!!
-// Only feature needs to be put into Object and Method environment !!!
-// The following are actually not needed.
-void object_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    class_object_env_.addid(name->get_string(), &No_type);
-    return;
+
+std::pair<std::string, Symbol> formal_class::construct_id_type_pair() {
+    return std::make_pair(name->get_string(), type_decl);
 }
 
-void no_expr_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
+void attr_class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
+    class_object_env.addid(name->get_string(), &type_decl);
+}
+void method_class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
+    std::vector<std::pair<std::string, Symbol>> args;
+    for(int i = 0; i < formals->len(); i ++) {
+        args.push_back(formals->nth(i)->construct_id_type_pair());
+    }
+    args.push_back(std::make_pair("", return_type));
+    class_method_env[name->get_string()] = args;
 }
 
-void isvoid_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return this->e1->init_envs(class_object_env_, class_method_env_);
-}
-
-void new__class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-
-void string_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void bool_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void int_const_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void comp_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void leq_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void eq_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void lt_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void neg_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void divide_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void mul_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void sub_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void plus_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void let_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void block_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void typcase_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void loop_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void cond_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void dispatch_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void static_dispatch_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
-}
-void assign_class::init_envs(ObjectEnvType<std::string>& class_object_env_, MethodEnvType<std::string>& class_method_env_) {
-    return;
+void class__class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
+    for(int i = 0; i < features->len(); i ++) {
+        features->nth(i)->init_envs(class_object_env, class_method_env);
+    }
 }

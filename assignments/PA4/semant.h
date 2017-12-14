@@ -43,11 +43,31 @@ public:
   ClassTable(Classes);
   int errors() { return semant_errors; }
   ostream& semant_error();
+  ostream& semant_error(const std::string& class_name);
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
   void add_user_defined_classes(program_class program);
+  // Initialize envs for all classes in classes_map_.
+  bool init_all_envs();
   // Initialize object_env_ and method_env_ for a given class.
-  void init_envs(Class_ c);
+  bool init_envs(Class_ c);
+  // Helper function.
+  void add_to_object_env(const std::string& class_name, const std::string& id, Symbol* type) {
+    object_env_[class_name].addid(id, type);
+  }
+  Symbol* get_from_object_env(const std::string& class_name, const std::string& id) {
+    return object_env_[class_name].lookup(id);
+  }
+  void add_to_method_env(const std::string& class_name, const std::string& method_id, const std::vector<std::pair<std::string, Symbol>>& args) {
+    method_env_[class_name][method_id] = args;
+  }
+  std::vector<std::pair<std::string, Symbol>>* get_from_method_env(const std::string& class_name, const std::string& method_id) {
+    if(method_env_[class_name].find(method_id) == method_env_[class_name].end()) {
+      return nullptr;
+    } else {
+      return &(method_env_[class_name][method_id]);
+    }
+  }
 };
 
 

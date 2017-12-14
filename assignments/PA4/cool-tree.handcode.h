@@ -55,6 +55,9 @@ typedef Expressions_class *Expressions;
 typedef list_node<Case> Cases_class;
 typedef Cases_class *Cases;
 
+// Forward declear ClassTable for error handling purpose.
+class ClassTable;
+
 #define Program_EXTRAS                          \
 virtual void semant() = 0;			\
 virtual void dump_with_types(ostream&, int) = 0; 
@@ -67,7 +70,7 @@ void dump_with_types(ostream&, int);
 virtual Symbol get_filename() = 0;      \
 virtual Symbol get_classname() = 0;		\
 virtual Symbol get_parentname() = 0;	\
-virtual void init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) = 0;	\
+virtual bool init_envs(const std::string& class_name, ClassTable& class_table) = 0;	\
 virtual void dump_with_types(ostream&,int) = 0; 
 
 
@@ -75,20 +78,18 @@ virtual void dump_with_types(ostream&,int) = 0;
 Symbol get_filename() { return filename; }             \
 Symbol get_classname() { return name; }					\
 Symbol get_parentname() { return parent; }				\
-void init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env);	\
+bool init_envs(const std::string& class_name, ClassTable& class_table);	\
 void dump_with_types(ostream&,int);                    
 
 
 #define Feature_EXTRAS                                        \
 virtual void dump_with_types(ostream&,int) = 0; 	\
-virtual void init_envs(ObjectEnvType<std::string>& class_object_env, \
-				MethodEnvType<std::string>& class_method_env) = 0;
+virtual bool init_envs(const std::string& class_name, ClassTable& class_table) = 0;
 
 
 #define Feature_SHARED_EXTRAS			\
 void dump_with_types(ostream&,int);		\
-void init_envs(ObjectEnvType<std::string>& class_object_env, \
-				MethodEnvType<std::string>& class_method_env);
+bool init_envs(const std::string& class_name, ClassTable& class_table);
 
 
 

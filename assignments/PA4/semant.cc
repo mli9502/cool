@@ -90,20 +90,6 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr),
     install_basic_classes();
 }
 
-void ClassTable::init_envs(Class_ c) {
-    std::string class_name = c->get_classname()->get_string();
-    std::cerr << class_name << std::endl;
-    object_env_[class_name] = SymbolTable<std::string, Symbol>();
-    // FIXME: May need to add a scope first before actually adding stuff to symbol table.
-    // The symbol table used by class is not the same as the symbol table used when doing type checking.
-    // A new symbol table is needed when doing type checking for each class.
-    // FIXME: When constructing object and method environments, need to check for duplicate defination !!!
-    method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
-    object_env_[class_name].enterscope();
-    c->init_envs(object_env_[class_name], method_env_[class_name]);
-    object_env_[class_name].exitscope();
-} 
-
 void ClassTable::install_basic_classes() {
 
     // The tree package uses these globals to annotate the classes built below.
@@ -290,6 +276,10 @@ bool ClassTable::dfs_detect_cycle(std::map<std::string, int>& visited, std::map<
 //
 ///////////////////////////////////////////////////////////////////
 
+ostream& ClassTable::semant_error(const std::string& class_name) {
+    return semant_error(classes_map_[class_name]);
+}
+
 ostream& ClassTable::semant_error(Class_ c)
 {                                                             
     return semant_error(c->get_filename(),c);
@@ -328,16 +318,17 @@ void program_class::semant()
     /* ClassTable constructor may do some semantic analysis */
     ClassTable* classtable = new ClassTable(classes);
     classtable->add_user_defined_classes(*this);
+    if (classtable->errors()) {
+	    cerr << "Compilation halted due to static semantic errors." << endl;
+	    exit(1);
+    }
     /* some semantic analysis code may go here */
     // Initialize object environemnt and method environment here.
     // FIXME: Should not use this->classes, need to use class map instead since it contains default classes.
-    for(int i = 0; i < this->classes->len(); i ++) {
-        std::cerr << "2" << std::endl;
-        classtable->init_envs(this->classes->nth(i));
-    }
+    classtable->init_all_envs();
     if (classtable->errors()) {
-	cerr << "Compilation halted due to static semantic errors." << endl;
-	exit(1);
+	    cerr << "Compilation halted due to static semantic errors." << endl;
+	    exit(1);
     }
 }
 
@@ -350,20 +341,64 @@ std::pair<std::string, Symbol> formal_class::construct_id_type_pair() {
     return std::make_pair(name->get_string(), type_decl);
 }
 
-void attr_class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
-    class_object_env.addid(name->get_string(), &type_decl);
+bool attr_class::init_envs(const std::string& class_name, ClassTable& class_table) {
+    std::string object_id = name->get_string();
+    // If objectId is previously defined.
+    if(class_table.get_from_object_env(class_name, object_id) != nullptr) {
+        std::cerr << object_id << " declared twice ..." << std::endl;
+        class_table.semant_error(class_name);
+        return false;
+    } else {
+        class_table.add_to_object_env(class_name, object_id, &type_decl);
+        return true;
+    }
 }
-void method_class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
+bool method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
+    std::string method_id = name->get_string();
+    if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
+        std::cerr << method_id << " declared twice ..." << std::endl;
+        class_table.semant_error(class_name);
+        return false;
+    }
     std::vector<std::pair<std::string, Symbol>> args;
     for(int i = 0; i < formals->len(); i ++) {
         args.push_back(formals->nth(i)->construct_id_type_pair());
     }
     args.push_back(std::make_pair("", return_type));
-    class_method_env[name->get_string()] = args;
+    class_table.add_to_method_env(class_name, method_id, args);
+    return true;
 }
 
-void class__class::init_envs(ObjectEnvType<std::string>& class_object_env, MethodEnvType<std::string>& class_method_env) {
+bool class__class::init_envs(const std::string& class_name, ClassTable& class_table) {
     for(int i = 0; i < features->len(); i ++) {
-        features->nth(i)->init_envs(class_object_env, class_method_env);
+        if(!features->nth(i)->init_envs(class_name, class_table)) {
+            return false;
+        }
     }
+    return true;
+}
+
+bool ClassTable::init_envs(Class_ c) {
+    std::string class_name = c->get_classname()->get_string();
+    std::cerr << class_name << std::endl;
+    object_env_[class_name] = SymbolTable<std::string, Symbol>();
+    // TODO: The symbol table used by class is not the same as the symbol table used when doing type checking.
+    // A new symbol table is needed when doing type checking for each class.
+    // FIXME: When constructing object and method environments, need to check for duplicate defination !!!
+    method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
+    object_env_[class_name].enterscope();
+    return c->init_envs(class_name, *this);
+} 
+// NOTE: enter scope will push a new list to stack.
+// exit scope will pop that list. If scope is exit, it is gone.
+bool ClassTable::init_all_envs() {
+    for(const auto& entry : classes_map_) {
+        if(!init_envs(entry.second)) {
+            return false;
+        }
+        std::cerr << ">>>>>>>>>" << std::endl;
+        object_env_[entry.first].dump();
+        std::cerr << "<<<<<<<<<" << std::endl;
+    }
+    return true;
 }

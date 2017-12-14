@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
   // check whether Miguel is in any scope; predicate is now false
   cout << ((map->lookup(Miguel) != NULL) ? "Yes\n" : "No\n");
 
+  map->dump();
+
   return 0;
  
 }

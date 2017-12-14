@@ -276,8 +276,8 @@ bool ClassTable::dfs_detect_cycle(std::map<std::string, int>& visited, std::map<
 //
 ///////////////////////////////////////////////////////////////////
 
-ostream& ClassTable::semant_error(const std::string& class_name) {
-    return semant_error(classes_map_[class_name]);
+ostream& ClassTable::semant_error(const std::string& class_name, tree_node* t) {
+    return semant_error(classes_map_[class_name]->get_filename(), t);
 }
 
 ostream& ClassTable::semant_error(Class_ c)
@@ -340,13 +340,12 @@ Classes program_class::get_classes() {
 std::pair<std::string, Symbol> formal_class::construct_id_type_pair() {
     return std::make_pair(name->get_string(), type_decl);
 }
-
+// FIXME: When multiple defination error occurs, do not abort. Continue semantic analysis.
 bool attr_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string object_id = name->get_string();
     // If objectId is previously defined.
     if(class_table.get_from_object_env(class_name, object_id) != nullptr) {
-        std::cerr << object_id << " declared twice ..." << std::endl;
-        class_table.semant_error(class_name);
+        class_table.semant_error(class_name, this) << "Attribute " << object_id << " is multiply defined in class." << std::endl;
         return false;
     } else {
         class_table.add_to_object_env(class_name, object_id, &type_decl);
@@ -356,8 +355,7 @@ bool attr_class::init_envs(const std::string& class_name, ClassTable& class_tabl
 bool method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string method_id = name->get_string();
     if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
-        std::cerr << method_id << " declared twice ..." << std::endl;
-        class_table.semant_error(class_name);
+        class_table.semant_error(class_name, this) << ": Method " << method_id << " is multiply defined in class." << std::endl;
         return false;
     }
     std::vector<std::pair<std::string, Symbol>> args;

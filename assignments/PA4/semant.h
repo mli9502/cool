@@ -43,7 +43,7 @@ public:
   ClassTable(Classes);
   int errors() { return semant_errors; }
   ostream& semant_error();
-  ostream& semant_error(const std::string& class_name);
+  ostream& semant_error(const std::string& class_name, tree_node* t);
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
   void add_user_defined_classes(program_class program);

@@ -83,7 +83,7 @@ static void initialize_constants(void)
 
 
 
-ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr),
+ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr), out_stream(cout), 
                                             classes_map_(), inheritance_graph_() {
 
     /* Fill this in */
@@ -324,12 +324,16 @@ void program_class::semant()
     }
     /* some semantic analysis code may go here */
     // Initialize object environemnt and method environment here.
-    // FIXME: Should not use this->classes, need to use class map instead since it contains default classes.
     classtable->init_all_envs();
-    if (classtable->errors()) {
-	    cerr << "Compilation halted due to static semantic errors." << endl;
-	    exit(1);
-    }
+    std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
+    classtable->dump_method_env();
+    std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
+    // According to the given semant, it does not stop when redudent defination is found.
+    // As a result, the exit here is not needed.
+    // if (classtable->errors()) {
+	//     cerr << "Compilation halted due to static semantic errors." << endl;
+	//     exit(1);
+    // }
 }
 
 Classes program_class::get_classes() {

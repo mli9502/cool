@@ -30,6 +30,7 @@ private:
 
   int semant_errors;
   ostream& error_stream;
+  ostream& out_stream;
   // key: class name, val: the actual class.
   std::map<std::string, Class_> classes_map_;
   // key: class name, val: all the classes that inherits from it.
@@ -67,6 +68,27 @@ public:
     } else {
       return &(method_env_[class_name][method_id]);
     }
+  }
+  void dump_method_env() {
+    for(const auto& entry : method_env_) {
+      std::cout << "----- class: " << entry.first << " -----" << std::endl;
+      for(const auto& method_entry : entry.second) {
+        unsigned arg_size = method_entry.second.size();
+        std::cout << method_entry.first << " : " << method_entry.second[arg_size - 1].second->get_string() << " (";
+        // If there's no arg.
+        if(arg_size == 1) {
+          std::cout << ")" << std::endl;
+          break;
+        }
+        for(unsigned i = 0; i < arg_size - 2; i ++) {
+          dump_arg(method_entry.second[i]) << ", ";
+        }
+        dump_arg(method_entry.second[arg_size - 2]) << ")" << std::endl;
+      }
+    }
+  }
+  ostream& dump_arg(const std::pair<std::string, Symbol>& arg) {
+    return out_stream << arg.first << " : " << arg.second->get_string();
   }
 };
 

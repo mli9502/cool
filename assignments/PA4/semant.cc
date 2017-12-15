@@ -328,6 +328,9 @@ void program_class::semant()
     std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
     classtable->dump_method_env();
     std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << "Start type checking ..." << std::endl;
+    this->check_type(*classtable);
+
     // According to the given semant, it does not stop when redudent defination is found.
     // As a result, the exit here is not needed.
     // if (classtable->errors()) {
@@ -339,6 +342,12 @@ void program_class::semant()
 Classes program_class::get_classes() {
     return this->classes;
 }
+
+// TODO: Start working on type checking.
+// NOTE: Do not have to return bool. Since error count will be incremented and checked after type check finish.
+void program_class::check_type(ClassTable& class_table) {
+    return;
+} 
 
 
 std::pair<std::string, Symbol> formal_class::construct_id_type_pair() {

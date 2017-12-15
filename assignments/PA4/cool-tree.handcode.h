@@ -60,11 +60,13 @@ class ClassTable;
 
 #define Program_EXTRAS                          \
 virtual void semant() = 0;			\
-virtual void dump_with_types(ostream&, int) = 0; 
+virtual void dump_with_types(ostream&, int) = 0; \
+virtual void check_type(ClassTable& class_table) = 0;
 
 #define program_EXTRAS                          \
 void semant();     				\
-void dump_with_types(ostream&, int);            
+void dump_with_types(ostream&, int);  \
+void check_type(ClassTable& class_table);          
 
 #define Class__EXTRAS                   \
 virtual Symbol get_filename() = 0;      \

@@ -72,7 +72,7 @@ void check_type(ClassTable& class_table);
 virtual Symbol get_filename() = 0;      \
 virtual Symbol get_classname() = 0;		\
 virtual Symbol get_parentname() = 0;	\
-virtual bool init_envs(const std::string& class_name, ClassTable& class_table) = 0;	\
+virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0;	\
 virtual void dump_with_types(ostream&,int) = 0; 
 
 
@@ -80,18 +80,18 @@ virtual void dump_with_types(ostream&,int) = 0;
 Symbol get_filename() { return filename; }             \
 Symbol get_classname() { return name; }					\
 Symbol get_parentname() { return parent; }				\
-bool init_envs(const std::string& class_name, ClassTable& class_table);	\
+void init_envs(const std::string& class_name, ClassTable& class_table);	\
 void dump_with_types(ostream&,int);                    
 
 
 #define Feature_EXTRAS                                        \
 virtual void dump_with_types(ostream&,int) = 0; 	\
-virtual bool init_envs(const std::string& class_name, ClassTable& class_table) = 0;
+virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0;
 
 
 #define Feature_SHARED_EXTRAS			\
 void dump_with_types(ostream&,int);		\
-bool init_envs(const std::string& class_name, ClassTable& class_table);
+void init_envs(const std::string& class_name, ClassTable& class_table);
 
 
 
@@ -99,11 +99,11 @@ bool init_envs(const std::string& class_name, ClassTable& class_table);
 
 #define Formal_EXTRAS                              \
 virtual void dump_with_types(ostream&,int) = 0;	\
-virtual std::pair<std::string, Symbol> construct_id_type_pair() = 0;
+virtual std::pair<std::string, Symbol> construct_id_type_pair(const std::string& class_name, ClassTable& class_table) = 0;
 
 #define formal_EXTRAS                           \
 void dump_with_types(ostream&,int);		\
-std::pair<std::string, Symbol> construct_id_type_pair();
+std::pair<std::string, Symbol> construct_id_type_pair(const std::string& class_name, ClassTable& class_table);
 
 
 

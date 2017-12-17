@@ -1,6 +1,5 @@
 ~/.vscode*/
 *.o
-*.d
 cgen
 lexer
 parser

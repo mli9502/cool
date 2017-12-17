@@ -1,20 +1,16 @@
-class C {
+class A inherits B {
 	a : Int;
-	b : Bool;
-	init(x : Int, y : Bool) : C {
-           {
-		a <- x;
-		b <- y;
-		self;
-           }
-	};
-	init(x : Int, y : Bool) : C {
-		a <- x
+	c : Object;
+	init(x : ABC, y : Object) : C {
+		{
+			b;
+		}
 	};
 };
+class B inherits Object {
+	a : HELLO;
+	a : Int;
+	b : Int <- a;
+};
+class C inherits Object {};
 
-Class Main {
-	main():C {
-	  (new C).init(1,true)
-	};
-};

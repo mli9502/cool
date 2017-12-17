@@ -191,7 +191,7 @@ void ClassTable::install_basic_classes() {
 	       filename);
     classes_map_[Str->get_string()] = Str_class;
 }
-// FIXME: Need to check whether Main class contains method "main".
+
 void ClassTable::add_user_defined_classes(program_class program) {
     Classes classes = program.get_classes();
     for(int i = 0; i < classes->len(); i ++) {
@@ -221,11 +221,22 @@ void ClassTable::add_user_defined_classes(program_class program) {
             inheritance_graph_[parent_name].push_back(class_name);
         }
     }
+    /*
+    // Stuff used to print class hierechy.
+    for(const auto& entry : inheritance_graph_) {
+        std::cout << entry.first << ": ";
+        for(const auto& class_name : entry.second) {
+            std::cout << class_name << ", ";
+        }
+        std::cout << std::endl;
+    }
+    */
     std::map<std::string, int> visited;
     for(std::map<std::string, Class_>::const_iterator it = classes_map_.begin(); it != classes_map_.end(); it ++) {
         std::map<std::string, int> curr_visit;
         // Do not visit Object. All the other classes are derived from Object. So, if one of them if visited first, and Object is then visited, it will be falsely detected as a cycle.
-        if(!visited[it->first] && it->first != Object->get_string()) {
+        if(visited[it->first] == 0 && it->first != Object->get_string()) {
+            // std::cerr << "Visiting " << it->first << std::endl;
             // If cycle is detected.
             if(!dfs_detect_cycle(visited, curr_visit, it->first)) {
                 for(std::map<std::string, int>::const_iterator it = curr_visit.begin(); it != curr_visit.end(); it ++) {
@@ -238,16 +249,20 @@ void ClassTable::add_user_defined_classes(program_class program) {
             }
         }
     }
-    // Check whether class Main is defined.
-    if(classes_map_.find(Main->get_string()) == classes_map_.end()) {
-        this->semant_error() << "Class Main is not defined." << std::endl;
-        return;
+    // Check if there are any classes inherit from Int or String.
+    if(!inheritance_graph_["String"].empty() || !inheritance_graph_["Int"].empty()) {
+        for(const auto& class_name : inheritance_graph_["String"]) {
+            this->semant_error(classes_map_[class_name]) << "Class " << class_name << " cannot inherit class String." << std::endl;
+        }
+        for(const auto& class_name : inheritance_graph_["Int"]) {
+            this->semant_error(classes_map_[class_name]) << "Class " << class_name << " cannot inherit class Int." << std::endl;
+        }
     }
-    return;
 }
 // return false if cycle is detected.
+// 1: is visiting. 2: finish.
 bool ClassTable::dfs_detect_cycle(std::map<std::string, int>& visited, std::map<std::string, int>& curr_visit, const std::string& curr_class) {
-    if(visited[curr_class]) {
+    if(visited[curr_class] == 1) {
         return false;
     }
     visited[curr_class] = 1;
@@ -258,6 +273,7 @@ bool ClassTable::dfs_detect_cycle(std::map<std::string, int>& visited, std::map<
             return false;
         }
     }
+    visited[curr_class] = 2;
     return true;
 }
 
@@ -324,10 +340,16 @@ void program_class::semant()
     }
     /* some semantic analysis code may go here */
     // Initialize object environemnt and method environment here.
+    // NOTE: While initializing environments, also find objectId with undefined types.
+    // Check for undefined types in both object environment and method environment. 
+    // Assign no_type_ to these attribute and methods. 
+    // TODO: no_type_ needs to be handled specially else where.
     classtable->init_all_envs();
     std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
     classtable->dump_method_env();
     std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
+    classtable->check_for_main_class();
+    // FIXME: Add base calss symbol and method to child class.
     std::cout << "Start type checking ..." << std::endl;
     this->check_type(*classtable);
 
@@ -346,70 +368,141 @@ Classes program_class::get_classes() {
 // TODO: Start working on type checking.
 // NOTE: Do not have to return bool. Since error count will be incremented and checked after type check finish.
 void program_class::check_type(ClassTable& class_table) {
+    Classes classes = this->get_classes();
+    for(int i = 0; i < classes->len(); i ++) {
+        std::string class_name = classes->nth(i)->get_classname()->get_string();
+        ObjectEnvType<std::string> local_object_env;
+        ObjectEnvType<std::string>& class_object_env = class_table.get_class_object_env(class_name);
+        MethodEnvType<std::string>& class_method_env = class_table.get_class_method_env(class_name);
+
+    }
     return;
 } 
 
-
-std::pair<std::string, Symbol> formal_class::construct_id_type_pair() {
+std::pair<std::string, Symbol> formal_class::construct_id_type_pair(const std::string& class_name, ClassTable& class_table) {
+    if(!class_table.is_basic_class(class_name) && !class_table.exists_type(type_decl)) {
+        class_table.semant_error(class_name, this) << "Class " << type_decl->get_string() << " of formal parameter " << name->get_string() << " is undefined." << std::endl;
+        return std::make_pair(name->get_string(), No_type);
+    }
     return std::make_pair(name->get_string(), type_decl);
 }
-// FIXME: When multiple defination error occurs, do not abort. Continue semantic analysis.
-bool attr_class::init_envs(const std::string& class_name, ClassTable& class_table) {
+void attr_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string object_id = name->get_string();
-    // If objectId is previously defined.
-    if(class_table.get_from_object_env(class_name, object_id) != nullptr) {
-        class_table.semant_error(class_name, this) << "Attribute " << object_id << " is multiply defined in class." << std::endl;
-        return false;
-    } else {
+    if(class_table.is_basic_class(class_name)) {
         class_table.add_to_object_env(class_name, object_id, &type_decl);
-        return true;
-    }
-}
-bool method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
-    std::string method_id = name->get_string();
-    if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
-        class_table.semant_error(class_name, this) << ": Method " << method_id << " is multiply defined in class." << std::endl;
-        return false;
-    }
-    std::vector<std::pair<std::string, Symbol>> args;
-    for(int i = 0; i < formals->len(); i ++) {
-        args.push_back(formals->nth(i)->construct_id_type_pair());
-    }
-    args.push_back(std::make_pair("", return_type));
-    class_table.add_to_method_env(class_name, method_id, args);
-    return true;
-}
-
-bool class__class::init_envs(const std::string& class_name, ClassTable& class_table) {
-    for(int i = 0; i < features->len(); i ++) {
-        if(!features->nth(i)->init_envs(class_name, class_table)) {
-            return false;
+    } else {
+        // If objectId is previously defined in a parent class. Report error, but add to this class's environment.
+        if(class_table.get_from_object_env(class_name, object_id) != nullptr) {
+            class_table.semant_error(class_name, this) << "Attribute " << object_id << " is an attribute of an inherited class." << std::endl;
+        }
+        // If objectId is previously defined in this class, do not add to this class's environment.
+        if(class_table.get_from_object_env_local(class_name, object_id) != nullptr) {
+            class_table.semant_error(class_name, this) << "Attribute " << object_id << " is multiply defined in class." << std::endl;
+            return;
+        }
+        // Check if if basic class to prevent checking for some werid class used by basic classes.
+        if(!class_table.exists_type(type_decl)) {
+            class_table.semant_error(class_name, this) << "Class " << type_decl->get_string() << " of attribute " << object_id << " is undefined." << std::endl;
+            class_table.add_to_object_env(class_name, object_id, &No_type);
+        } else {
+            class_table.add_to_object_env(class_name, object_id, &type_decl);
         }
     }
-    return true;
+}
+// If multiple defination happens, the later one overwrites the previous one.
+void method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
+    std::string method_id = name->get_string();
+    std::vector<std::pair<std::string, Symbol>> args;
+    // NOTE: Need to handle base class first to prevent werid base class types.
+    if(class_table.is_basic_class(class_name)) {  
+        for(int i = 0; i < formals->len(); i ++) {
+            args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
+        }
+        args.push_back(std::make_pair("", return_type));
+        class_table.add_to_method_env(class_name, method_id, args);
+    } else {
+        if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
+            class_table.semant_error(class_name, this) << ": Method " << method_id << " is a method of an inherited class." << std::endl;
+        }
+        if(class_table.get_from_method_env_local(class_name, method_id) != nullptr) {
+            class_table.semant_error(class_name, this) << ": Method " << method_id << " is multiply defined in class." << std::endl;
+            return;
+        }
+        for(int i = 0; i < formals->len(); i ++) {
+            args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
+        }
+        if(!class_table.exists_type(return_type)) {
+            args.push_back(std::make_pair("", No_type));
+        } else {
+            args.push_back(std::make_pair("", return_type));
+        }
+        class_table.add_to_method_env(class_name, method_id, args);
+    }
 }
 
-bool ClassTable::init_envs(Class_ c) {
+void class__class::init_envs(const std::string& class_name, ClassTable& class_table) {
+    for(int i = 0; i < features->len(); i ++) {
+        features->nth(i)->init_envs(class_name, class_table);
+    }
+}
+
+
+// This method go through the inheritance tree to find attribute defination.
+Symbol* ClassTable::get_from_object_env(const std::string& class_name, const std::string& id) {
+Symbol* rtn = object_env_[class_name].lookup(id);
+    if(class_name == Object->get_string()) {
+        return rtn;
+    }
+    const std::string& parent_name = classes_map_[class_name]->get_parentname()->get_string();
+    if(rtn == nullptr) {
+        if(parent_name == Object->get_string()) {
+            return nullptr;
+        } else {
+            return get_from_object_env(parent_name, id);
+        }
+    } else {
+        return rtn;
+    }
+}
+
+// This method go through the inheritance tree to find method defination.
+std::vector<std::pair<std::string, Symbol>>* ClassTable::get_from_method_env(const std::string& class_name, const std::string& method_id) {
+    const std::string& parent_name = classes_map_[class_name]->get_parentname()->get_string();
+    if(method_env_[class_name].find(method_id) == method_env_[class_name].end()) {
+        if(parent_name == Object->get_string()) {
+            return nullptr;
+        } else {
+            return get_from_method_env(parent_name, method_id);
+        }
+    } else {
+        return &(method_env_[class_name][method_id]);
+    }
+}
+
+void ClassTable::check_for_main_class() {
+    // Check whether class Main is defined.
+    if(classes_map_.find(Main->get_string()) == classes_map_.end()) {
+        this->semant_error() << "Class Main is not defined." << std::endl;
+    }
+    return;
+}
+void ClassTable::init_envs(Class_ c) {
     std::string class_name = c->get_classname()->get_string();
     std::cerr << class_name << std::endl;
     object_env_[class_name] = SymbolTable<std::string, Symbol>();
     // TODO: The symbol table used by class is not the same as the symbol table used when doing type checking.
     // A new symbol table is needed when doing type checking for each class.
-    // FIXME: When constructing object and method environments, need to check for duplicate defination !!!
     method_env_[class_name] = std::map<std::string, std::vector<std::pair<std::string, Symbol>>>();
     object_env_[class_name].enterscope();
-    return c->init_envs(class_name, *this);
+    c->init_envs(class_name, *this);
 } 
 // NOTE: enter scope will push a new list to stack.
 // exit scope will pop that list. If scope is exit, it is gone.
-bool ClassTable::init_all_envs() {
+void ClassTable::init_all_envs() {
     for(const auto& entry : classes_map_) {
-        if(!init_envs(entry.second)) {
-            return false;
-        }
+        init_envs(entry.second);
         std::cerr << ">>>>>>>>>" << std::endl;
         object_env_[entry.first].dump();
         std::cerr << "<<<<<<<<<" << std::endl;
     }
-    return true;
 }

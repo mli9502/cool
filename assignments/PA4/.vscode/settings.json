@@ -35,5 +35,6 @@
         "system_error": "cpp",
         "cinttypes": "cpp"
     },
-    "C_Cpp.intelliSenseEngineFallback": "Disabled"
+    "C_Cpp.intelliSenseEngineFallback": "Disabled",
+    "editor.minimap.enabled": false
 }

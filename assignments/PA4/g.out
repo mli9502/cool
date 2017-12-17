@@ -2,7 +2,7 @@
 _program
   #1
   _class
-    Main
+    P
     Object
     "good.cl"
     (
@@ -78,7 +78,7 @@ _program
   #20
   _class
     D
-    Int
+    Object
     "good.cl"
     (
     #21

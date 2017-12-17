@@ -48,26 +48,52 @@ public:
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
   void add_user_defined_classes(program_class program);
+  void check_for_main_class();
   // Initialize envs for all classes in classes_map_.
-  bool init_all_envs();
+  void init_all_envs();
   // Initialize object_env_ and method_env_ for a given class.
-  bool init_envs(Class_ c);
+  // init_envs will also check for undefined types, and assign no_type_ to these attributes or methods.
+  void init_envs(Class_ c);
+  bool is_basic_class(const std::string& class_name) {
+    if(std::string(classes_map_[class_name]->get_filename()->get_string()) == "<basic class>") {
+      return true;
+    }
+    return false;
+  }
+  bool exists_type(Symbol type_decl) {
+    if(classes_map_.find(type_decl->get_string()) == classes_map_.end()) {
+      return false;
+    }
+    return true;
+  }
   // Helper function.
   void add_to_object_env(const std::string& class_name, const std::string& id, Symbol* type) {
     object_env_[class_name].addid(id, type);
   }
-  Symbol* get_from_object_env(const std::string& class_name, const std::string& id) {
+  // This method go through the inheritance tree to find attribute defination.
+  Symbol* get_from_object_env(const std::string& class_name, const std::string& id);
+  Symbol* get_from_object_env_local(const std::string& class_name, const std::string& id) {
     return object_env_[class_name].lookup(id);
   }
   void add_to_method_env(const std::string& class_name, const std::string& method_id, const std::vector<std::pair<std::string, Symbol>>& args) {
     method_env_[class_name][method_id] = args;
   }
-  std::vector<std::pair<std::string, Symbol>>* get_from_method_env(const std::string& class_name, const std::string& method_id) {
+  // This method go through the inheritance tree to find method defination.
+  std::vector<std::pair<std::string, Symbol>>* get_from_method_env(const std::string& class_name, const std::string& method_id);
+  std::vector<std::pair<std::string, Symbol>>* get_from_method_env_local(const std::string& class_name, const std::string& method_id) {
     if(method_env_[class_name].find(method_id) == method_env_[class_name].end()) {
       return nullptr;
     } else {
       return &(method_env_[class_name][method_id]);
     }
+  }
+  
+
+  ObjectEnvType<std::string>& get_class_object_env(const std::string& class_name) {
+    return object_env_[class_name];
+  }
+  MethodEnvType<std::string>& get_class_method_env(const std::string& class_name) {
+    return method_env_[class_name];
   }
   void dump_method_env() {
     for(const auto& entry : method_env_) {

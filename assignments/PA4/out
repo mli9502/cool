@@ -1,0 +1,78 @@
+#1
+_program
+  #1
+  _class
+    A
+    B
+    "good.cl"
+    (
+    #2
+    _attr
+      a
+      Int
+      #0
+      _no_expr
+      : _no_type
+    #3
+    _attr
+      c
+      Object
+      #0
+      _no_expr
+      : _no_type
+    #4
+    _method
+      init
+      #4
+      _formal
+        x
+        ABC
+      #4
+      _formal
+        y
+        Object
+      C
+      #5
+      _block
+        #6
+        _object
+          b
+        : _no_type
+      : _no_type
+    )
+  #10
+  _class
+    B
+    Object
+    "good.cl"
+    (
+    #11
+    _attr
+      a
+      HELLO
+      #0
+      _no_expr
+      : _no_type
+    #12
+    _attr
+      a
+      Int
+      #0
+      _no_expr
+      : _no_type
+    #13
+    _attr
+      b
+      Int
+      #13
+      _object
+        a
+      : _no_type
+    )
+  #15
+  _class
+    C
+    Object
+    "good.cl"
+    (
+    )

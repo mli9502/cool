@@ -73,26 +73,28 @@ virtual Symbol get_filename() = 0;      \
 virtual Symbol get_classname() = 0;		\
 virtual Symbol get_parentname() = 0;	\
 virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0;	\
-virtual void dump_with_types(ostream&,int) = 0; 
-
+virtual void dump_with_types(ostream&,int) = 0; \
+virtual void check_type(ClassTable& class_table) = 0;
 
 #define class__EXTRAS                                 \
 Symbol get_filename() { return filename; }             \
 Symbol get_classname() { return name; }					\
 Symbol get_parentname() { return parent; }				\
 void init_envs(const std::string& class_name, ClassTable& class_table);	\
-void dump_with_types(ostream&,int);                    
+void dump_with_types(ostream&,int);    \
+void check_type(ClassTable& class_table);                
 
 
 #define Feature_EXTRAS                                        \
 virtual void dump_with_types(ostream&,int) = 0; 	\
-virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0;
+virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0; \
+virtual void check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table);
 
 
 #define Feature_SHARED_EXTRAS			\
 void dump_with_types(ostream&,int);		\
-void init_envs(const std::string& class_name, ClassTable& class_table);
-
+void init_envs(const std::string& class_name, ClassTable& class_table); \
+void check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table);
 
 
 
@@ -120,11 +122,12 @@ Symbol type;                                 \
 Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
 virtual void dump_with_types(ostream&,int) = 0;  \
+virtual Symbol check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table); \
 void dump_type(ostream&, int);               \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \
-void dump_with_types(ostream&,int);
-
+void dump_with_types(ostream&,int);		\
+Symbol check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table);
 
 #endif

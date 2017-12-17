@@ -66,6 +66,22 @@ public:
     }
     return true;
   }
+  bool is_sub_class(Symbol sub_class, Symbol base_class) {
+    // If sub_class is Object.
+    if(sub_class->get_string() == Object->get_string()) {
+      if(base_class->get_string() == Object->get_string()) {
+        return true;
+      }
+      return false;
+    }
+    Symbol parent = classes_map_[sub_class->get_string()]->get_parentname();
+    std::string parent_name = parent->get_string();
+    if(parent_name == base_class->get_string()) {
+      return true;
+    } else {
+      return is_sub_class(parent, base_class);
+    }
+  }
   // Helper function.
   void add_to_object_env(const std::string& class_name, const std::string& id, Symbol* type) {
     object_env_[class_name].addid(id, type);

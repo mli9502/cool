@@ -367,17 +367,25 @@ Classes program_class::get_classes() {
 
 // TODO: Start working on type checking.
 // NOTE: Do not have to return bool. Since error count will be incremented and checked after type check finish.
+// TODO: Once global object env and method env are passed in, they are not going to be changed.
+// TODO: Need to handle no_type_ for variable with type not defined.
+// FIXME: Need to test inheritance.
+// FIXME: Handle SELF_TYPE.
 void program_class::check_type(ClassTable& class_table) {
     Classes classes = this->get_classes();
     for(int i = 0; i < classes->len(); i ++) {
-        std::string class_name = classes->nth(i)->get_classname()->get_string();
-        ObjectEnvType<std::string> local_object_env;
-        ObjectEnvType<std::string>& class_object_env = class_table.get_class_object_env(class_name);
-        MethodEnvType<std::string>& class_method_env = class_table.get_class_method_env(class_name);
-
+        classes->nth(i)->check_type(class_table);
     }
     return;
-} 
+}
+
+void class__class::check_type(ClassTable& class_table) {
+    SymbolTable<std::string, Symbol> local_object_env;
+    const std::string& class_name = name->get_string();
+    for(int i = 0; i < features->len(); i ++) {
+        features->nth(i)->check_type(class_name, local_object_env, class_table);
+    }
+}
 
 std::pair<std::string, Symbol> formal_class::construct_id_type_pair(const std::string& class_name, ClassTable& class_table) {
     if(!class_table.is_basic_class(class_name) && !class_table.exists_type(type_decl)) {
@@ -409,6 +417,31 @@ void attr_class::init_envs(const std::string& class_name, ClassTable& class_tabl
         }
     }
 }
+void attr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    local_object_env.enterscope();
+    char* tmp_class_name = const_cast<char*>(class_name.c_str());
+    Symbol class_symbol = idtable.add_string(tmp_class_name);
+    local_object_env.addid(SELF_TYPE->get_string(), &class_symbol);
+    Symbol expr_type = init->check_type(class_name, local_object_env, class_table);
+    local_object_env.exitscope();
+    // If Attr-No-Init.
+    if(expr_type == nullptr) {
+        return;
+    } else {
+        // Check T1(expr_type) <= T0(type_decl).
+        if(class_table.is_sub_class(expr_type, type_decl)) {
+            return;
+        } else {
+            class_table.semant_error(class_name, this) << "Type " << expr_type->get_string() << " does not match " << type_decl->get_string() << std::endl;
+            return;
+        }
+    }
+}
+// TODO: Add method get_from_all_object_env(local_object_env, class_object_env) to search for ObjectId in all object envs. 
+void method_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    
+}
+
 // If multiple defination happens, the later one overwrites the previous one.
 void method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string method_id = name->get_string();

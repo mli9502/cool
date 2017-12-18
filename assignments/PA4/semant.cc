@@ -338,6 +338,7 @@ void program_class::semant()
 	    cerr << "Compilation halted due to static semantic errors." << endl;
 	    exit(1);
     }
+    classtable->init_classes_symbol_map();
     /* some semantic analysis code may go here */
     // Initialize object environemnt and method environment here.
     // NOTE: While initializing environments, also find objectId with undefined types.
@@ -369,8 +370,9 @@ Classes program_class::get_classes() {
 // NOTE: Do not have to return bool. Since error count will be incremented and checked after type check finish.
 // TODO: Once global object env and method env are passed in, they are not going to be changed.
 // TODO: Need to handle no_type_ for variable with type not defined.
-// FIXME: Need to test inheritance.
+// FIXME: Need to test method override.
 // FIXME: Handle SELF_TYPE.
+// FIXME: Need to ignore base classes...
 void program_class::check_type(ClassTable& class_table) {
     Classes classes = this->get_classes();
     for(int i = 0; i < classes->len(); i ++) {
@@ -389,6 +391,7 @@ void class__class::check_type(ClassTable& class_table) {
 
 std::pair<std::string, Symbol> formal_class::construct_id_type_pair(const std::string& class_name, ClassTable& class_table) {
     if(!class_table.is_basic_class(class_name) && !class_table.exists_type(type_decl)) {
+        // FIXME: May need to change No_type to Object.
         class_table.semant_error(class_name, this) << "Class " << type_decl->get_string() << " of formal parameter " << name->get_string() << " is undefined." << std::endl;
         return std::make_pair(name->get_string(), No_type);
     }
@@ -411,38 +414,62 @@ void attr_class::init_envs(const std::string& class_name, ClassTable& class_tabl
         // Check if if basic class to prevent checking for some werid class used by basic classes.
         if(!class_table.exists_type(type_decl)) {
             class_table.semant_error(class_name, this) << "Class " << type_decl->get_string() << " of attribute " << object_id << " is undefined." << std::endl;
+            // FIXME: May need to change No_type to Object.
             class_table.add_to_object_env(class_name, object_id, &No_type);
         } else {
             class_table.add_to_object_env(class_name, object_id, &type_decl);
         }
     }
 }
+
 void attr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     local_object_env.enterscope();
-    char* tmp_class_name = const_cast<char*>(class_name.c_str());
-    Symbol class_symbol = idtable.add_string(tmp_class_name);
-    local_object_env.addid(SELF_TYPE->get_string(), &class_symbol);
-    Symbol expr_type = init->check_type(class_name, local_object_env, class_table);
+    Symbol* class_symbol = class_table.get_symbol(class_name);
+    local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
+    Symbol* expr_type = init->check_type(class_name, local_object_env, class_table);
     local_object_env.exitscope();
     // If Attr-No-Init.
+    // TODO: no_expr return nullptr as type.
     if(expr_type == nullptr) {
         return;
     } else {
         // Check T1(expr_type) <= T0(type_decl).
-        if(class_table.is_sub_class(expr_type, type_decl)) {
+        if(class_table.is_sub_class(*expr_type, type_decl)) {
             return;
         } else {
-            class_table.semant_error(class_name, this) << "Type " << expr_type->get_string() << " does not match " << type_decl->get_string() << std::endl;
+            class_table.semant_error(class_name, this) << "Type " << (*expr_type)->get_string() << " does not match " << type_decl->get_string() << "." << std::endl;
             return;
         }
     }
 }
-// TODO: Add method get_from_all_object_env(local_object_env, class_object_env) to search for ObjectId in all object envs. 
+
 void method_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
-    
+    local_object_env.enterscope();
+    Symbol* class_symbol = class_table.get_symbol(class_name);
+    local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
+    for(int i = 0; i < formals->len(); i ++) {
+        std::pair<std::string, Symbol> formal_pair = formals->nth(i)->construct_id_type_pair(class_name, class_table);
+        Symbol* formal_symbol = class_table.get_symbol(formal_pair.second->get_string());
+        local_object_env.addid(formal_pair.first, formal_symbol);
+    }
+    Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
+    local_object_env.exitscope();
+    Symbol expr_type_symbol = *expr_type;
+    if(expr_type_symbol->get_string() == SELF_TYPE->get_string()) {
+        expr_type_symbol = *class_symbol;
+    }
+    // Check T0'(expr_type_symbol) <= T0(return_type)
+    Symbol* method_rtn_type = class_table.get_method_rtn_type(class_name, name->get_string());
+    if(class_table.is_sub_class(*expr_type, *method_rtn_type)) {
+        return;
+    } else {
+        class_table.semant_error(class_name, this) << "Type " << (*expr_type)->get_string() << " does not match " << (*method_rtn_type)->get_string() << "." << std::endl;
+        return;
+    }
 }
 
-// If multiple defination happens, the later one overwrites the previous one.
+// FIXME: May need to handle method override !!!
+// NOTE: Method override may not be a thing in COOL ???
 void method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string method_id = name->get_string();
     std::vector<std::pair<std::string, Symbol>> args;
@@ -455,16 +482,17 @@ void method_class::init_envs(const std::string& class_name, ClassTable& class_ta
         class_table.add_to_method_env(class_name, method_id, args);
     } else {
         if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
-            class_table.semant_error(class_name, this) << ": Method " << method_id << " is a method of an inherited class." << std::endl;
+            class_table.semant_error(class_name, this) << "Method " << method_id << " is a method of an inherited class." << std::endl;
         }
         if(class_table.get_from_method_env_local(class_name, method_id) != nullptr) {
-            class_table.semant_error(class_name, this) << ": Method " << method_id << " is multiply defined in class." << std::endl;
+            class_table.semant_error(class_name, this) << "Method " << method_id << " is multiply defined in class." << std::endl;
             return;
         }
         for(int i = 0; i < formals->len(); i ++) {
             args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
         }
         if(!class_table.exists_type(return_type)) {
+            class_table.semant_error(class_name, this) << "Undefined return type " << return_type->get_string() << " in method " << method_id << "." << std::endl;
             args.push_back(std::make_pair("", No_type));
         } else {
             args.push_back(std::make_pair("", return_type));

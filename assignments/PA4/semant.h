@@ -33,6 +33,8 @@ private:
   ostream& out_stream;
   // key: class name, val: the actual class.
   std::map<std::string, Class_> classes_map_;
+  // key: class name, val: corresponding Symbol.
+  std::map<std::string, Symbol> classes_symbol_map_;
   // key: class name, val: all the classes that inherits from it.
   std::map<std::string, std::vector<std::string> > inheritance_graph_;
   // key: class name, val: symbol table representing O corresponds to it.
@@ -48,6 +50,21 @@ public:
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
   void add_user_defined_classes(program_class program);
+  // FIXME: May need to filter out base classes?
+  void init_classes_symbol_map() {
+    for(auto entry : classes_map_) {
+      char* class_name = const_cast<char*>(entry.first.c_str());
+      classes_symbol_map_[entry.first] = idtable.add_string(class_name);
+    }
+  }
+  Symbol* get_symbol(const std::string& class_name) {
+    // FIXME: This may need to change to Object.
+    if(classes_map_.find(class_name) == classes_map_.end()) {
+      return &No_type;
+    } else {
+      return &classes_symbol_map_[class_name];
+    }
+  }
   void check_for_main_class();
   // Initialize envs for all classes in classes_map_.
   void init_all_envs();
@@ -67,6 +84,10 @@ public:
     return true;
   }
   bool is_sub_class(Symbol sub_class, Symbol base_class) {
+    // If sub_class is No_type.
+    if(sub_class->get_string() == No_type->get_string()) {
+      return true;
+    }
     // If sub_class is Object.
     if(sub_class->get_string() == Object->get_string()) {
       if(base_class->get_string() == Object->get_string()) {
@@ -86,6 +107,18 @@ public:
   void add_to_object_env(const std::string& class_name, const std::string& id, Symbol* type) {
     object_env_[class_name].addid(id, type);
   }
+  Symbol* get_from_all_object_env(const std::string& class_name, const std::string& id, SymbolTable<std::string, Symbol>& local_object_env) {
+    auto prob_result = local_object_env.probe(id);
+    auto lookup_result = local_object_env.lookup(id);
+    auto global_result = get_from_object_env(class_name, id);
+    if(prob_result != nullptr) {
+      return prob_result;
+    }
+    if(lookup_result != nullptr) {
+      return lookup_result;
+    }
+    return global_result;
+  }
   // This method go through the inheritance tree to find attribute defination.
   Symbol* get_from_object_env(const std::string& class_name, const std::string& id);
   Symbol* get_from_object_env_local(const std::string& class_name, const std::string& id) {
@@ -103,7 +136,11 @@ public:
       return &(method_env_[class_name][method_id]);
     }
   }
-  
+  Symbol* get_method_rtn_type(const std::string& class_name, const std::string& method_id) {
+    auto* args = get_from_method_env(class_name, method_id);
+    const std::pair<std::string, Symbol>& rtn_arg = args->back();
+    return get_symbol(rtn_arg.second->get_string());
+  }
 
   ObjectEnvType<std::string>& get_class_object_env(const std::string& class_name) {
     return object_env_[class_name];

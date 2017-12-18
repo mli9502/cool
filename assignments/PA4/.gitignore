@@ -6,3 +6,4 @@ parser
 semant
 core.*
 *.log
+*.out

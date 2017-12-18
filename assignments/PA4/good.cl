@@ -1,16 +1,14 @@
 class A inherits B {
-	a : Int;
+	a : Int <- b;
 	c : Object;
-	init(x : ABC, y : Object) : C {
+	init(x : Int, y : Object) : ABC {
 		{
 			b;
 		}
 	};
 };
 class B inherits Object {
-	a : HELLO;
-	a : Int;
-	b : Int <- a;
+	b : Int;
 };
 class C inherits Object {};
 

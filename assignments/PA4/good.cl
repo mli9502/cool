@@ -1,9 +1,11 @@
 class A inherits B {
 	a : Int <- b;
-	c : Object;
-	init(x : Int, y : Object) : ABC {
+	c : String;
+	init(x : Int, y : Object) : String {
 		{
-			b;
+			new ABC;
+			c <- b;
+			c;
 		}
 	};
 };

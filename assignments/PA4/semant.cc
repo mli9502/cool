@@ -507,6 +507,42 @@ void class__class::init_envs(const std::string& class_name, ClassTable& class_ta
     }
 }
 
+Symbol* assign_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = &Object;
+    Symbol* id_type = class_table.get_from_all_object_env(class_name, name->get_string(), local_object_env);
+    if(id_type == nullptr) {
+        class_table.semant_error(class_name, this) << "Assignment to undeclared variable " << name->get_string() << "." << std::endl;
+    } else {
+        Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
+        // If T' <= T.
+        if(class_table.is_sub_class(*expr_type, *id_type)) {
+            rtn = expr_type;
+        } else {
+            class_table.semant_error(class_name, this) << "Type " << (*expr_type)->get_string() << " of assigned expression does not conform to declared type " << (*id_type)->get_string() << "of id." << std::endl;
+        }
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* cond_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    // TODO: Need to implement LCA for this.
+}
+
+Symbol* new__class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = &Object;
+    if(type_name->get_string() == SELF_TYPE->get_string()) {
+        rtn = class_table.get_symbol(class_name);
+    } else {
+        if(!class_table.exists_type(type_name)) {
+            class_table.semant_error(class_name, this) << "'new' used with undefined class " << type_name->get_string() << "." << std::endl; 
+        } else {
+            rtn = class_table.get_symbol(type_name->get_string());
+        }
+    }
+    this->type = *rtn;
+    return rtn;
+}
 
 // This method go through the inheritance tree to find attribute defination.
 Symbol* ClassTable::get_from_object_env(const std::string& class_name, const std::string& id) {

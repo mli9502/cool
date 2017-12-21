@@ -508,7 +508,7 @@ void class__class::init_envs(const std::string& class_name, ClassTable& class_ta
 }
 
 Symbol* assign_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
-    Symbol* rtn = &Object;
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
     Symbol* id_type = class_table.get_from_all_object_env(class_name, name->get_string(), local_object_env);
     if(id_type == nullptr) {
         class_table.semant_error(class_name, this) << "Assignment to undeclared variable " << name->get_string() << "." << std::endl;
@@ -526,11 +526,49 @@ Symbol* assign_class::check_type(const std::string& class_name, SymbolTable<std:
 }
 
 Symbol* cond_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
-    // TODO: Need to implement LCA for this.
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    Symbol* pred_type = pred->check_type(class_name, local_object_env, class_table);
+    // If condition is not bool.
+    if((*pred_type)->get_string() != Bool->get_string()) {
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Found condition type " << (*pred_type)->get_string() << ", should be Bool instead." << std::endl;
+    } else {
+        Symbol* then_expr_type = then_exp->check_type(class_name, local_object_env, class_table);
+        Symbol* else_expr_type = else_exp->check_type(class_name, local_object_env, class_table);
+        rtn = class_table.lca(*then_expr_type, *else_expr_type);
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* loop_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    Symbol* pred_type = pred->check_type(class_name, local_object_env, class_table);
+    // If condition is not bool.
+    if((*pred_type)->get_string() != Bool->get_string()) {
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Found condition type " << (*pred_type)->get_string() << ", should be Bool instead." << std::endl;
+    } else {
+        Symbol* body_type = body->check_type(class_name, local_object_env, class_table);
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* block_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    for(int i = 0; i < body->len(); i ++) {
+        Symbol* expr_type = body->nth(i)->check_type(class_name, local_object_env, class_table);
+        if(i == body->len() - 1) {
+            rtn = expr_type;
+        }
+    }
+    this->type = *rtn;
+    return rtn;
 }
 
 Symbol* new__class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
-    Symbol* rtn = &Object;
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
     if(type_name->get_string() == SELF_TYPE->get_string()) {
         rtn = class_table.get_symbol(class_name);
     } else {
@@ -544,9 +582,22 @@ Symbol* new__class::check_type(const std::string& class_name, SymbolTable<std::s
     return rtn;
 }
 
+Symbol* bool_const_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Bool->get_string());
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* isvoid_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Bool->get_string());
+    Symbol* expr_type = e1->check_type(class_name, local_object_env, class_table);
+    this->type = *rtn;
+    return rtn;
+}
+
 // This method go through the inheritance tree to find attribute defination.
 Symbol* ClassTable::get_from_object_env(const std::string& class_name, const std::string& id) {
-Symbol* rtn = object_env_[class_name].lookup(id);
+    Symbol* rtn = object_env_[class_name].lookup(id);
     if(class_name == Object->get_string()) {
         return rtn;
     }

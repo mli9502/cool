@@ -103,6 +103,37 @@ public:
       return is_sub_class(parent, base_class);
     }
   }
+  // Find the least common ancestor for symbol1 and symbol2.
+  Symbol* lca(const Symbol& s1, const Symbol& s2) {
+    bool base_of_s1 = false, base_of_s2 = false;
+    return lca_helper(Object->get_string(), s1->get_string(), s2->get_string(), base_of_s1, base_of_s2);
+  }
+  Symbol* lca_helper(const std::string& curr_symbol, const std::string& s1, const std::string& s2, bool& base_of_s1, bool& base_of_s2) {
+    const std::vector<std::string>& children = inheritance_graph_[curr_symbol];
+    bool base_s1 = false, base_s2 = false;
+    // Go through all children.
+    for(const auto& child : children) {
+      bool tmp_base_s1 = false, tmp_base_s2 = false;
+      Symbol* rtn = lca_helper(child, s1, s2, tmp_base_s1, tmp_base_s2);
+      if(rtn != nullptr) { // If a children is already a common base, return.
+        return rtn;
+      } else { // If not, check whether this children is a base.
+        base_s1 |= tmp_base_s1;
+        base_s2 |= tmp_base_s2;
+      }
+    }
+    // Check if current symbol is a base for a Symbol.
+    base_s1 |= (curr_symbol == s1);
+    base_s2 |= (curr_symbol == s2);
+    base_of_s1 = base_s1;
+    base_of_s2 = base_s2;
+    // If current Symbol is base for both left and right, return this symbol.
+    if(base_of_s1 && base_of_s2) {
+      return get_symbol(curr_symbol);
+    } else {
+      return nullptr;
+    }
+  }
   // Helper function.
   void add_to_object_env(const std::string& class_name, const std::string& id, Symbol* type) {
     object_env_[class_name].addid(id, type);

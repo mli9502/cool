@@ -573,6 +573,7 @@ Symbol* new__class::check_type(const std::string& class_name, SymbolTable<std::s
         rtn = class_table.get_symbol(class_name);
     } else {
         if(!class_table.exists_type(type_name)) {
+            // FIXME: Fix error message.
             class_table.semant_error(class_name, this) << "'new' used with undefined class " << type_name->get_string() << "." << std::endl; 
         } else {
             rtn = class_table.get_symbol(type_name->get_string());
@@ -591,6 +592,150 @@ Symbol* bool_const_class::check_type(const std::string& class_name, SymbolTable<
 Symbol* isvoid_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     Symbol* rtn = class_table.get_symbol(Bool->get_string());
     Symbol* expr_type = e1->check_type(class_name, local_object_env, class_table);
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* plus_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Plus argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Plus argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* sub_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Sub argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Sub argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* mul_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Mul argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Mul argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* divide_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Divide argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Divide argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* lt_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Bool->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Lt argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Lt argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* leq_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Bool->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Leq argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl; 
+    }
+    if((*e2_type)->get_string() != Int->get_string()) {
+       rtn = class_table.get_symbol(Object->get_string());
+       // FIXME: Fix error message.
+       class_table.semant_error(class_name, this) << "Leq argument expects Int, but found " << (*e2_type)->get_string() << "." << std::endl; 
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* neg_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Int->get_string()) {
+        rtn = class_table.get_symbol(Object->get_string());
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Neg argument expects Int, but found " << (*e1_type)->get_string() << "." << std::endl;
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* comp_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Bool->get_string());
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    if((*e1_type)->get_string() != Bool->get_string()) {
+        rtn = class_table.get_symbol(Object->get_string());
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Comp (not) argument expects Bool, but found " << (*e1_type)->get_string() << "." << std::endl;
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* int_const_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Int->get_string());
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* string_const_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Str->get_string());
     this->type = *rtn;
     return rtn;
 }

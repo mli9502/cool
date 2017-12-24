@@ -19,6 +19,7 @@ extern char *curr_filename;
 // as fixed names used by the runtime system.
 //
 //////////////////////////////////////////////////////////////////////
+
 static Symbol 
     arg,
     arg2,

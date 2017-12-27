@@ -78,6 +78,9 @@ public:
     return false;
   }
   bool exists_type(Symbol type_decl) {
+    if(type_decl->get_string() == SELF_TYPE->get_string() || type_decl->get_string() == No_type->get_string()) {
+      return true;
+    }
     if(classes_map_.find(type_decl->get_string()) == classes_map_.end()) {
       return false;
     }
@@ -150,6 +153,14 @@ public:
     }
     return global_result;
   }
+  Symbol* get_self_type_symbol(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env) {
+    Symbol* rtn = get_from_all_object_env(class_name, SELF_TYPE->get_string(), local_object_env);
+    if(rtn == nullptr) {
+      return get_symbol(class_name);
+    } else {
+      return rtn;
+    }
+  }
   // This method go through the inheritance tree to find attribute defination.
   Symbol* get_from_object_env(const std::string& class_name, const std::string& id);
   Symbol* get_from_object_env_local(const std::string& class_name, const std::string& id) {
@@ -157,6 +168,12 @@ public:
   }
   void add_to_method_env(const std::string& class_name, const std::string& method_id, const std::vector<std::pair<std::string, Symbol>>& args) {
     method_env_[class_name][method_id] = args;
+  }
+  bool is_method_exist(const std::string& class_name, const std::string& method_id) {
+    if(get_from_method_env(class_name, method_id) == nullptr) {
+      return false;
+    }
+    return true;
   }
   // This method go through the inheritance tree to find method defination.
   std::vector<std::pair<std::string, Symbol>>* get_from_method_env(const std::string& class_name, const std::string& method_id);

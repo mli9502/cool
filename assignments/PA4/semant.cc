@@ -429,16 +429,20 @@ void attr_class::check_type(const std::string& class_name, SymbolTable<std::stri
     local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     Symbol* expr_type = init->check_type(class_name, local_object_env, class_table);
     local_object_env.exitscope();
+    Symbol* decl_type = &type_decl;
+    if(type_decl->get_string() == SELF_TYPE->get_string()) {
+        decl_type = class_table.get_self_type_symbol(class_name, local_object_env);
+    }
     // If Attr-No-Init.
     // TODO: no_expr return nullptr as type.
     if(expr_type == nullptr) {
         return;
     } else {
         // Check T1(expr_type) <= T0(type_decl).
-        if(class_table.is_sub_class(*expr_type, type_decl)) {
+        if(class_table.is_sub_class(*expr_type, *decl_type)) {
             return;
         } else {
-            class_table.semant_error(class_name, this) << "Type " << (*expr_type)->get_string() << " does not match " << type_decl->get_string() << "." << std::endl;
+            class_table.semant_error(class_name, this) << "Type " << (*expr_type)->get_string() << " does not match " << (*decl_type)->get_string() << "." << std::endl;
             return;
         }
     }
@@ -454,11 +458,10 @@ void method_class::check_type(const std::string& class_name, SymbolTable<std::st
         local_object_env.addid(formal_pair.first, formal_symbol);
     }
     Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
-    local_object_env.exitscope();
-    Symbol expr_type_symbol = *expr_type;
-    if(expr_type_symbol->get_string() == SELF_TYPE->get_string()) {
-        expr_type_symbol = *class_symbol;
+    if((*expr_type)->get_string() == SELF_TYPE->get_string()) {
+        expr_type = class_table.get_self_type_symbol(class_name, local_object_env);
     }
+    local_object_env.exitscope();
     // Check T0'(expr_type_symbol) <= T0(return_type)
     Symbol* method_rtn_type = class_table.get_method_rtn_type(class_name, name->get_string());
     if(class_table.is_sub_class(*expr_type, *method_rtn_type)) {
@@ -469,8 +472,7 @@ void method_class::check_type(const std::string& class_name, SymbolTable<std::st
     }
 }
 
-// FIXME: May need to handle method override !!!
-// NOTE: Method override may not be a thing in COOL ???
+// Note: Method override is not a thing in COOL. 
 void method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string method_id = name->get_string();
     std::vector<std::pair<std::string, Symbol>> args;
@@ -562,6 +564,66 @@ Symbol* block_class::check_type(const std::string& class_name, SymbolTable<std::
         Symbol* expr_type = body->nth(i)->check_type(class_name, local_object_env, class_table);
         if(i == body->len() - 1) {
             rtn = expr_type;
+        }
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+// If SELF_TYPE is in object env, return its values, else, return current class.
+Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    // T0
+    Symbol* caller_type = expr->check_type(class_name, local_object_env, class_table);
+    // T0' (Type used for method lookup.)
+    Symbol* method_lookup_type = caller_type;
+    if((*caller_type)->get_string() == SELF_TYPE->get_string()) {
+        method_lookup_type = class_table.get_self_type_symbol(class_name, local_object_env);
+    }
+    // NOTE: This is the class name used to look up method!
+    const std::string& method_lookup_class = (*method_lookup_type)->get_string();
+    // T1 ... Tn
+    std::vector<Symbol*> arg_symbols;
+    for(int i = 0; i < this->actual->len(); i ++) {
+        arg_symbols.push_back(this->actual->nth(i)->check_type(class_name, local_object_env, class_table));
+    }
+    const std::string& method_id = name->get_string();
+    // Check if method exists for method lookup type.
+    if(!class_table.is_method_exist(method_lookup_class, method_id)) {
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Method " << method_id << " does not exist for class " << method_lookup_class << "." << std::endl; 
+    } else {
+        // Get method return type and argument types.
+        // Tn+1'
+        Symbol* method_rtn_type = class_table.get_method_rtn_type(method_lookup_class, method_id);
+        std::vector<std::pair<std::string, Symbol>>* method_args = class_table.get_from_method_env(method_lookup_class, method_id);
+        // T1' ... Tn'
+        std::vector<Symbol> method_params_types;
+        for(int i = 0; i < (*method_args).size() - 1; i ++) {
+            // FIXME: Debugging printout here...
+            std::cerr << (*method_args)[i].first << std::endl;
+            method_params_types.push_back((*method_args)[i].second);
+        }
+        // FIXME: Check method argument number match here. Not sure whether this is needed or not.
+        if(arg_symbols.size() != method_params_types.size()) {
+            class_table.semant_error(class_name, this) << "Method " << method_id << " is called with " << arg_symbols.size() << " arguments, but require " << method_params_types.size() << " parameters!" << std::endl;
+        } else {
+            bool found_err = false;
+            // Check Ti <= Ti' for 1 <= i <= n.
+            for(int i = 0; i < arg_symbols.size(); i ++) {
+                if(!class_table.is_sub_class(*(arg_symbols[i]), method_params_types[i])) {
+                    // FIXME: Error message may need to include parameter name.
+                    class_table.semant_error(class_name, this) << "Method " << method_id << " requires type " << (*(arg_symbols[i]))->get_string() << ", but found " << method_params_types[i]->get_string() << "." << std::endl;
+                    found_err = true;
+                }
+            }
+            if(!found_err) {
+                if((*method_rtn_type)->get_string() == SELF_TYPE->get_string()) {
+                    rtn = caller_type;
+                } else {
+                    rtn = method_rtn_type;
+                }
+            }
         }
     }
     this->type = *rtn;

@@ -175,6 +175,18 @@ public:
     }
     return true;
   }
+  // Give two methods, check whether they have the same argument types and return type.
+  bool is_method_args_same(const std::vector<std::pair<std::string, Symbol>>& m1, const std::vector<std::pair<std::string, Symbol>>& m2) {
+    if(m1.size() != m2.size()) {
+      return false;
+    }
+    for(int i = 0; i < m1.size(); i ++) {
+      if(m1[i].second->get_string() != m2[i].second->get_string()) {
+        return false;
+      }
+    }
+    return true;
+  }
   // This method go through the inheritance tree to find method defination.
   std::vector<std::pair<std::string, Symbol>>* get_from_method_env(const std::string& class_name, const std::string& method_id);
   std::vector<std::pair<std::string, Symbol>>* get_from_method_env_local(const std::string& class_name, const std::string& method_id) {

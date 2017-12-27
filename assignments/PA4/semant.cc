@@ -484,15 +484,20 @@ void method_class::init_envs(const std::string& class_name, ClassTable& class_ta
         args.push_back(std::make_pair("", return_type));
         class_table.add_to_method_env(class_name, method_id, args);
     } else {
-        if(class_table.get_from_method_env(class_name, method_id) != nullptr) {
-            class_table.semant_error(class_name, this) << "Method " << method_id << " is a method of an inherited class." << std::endl;
-        }
         if(class_table.get_from_method_env_local(class_name, method_id) != nullptr) {
             class_table.semant_error(class_name, this) << "Method " << method_id << " is multiply defined in class." << std::endl;
             return;
         }
         for(int i = 0; i < formals->len(); i ++) {
             args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
+        }
+        auto* env_rtn = class_table.get_from_method_env(class_name, method_id);
+        if(evn_rtn != nullptr && !class_table.is_method_args_same(args, *env_rtn)) {
+            // Check for inheritance here!
+            // Need to make sure that the arguments are the same as the method got from parent.
+            // NOTE: If method does not have the same arguments as the method from parent. Just report error.
+            class_table.semant_error(class_name, this) << "Method " << method_id << " is a method of an inherited class." << std::endl;            
+            return;
         }
         if(!class_table.exists_type(return_type)) {
             class_table.semant_error(class_name, this) << "Undefined return type " << return_type->get_string() << " in method " << method_id << "." << std::endl;
@@ -568,6 +573,18 @@ Symbol* block_class::check_type(const std::string& class_name, SymbolTable<std::
     }
     this->type = *rtn;
     return rtn;
+}
+// FIXME: NEED TO ADD INHERITANCE! 
+Symbol* static_dispatch_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    // T0.
+    Symbol* caller_type = expr->check_type(class_name, local_object_env, class_table);
+    std::vector<Symbol*> arg_symbols;
+    for(int i = 0; i < this->actual->len(); i ++) {
+        arg_symbols.push_back(this->actual->nth(i)->check_type(class_name, local_object_env, class_table));
+    }
+    const std::string& method_id = name->get_string();
+    
 }
 
 // If SELF_TYPE is in object env, return its values, else, return current class.

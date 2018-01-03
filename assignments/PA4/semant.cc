@@ -448,6 +448,38 @@ void attr_class::check_type(const std::string& class_name, SymbolTable<std::stri
     }
 }
 
+Symbol* let_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    bool found_err = false;
+    // T0'
+    Symbol* id_type = nullptr;
+    if(type_decl->get_string() == SELF_TYPE->get_string()) {
+        id_type = class_table.get_self_type_symbol(class_name, local_object_env);
+    } else {
+        id_type = class_table.get_symbol(type_decl->get_string());
+    }
+    // T1 (Let-Init). If it's Let-No-Init, init_type is nullptr.
+    Symbol* init_type = init->check_type(class_name, local_object_env, class_table);
+    // If it is Let-Init.
+    if(init_type != nullptr) {
+        // T1 <= T0'
+        if(!class_table.is_sub_class(*init_type, *id_type)) {
+            class_table.semant_error(class_name, this) << "Type " << (*init_type)->get_string() << " is not a child of " << (*id_type)->get_string() << "." << std::endl;
+            found_err = true;
+        }
+    }
+    local_object_env.enterscope();
+    local_object_env.addid(identifier->get_string(), id_type);
+    // T2 (Let-Init) / T1 (Let-No-Init)
+    Symbol* body_type = body->check_type(class_name, local_object_env, class_table);
+    local_object_env.exitscope();
+    if(!found_err) {
+        rtn = body_type;
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
 void method_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
@@ -484,6 +516,7 @@ void method_class::init_envs(const std::string& class_name, ClassTable& class_ta
         args.push_back(std::make_pair("", return_type));
         class_table.add_to_method_env(class_name, method_id, args);
     } else {
+        // If method is already defined in current class, report error.
         if(class_table.get_from_method_env_local(class_name, method_id) != nullptr) {
             class_table.semant_error(class_name, this) << "Method " << method_id << " is multiply defined in class." << std::endl;
             return;
@@ -491,8 +524,9 @@ void method_class::init_envs(const std::string& class_name, ClassTable& class_ta
         for(int i = 0; i < formals->len(); i ++) {
             args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
         }
+        // If method is defined in parent class.
         auto* env_rtn = class_table.get_from_method_env(class_name, method_id);
-        if(evn_rtn != nullptr && !class_table.is_method_args_same(args, *env_rtn)) {
+        if(env_rtn != nullptr && !class_table.is_method_args_same(args, *env_rtn)) {
             // Check for inheritance here!
             // Need to make sure that the arguments are the same as the method got from parent.
             // NOTE: If method does not have the same arguments as the method from parent. Just report error.
@@ -574,17 +608,67 @@ Symbol* block_class::check_type(const std::string& class_name, SymbolTable<std::
     this->type = *rtn;
     return rtn;
 }
-// FIXME: NEED TO ADD INHERITANCE! 
+
 Symbol* static_dispatch_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     Symbol* rtn = class_table.get_symbol(Object->get_string());
-    // T0.
+    // e0: T0.
     Symbol* caller_type = expr->check_type(class_name, local_object_env, class_table);
+    // T
+    Symbol* method_lookup_type = class_table.get_symbol(type_name->get_string());
+    const std::string& method_lookup_class = (*method_lookup_type)->get_string();
+    const std::string& method_id = name->get_string();
+    // T1 ... Tn
     std::vector<Symbol*> arg_symbols;
     for(int i = 0; i < this->actual->len(); i ++) {
         arg_symbols.push_back(this->actual->nth(i)->check_type(class_name, local_object_env, class_table));
     }
-    const std::string& method_id = name->get_string();
-    
+    if(!class_table.is_method_exist(method_lookup_class, method_id)) {
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "Method " << method_id << " does not exist for class " << method_lookup_class << "." << std::endl;
+    } else {
+        // Tn+1'
+        Symbol* method_rtn_type = class_table.get_method_rtn_type(method_lookup_class, method_id);
+        std::vector<std::pair<std::string, Symbol>>* method_args = class_table.get_from_method_env(method_lookup_class, method_id);
+        // T1' ... Tn'
+        std::vector<Symbol> method_params_types;
+        for(int i = 0; i < (*method_args).size() - 1; i ++) {
+            method_params_types.push_back((*method_args)[i].second);
+        }
+        if(arg_symbols.size() != method_params_types.size()) {
+            class_table.semant_error(class_name, this) << "Method " << method_id << " is called with " << arg_symbols.size() << " arguments, but require " << method_params_types.size() << " parameters!" << std::endl;
+        } else {
+            bool found_err = false;
+            // Check Ti <= Ti' for 1 <= i <=n.
+            for(int i = 0; i < arg_symbols.size(); i ++) {
+                if(!class_table.is_sub_class(*(arg_symbols[i]), method_params_types[i])) {
+                    // FIXME: Error message may need to include parameter name.
+                    class_table.semant_error(class_name, this) << "Method " << method_id << " requires type " << (*(arg_symbols[i]))->get_string() << ", but found " << method_params_types[i]->get_string() << "." << std::endl;
+                    found_err = true;
+                }
+            }
+            if(!found_err) {
+                if((*method_rtn_type)->get_string() == SELF_TYPE->get_string()) {
+                    rtn = caller_type;
+                } else {
+                    rtn = method_rtn_type;
+                }
+            }
+        }
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* object_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    Symbol* id_type = class_table.get_from_all_object_env(class_name, name->get_string(), local_object_env);
+    if(id_type != nullptr) {
+        rtn = id_type;
+    } else {
+        class_table.semant_error(class_name, this) << "Object id " << name->get_string() << " is not defined." << endl;
+    }
+    this->type = *rtn;
+    return rtn;
 }
 
 // If SELF_TYPE is in object env, return its values, else, return current class.

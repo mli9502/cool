@@ -423,6 +423,71 @@ void attr_class::init_envs(const std::string& class_name, ClassTable& class_tabl
     }
 }
 
+Symbol* branch_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    Symbol* id_type = class_table.get_symbol(type_decl->get_string());
+    // FIXME: May need to check id_type. If No_type, report error.
+    local_object_env.enterscope();
+    local_object_env.addid(name->get_string(), id_type);
+    rtn = expr->check_type(class_name, local_object_env, class_table);
+    local_object_env.exitscope();
+    return rtn;
+}
+
+Symbol* typcase_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    bool found_err = false;
+    // T0
+    Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
+    std::unordered_set<std::string> branch_types_set;
+    // T1' ... Tn'
+    std::vector<Symbol*> branch_types;
+    for(int i = 0; i < cases->len(); i ++) {
+        Symbol* branch_type = cases->nth(i)->check_type(class_name, local_object_env, class_table);
+        std::string branch_type_str = (*branch_type)->get_string();
+        if(branch_types_set.find(branch_type_str) != branch_types_set.end()) {
+            branch_types_set.insert(branch_type_str);
+            branch_types.push_back(branch_type);
+        } else {
+            class_table.semant_error(class_name, this) << "Found duplicate branch type " << branch_type_str << "." << std::endl;
+            found_err = true;
+        }
+    }
+    Symbol* curr_common_ancestor = branch_types.at(0);
+    for(int i = 1; i < branch_types.size(); i ++) {
+        curr_common_ancestor = class_table.lca(*curr_common_ancestor, *(branch_types.at(i)));
+    }
+    if(!found_err) {
+        rtn = curr_common_ancestor;
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
+Symbol* eq_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    Symbol* rtn = class_table.get_symbol(Object->get_string());
+    bool found_err = false;
+    Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
+    Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
+    if(!class_table.isIntStringBool(e1_type)) {
+        class_table.semant_error(class_name, this) << "Found type " << (*e1_type)->get_string() << " for e1, need Int, String or Bool." << std::endl;
+        found_err = true;
+    }
+    if(!class_table.isIntStringBool(e2_type)) {
+        class_table.semant_error(class_name, this) << "Found type " << (*e2_type)->get_string() << " for e2, need Int, String or Bool." << std::endl;
+        found_err = true;
+    }
+    if((*e1_type)->get_string() != (*e2_type)->get_string()) {
+        class_table.semant_error(class_name, this) << "e1 type " << (*e1_type)->get_string() << " is not equal to e2 type " << (*e2_type)->get_string() << "." << std::endl;
+        found_err = true;
+    }
+    if(!found_err) {
+        rtn = class_table.get_symbol(Bool->get_string());
+    }
+    this->type = *rtn;
+    return rtn;
+}
+
 void attr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
@@ -458,6 +523,7 @@ Symbol* let_class::check_type(const std::string& class_name, SymbolTable<std::st
     } else {
         id_type = class_table.get_symbol(type_decl->get_string());
     }
+    // FIXME: May need to check id_type. If it is No_type, report error.
     // T1 (Let-Init). If it's Let-No-Init, init_type is nullptr.
     Symbol* init_type = init->check_type(class_name, local_object_env, class_table);
     // If it is Let-Init.

@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <unordered_set>
 #include "cool-tree.h"
 #include "stringtab.h"
 #include "symtab.h"
@@ -106,6 +107,15 @@ public:
       return is_sub_class(parent, base_class);
     }
   }
+
+  bool isIntStringBool(Symbol* symbol) {
+    std::string sym_str = (*symbol)->get_string();
+    if(sym_str == Int->get_string() || sym_str == Str->get_string() || sym_str == Bool->get_string()) {
+      return true;
+    }
+    return false;
+  }
+
   // Find the least common ancestor for symbol1 and symbol2.
   Symbol* lca(const Symbol& s1, const Symbol& s2) {
     bool base_of_s1 = false, base_of_s2 = false;

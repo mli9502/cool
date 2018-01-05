@@ -88,7 +88,7 @@ void check_type(ClassTable& class_table);
 #define Feature_EXTRAS                                        \
 virtual void dump_with_types(ostream&,int) = 0; 	\
 virtual void init_envs(const std::string& class_name, ClassTable& class_table) = 0; \
-virtual void check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table);
+virtual void check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) = 0;
 
 
 #define Feature_SHARED_EXTRAS			\
@@ -124,8 +124,8 @@ Symbol type;                                 \
 Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
 virtual void dump_with_types(ostream&,int) = 0;  \
-virtual Symbol* check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table); \
-void dump_type(ostream&, int);               \
+virtual Symbol* check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) = 0; \
+void dump_type(ostream&, int); \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \

@@ -1,5 +1,3 @@
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -474,6 +472,11 @@ void attr_class::check_type(const std::string& class_name, SymbolTable<std::stri
             return;
         }
     }
+}
+// FIXME: type may need to be No_type.
+Symbol* no_expr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    this->type = (Symbol)nullptr;
+    return nullptr;
 }
 
 Symbol* let_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {

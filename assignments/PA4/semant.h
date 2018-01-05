@@ -16,6 +16,44 @@
 #define TRUE 1
 #define FALSE 0
 
+//////////////////////////////////////////////////////////////////////
+//
+// Symbols
+//
+// For convenience, a large number of symbols are predefined here.
+// These symbols include the primitive type and method names, as well
+// as fixed names used by the runtime system.
+//
+//////////////////////////////////////////////////////////////////////
+
+static Symbol 
+    arg,
+    arg2,
+    Bool,
+    concat,
+    cool_abort,
+    copy,
+    Int,
+    in_int,
+    in_string,
+    IO,
+    length,
+    Main,
+    main_meth,
+    No_class,
+    No_type,
+    Object,
+    out_int,
+    out_string,
+    prim_slot,
+    self,
+    SELF_TYPE,
+    Str,
+    str_field,
+    substr,
+    type_name,
+    val;
+
 class ClassTable;
 typedef ClassTable *ClassTableP;
 
@@ -190,7 +228,7 @@ public:
     if(m1.size() != m2.size()) {
       return false;
     }
-    for(int i = 0; i < m1.size(); i ++) {
+    for(unsigned i = 0; i < m1.size(); i ++) {
       if(m1[i].second->get_string() != m2[i].second->get_string()) {
         return false;
       }

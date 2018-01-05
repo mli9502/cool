@@ -10,43 +10,6 @@
 extern int semant_debug;
 extern char *curr_filename;
 
-//////////////////////////////////////////////////////////////////////
-//
-// Symbols
-//
-// For convenience, a large number of symbols are predefined here.
-// These symbols include the primitive type and method names, as well
-// as fixed names used by the runtime system.
-//
-//////////////////////////////////////////////////////////////////////
-
-static Symbol 
-    arg,
-    arg2,
-    Bool,
-    concat,
-    cool_abort,
-    copy,
-    Int,
-    in_int,
-    in_string,
-    IO,
-    length,
-    Main,
-    main_meth,
-    No_class,
-    No_type,
-    Object,
-    out_int,
-    out_string,
-    prim_slot,
-    self,
-    SELF_TYPE,
-    Str,
-    str_field,
-    substr,
-    type_name,
-    val;
 //
 // Initializing the predefined symbols.
 //
@@ -454,7 +417,7 @@ Symbol* typcase_class::check_type(const std::string& class_name, SymbolTable<std
         }
     }
     Symbol* curr_common_ancestor = branch_types.at(0);
-    for(int i = 1; i < branch_types.size(); i ++) {
+    for(unsigned i = 1; i < branch_types.size(); i ++) {
         curr_common_ancestor = class_table.lca(*curr_common_ancestor, *(branch_types.at(i)));
     }
     if(!found_err) {
@@ -697,7 +660,7 @@ Symbol* static_dispatch_class::check_type(const std::string& class_name, SymbolT
         std::vector<std::pair<std::string, Symbol>>* method_args = class_table.get_from_method_env(method_lookup_class, method_id);
         // T1' ... Tn'
         std::vector<Symbol> method_params_types;
-        for(int i = 0; i < (*method_args).size() - 1; i ++) {
+        for(unsigned i = 0; i < (*method_args).size() - 1; i ++) {
             method_params_types.push_back((*method_args)[i].second);
         }
         if(arg_symbols.size() != method_params_types.size()) {
@@ -705,7 +668,7 @@ Symbol* static_dispatch_class::check_type(const std::string& class_name, SymbolT
         } else {
             bool found_err = false;
             // Check Ti <= Ti' for 1 <= i <=n.
-            for(int i = 0; i < arg_symbols.size(); i ++) {
+            for(unsigned i = 0; i < arg_symbols.size(); i ++) {
                 if(!class_table.is_sub_class(*(arg_symbols[i]), method_params_types[i])) {
                     // FIXME: Error message may need to include parameter name.
                     class_table.semant_error(class_name, this) << "Method " << method_id << " requires type " << (*(arg_symbols[i]))->get_string() << ", but found " << method_params_types[i]->get_string() << "." << std::endl;
@@ -766,7 +729,7 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
         std::vector<std::pair<std::string, Symbol>>* method_args = class_table.get_from_method_env(method_lookup_class, method_id);
         // T1' ... Tn'
         std::vector<Symbol> method_params_types;
-        for(int i = 0; i < (*method_args).size() - 1; i ++) {
+        for(unsigned i = 0; i < (*method_args).size() - 1; i ++) {
             // FIXME: Debugging printout here...
             std::cerr << (*method_args)[i].first << std::endl;
             method_params_types.push_back((*method_args)[i].second);
@@ -777,7 +740,7 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
         } else {
             bool found_err = false;
             // Check Ti <= Ti' for 1 <= i <= n.
-            for(int i = 0; i < arg_symbols.size(); i ++) {
+            for(unsigned i = 0; i < arg_symbols.size(); i ++) {
                 if(!class_table.is_sub_class(*(arg_symbols[i]), method_params_types[i])) {
                     // FIXME: Error message may need to include parameter name.
                     class_table.semant_error(class_name, this) << "Method " << method_id << " requires type " << (*(arg_symbols[i]))->get_string() << ", but found " << method_params_types[i]->get_string() << "." << std::endl;

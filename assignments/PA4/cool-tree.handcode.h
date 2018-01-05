@@ -77,9 +77,9 @@ virtual void dump_with_types(ostream&,int) = 0; \
 virtual void check_type(ClassTable& class_table) = 0;
 
 #define class__EXTRAS                                 \
-Symbol get_filename() { return filename; }             \
-Symbol get_classname() { return name; }					\
-Symbol get_parentname() { return parent; }				\
+Symbol get_filename() { return filename; } \
+Symbol get_classname() { return name; } \
+Symbol get_parentname() { return parent; } \
 void init_envs(const std::string& class_name, ClassTable& class_table);	\
 void dump_with_types(ostream&,int);    \
 void check_type(ClassTable& class_table);                

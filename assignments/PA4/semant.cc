@@ -346,6 +346,7 @@ void program_class::check_type(ClassTable& class_table) {
 void class__class::check_type(ClassTable& class_table) {
     SymbolTable<std::string, Symbol> local_object_env;
     const std::string& class_name = name->get_string();
+    std::cerr << "--- Start type checking for class: " << class_name << std::endl;
     for(int i = 0; i < features->len(); i ++) {
         features->nth(i)->check_type(class_name, local_object_env, class_table);
     }
@@ -448,12 +449,16 @@ Symbol* eq_class::check_type(const std::string& class_name, SymbolTable<std::str
     this->type = *rtn;
     return rtn;
 }
-
+// FIXME: IMPORTANT: When "self" veriable is found, SELF_TYPE is returned as type.
+// SELF_TYPE is then used as key to look up for the actual type in object env. 
 void attr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
     local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     Symbol* expr_type = init->check_type(class_name, local_object_env, class_table);
+    if((*expr_type)->get_string() == SELF_TYPE->get_string()) {
+        expr_type = class_table.get_self_type_symbol(class_name, local_object_env);
+    }
     local_object_env.exitscope();
     Symbol* decl_type = &type_decl;
     if(type_decl->get_string() == SELF_TYPE->get_string()) {
@@ -513,21 +518,31 @@ Symbol* let_class::check_type(const std::string& class_name, SymbolTable<std::st
 }
 
 void method_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    std::cerr << "--- Start type checking for method: " << this->name->get_string() << std::endl;
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
     local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
+    std::cerr << "------------------------" << std::endl;
+    local_object_env.dump();
+    std::cerr << "------------------------" << std::endl;
     for(int i = 0; i < formals->len(); i ++) {
         std::pair<std::string, Symbol> formal_pair = formals->nth(i)->construct_id_type_pair(class_name, class_table);
         Symbol* formal_symbol = class_table.get_symbol(formal_pair.second->get_string());
         local_object_env.addid(formal_pair.first, formal_symbol);
     }
+    std::cerr << "~~~ Before expression check type" << std::endl;
     Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
+    std::cerr << (*expr_type)->get_string() << std::endl;
     if((*expr_type)->get_string() == SELF_TYPE->get_string()) {
         expr_type = class_table.get_self_type_symbol(class_name, local_object_env);
     }
     local_object_env.exitscope();
     // Check T0'(expr_type_symbol) <= T0(return_type)
     Symbol* method_rtn_type = class_table.get_method_rtn_type(class_name, name->get_string());
+    if((*method_rtn_type)->get_string() == SELF_TYPE->get_string()) {
+        method_rtn_type = class_table.get_symbol(class_name);
+    }
+    std::cerr << "check for is_sub_class: " << (*expr_type)->get_string() << ", " << (*method_rtn_type)->get_string() << std::endl;
     if(class_table.is_sub_class(*expr_type, *method_rtn_type)) {
         return;
     } else {
@@ -536,12 +551,12 @@ void method_class::check_type(const std::string& class_name, SymbolTable<std::st
     }
 }
 
-// Note: Method override is not a thing in COOL. 
 void method_class::init_envs(const std::string& class_name, ClassTable& class_table) {
     std::string method_id = name->get_string();
+    std::cerr << "----------------- class_name: " << class_name << ", method_id: " << method_id << std::endl;  
     std::vector<std::pair<std::string, Symbol>> args;
     // NOTE: Need to handle base class first to prevent werid base class types.
-    if(class_table.is_basic_class(class_name)) {  
+    if(class_table.is_basic_class(class_name)) {
         for(int i = 0; i < formals->len(); i ++) {
             args.push_back(formals->nth(i)->construct_id_type_pair(class_name, class_table));
         }
@@ -692,12 +707,17 @@ Symbol* static_dispatch_class::check_type(const std::string& class_name, SymbolT
 }
 
 Symbol* object_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    std::cerr << "--- Start type checking for object_class: " << name->get_string() << std::endl;
     Symbol* rtn = class_table.get_symbol(Object->get_string());
-    Symbol* id_type = class_table.get_from_all_object_env(class_name, name->get_string(), local_object_env);
-    if(id_type != nullptr) {
-        rtn = id_type;
+    if(name->get_string() == self->get_string()) {
+        rtn = &SELF_TYPE;
     } else {
-        class_table.semant_error(class_name, this) << "Object id " << name->get_string() << " is not defined." << endl;
+        Symbol* id_type = class_table.get_from_all_object_env(class_name, name->get_string(), local_object_env);
+        if(id_type != nullptr) {
+            rtn = id_type;
+        } else {
+            class_table.semant_error(class_name, this) << "Object id " << name->get_string() << " is not defined." << endl;
+        }
     }
     this->type = *rtn;
     return rtn;
@@ -705,16 +725,22 @@ Symbol* object_class::check_type(const std::string& class_name, SymbolTable<std:
 
 // If SELF_TYPE is in object env, return its values, else, return current class.
 Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    std::cerr << "--- Start type checking for dispatch: " << this->name->get_string() << std::endl;
     Symbol* rtn = class_table.get_symbol(Object->get_string());
     // T0
     Symbol* caller_type = expr->check_type(class_name, local_object_env, class_table);
+    std::cerr << "~~~ caller_type is: " << (*caller_type)->get_string() << std::endl;
     // T0' (Type used for method lookup.)
     Symbol* method_lookup_type = caller_type;
-    if((*caller_type)->get_string() == SELF_TYPE->get_string()) {
+    if((*method_lookup_type)->get_string() == SELF_TYPE->get_string()) {
+        std::cerr << "HERE!!!!!!!!!!!!!!!!" << std::endl;
         method_lookup_type = class_table.get_self_type_symbol(class_name, local_object_env);
     }
+    std::cerr << " !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl; 
+    // FIXME: Handle method_lookup_type is nullptr case.
     // NOTE: This is the class name used to look up method!
     const std::string& method_lookup_class = (*method_lookup_type)->get_string();
+    std::cerr << "method_lookup_class: " << method_lookup_class << std::endl;
     // T1 ... Tn
     std::vector<Symbol*> arg_symbols;
     for(int i = 0; i < this->actual->len(); i ++) {
@@ -728,7 +754,10 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
     } else {
         // Get method return type and argument types.
         // Tn+1'
+        std::cerr << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
         Symbol* method_rtn_type = class_table.get_method_rtn_type(method_lookup_class, method_id);
+        std::cerr << "~~~ method rtn type is: " << (*method_rtn_type)->get_string() << std::endl;
+        std::cerr << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
         std::vector<std::pair<std::string, Symbol>>* method_args = class_table.get_from_method_env(method_lookup_class, method_id);
         // T1' ... Tn'
         std::vector<Symbol> method_params_types;
@@ -765,15 +794,11 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
 
 Symbol* new__class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     Symbol* rtn = class_table.get_symbol(Object->get_string());
-    if(type_name->get_string() == SELF_TYPE->get_string()) {
-        rtn = class_table.get_symbol(class_name);
+    if(!class_table.exists_type(type_name)) {
+        // FIXME: Fix error message.
+        class_table.semant_error(class_name, this) << "'new' used with undefined class " << type_name->get_string() << "." << std::endl; 
     } else {
-        if(!class_table.exists_type(type_name)) {
-            // FIXME: Fix error message.
-            class_table.semant_error(class_name, this) << "'new' used with undefined class " << type_name->get_string() << "." << std::endl; 
-        } else {
-            rtn = class_table.get_symbol(type_name->get_string());
-        }
+        rtn = class_table.get_symbol(type_name->get_string());
     }
     this->type = *rtn;
     return rtn;
@@ -957,13 +982,18 @@ Symbol* ClassTable::get_from_object_env(const std::string& class_name, const std
 // This method go through the inheritance tree to find method defination.
 std::vector<std::pair<std::string, Symbol>>* ClassTable::get_from_method_env(const std::string& class_name, const std::string& method_id) {
     const std::string& parent_name = classes_map_[class_name]->get_parentname()->get_string();
+    std::cerr << "~~~ class_name: " << class_name << ", method_id: " << method_id << std::endl;
+    std::cerr << "~~~ parent_name: " << parent_name << ", method_id: " << method_id << std::endl;
     if(method_env_[class_name].find(method_id) == method_env_[class_name].end()) {
+        std::cerr << "*** method " << method_id << " not found in class " << class_name << std::endl; 
         if(parent_name == Object->get_string()) {
             return nullptr;
         } else {
+            std::cerr << "*** try to find method " << method_id << " in " << parent_name << std::endl;
             return get_from_method_env(parent_name, method_id);
         }
     } else {
+        std::cerr << "*** FOUND METHOD " << method_id << " IN CLASS: " << class_name << std::endl;
         return &(method_env_[class_name][method_id]);
     }
 }

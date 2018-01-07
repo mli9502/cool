@@ -47,7 +47,7 @@ change-prot:
 
 SEMANT_OBJS := ${filter-out symtab_example.o,${OBJS}}
 
-semant:  ${SEMANT_OBJS} lexer parser cgen
+semant: clean ${SEMANT_OBJS} lexer parser cgen
 	${CC} ${CFLAGS} ${SEMANT_OBJS} ${LIB} -o semant
 
 symtab_example: symtab_example.cc 

@@ -97,6 +97,9 @@ public:
     }
   }
   Symbol* get_symbol(const std::string& class_name) {
+    if(class_name == SELF_TYPE->get_string()) {
+      return &SELF_TYPE;
+    }
     // FIXME: This may need to change to Object.
     if(classes_map_.find(class_name) == classes_map_.end()) {
       return &No_type;
@@ -126,20 +129,29 @@ public:
     return true;
   }
   bool is_sub_class(Symbol sub_class, Symbol base_class) {
+    // std::cerr << "~~~ Check sub class for: " << sub_class->get_string() << " and " << base_class->get_string() << std::endl; 
     // If sub_class is No_type.
     if(sub_class->get_string() == No_type->get_string()) {
+      // std::cerr << "~~~ check rtn: true" << std::endl;
+      return true;
+    }
+    if(sub_class->get_string() == base_class->get_string()) {
+      // std::cerr << "~~~ check rtn: true" << std::endl;
       return true;
     }
     // If sub_class is Object.
     if(sub_class->get_string() == Object->get_string()) {
       if(base_class->get_string() == Object->get_string()) {
+        // std::cerr << "~~~ check rtn: true" << std::endl;
         return true;
       }
+      // std::cerr << "~~~ check rtn: false" << std::endl;
       return false;
     }
     Symbol parent = classes_map_[sub_class->get_string()]->get_parentname();
     std::string parent_name = parent->get_string();
     if(parent_name == base_class->get_string()) {
+      // std::cerr << "~~~ check rtn: true" << std::endl;
       return true;
     } else {
       return is_sub_class(parent, base_class);
@@ -155,6 +167,7 @@ public:
   }
 
   // Find the least common ancestor for symbol1 and symbol2.
+  // FIXME: lca needs to handle SELF_TYPE! See lecture for more information.
   Symbol* lca(const Symbol& s1, const Symbol& s2) {
     bool base_of_s1 = false, base_of_s2 = false;
     return lca_helper(Object->get_string(), s1->get_string(), s2->get_string(), base_of_s1, base_of_s2);
@@ -190,6 +203,7 @@ public:
     object_env_[class_name].addid(id, type);
   }
   Symbol* get_from_all_object_env(const std::string& class_name, const std::string& id, SymbolTable<std::string, Symbol>& local_object_env) {
+    std::cerr << "~~~ id is: " << id << std::endl;
     auto prob_result = local_object_env.probe(id);
     auto lookup_result = local_object_env.lookup(id);
     auto global_result = get_from_object_env(class_name, id);
@@ -246,7 +260,11 @@ public:
   }
   Symbol* get_method_rtn_type(const std::string& class_name, const std::string& method_id) {
     auto* args = get_from_method_env(class_name, method_id);
+    if(args == nullptr) {
+      return get_symbol(Object->get_string());
+    }
     const std::pair<std::string, Symbol>& rtn_arg = args->back();
+    std::cerr << rtn_arg.second->get_string() << std::endl;
     return get_symbol(rtn_arg.second->get_string());
   }
 
@@ -265,7 +283,7 @@ public:
         // If there's no arg.
         if(arg_size == 1) {
           std::cout << ")" << std::endl;
-          break;
+          continue;
         }
         for(unsigned i = 0; i < arg_size - 2; i ++) {
           dump_arg(method_entry.second[i]) << ", ";

@@ -452,11 +452,13 @@ Symbol* eq_class::check_type(const std::string& class_name, SymbolTable<std::str
 // FIXME: IMPORTANT: When "self" veriable is found, SELF_TYPE is returned as type.
 // SELF_TYPE is then used as key to look up for the actual type in object env. 
 void attr_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    std::cerr << "--- Start type checking for attr_class: " << name->get_string() << std::endl;
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
     local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     Symbol* expr_type = init->check_type(class_name, local_object_env, class_table);
-    if((*expr_type)->get_string() == SELF_TYPE->get_string()) {
+    // If there is an expr type.
+    if((expr_type != nullptr) && (*expr_type)->get_string() == SELF_TYPE->get_string()) {
         expr_type = class_table.get_self_type_symbol(class_name, local_object_env);
     }
     local_object_env.exitscope();

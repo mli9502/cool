@@ -8,3 +8,9 @@ core.*
 *.log
 *.out
 *.json
+my_semant
+official_semant
+*~
+*.cl
+pout
+examples/*

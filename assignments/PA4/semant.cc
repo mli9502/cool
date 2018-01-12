@@ -402,22 +402,28 @@ Symbol* typcase_class::check_type(const std::string& class_name, SymbolTable<std
     // T0
     Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
     std::unordered_set<std::string> branch_types_set;
+    // FIXME: Check unique for declared types instead of types labled by type checking.
+    for(int i = 0; i < cases->len(); i ++) {
+        Symbol branch_decl_type = cases->nth(i)->get_type_decl();
+        std::string branch_decl_type_str = branch_decl_type->get_string();
+        if(branch_types_set.find(branch_decl_type_str) == branch_types_set.end()) {
+            class_table.semant_error(class_name, this) << "Found duplicate branch type " << branch_decl_type_str << "." << std::endl;
+            break;
+        } else {
+            branch_types_set.insert(branch_decl_type_str);
+        }
+    }
     // T1' ... Tn'
     std::vector<Symbol*> branch_types;
     for(int i = 0; i < cases->len(); i ++) {
         Symbol* branch_type = cases->nth(i)->check_type(class_name, local_object_env, class_table);
         std::string branch_type_str = (*branch_type)->get_string();
-        if(branch_types_set.find(branch_type_str) != branch_types_set.end()) {
-            branch_types_set.insert(branch_type_str);
-            branch_types.push_back(branch_type);
-        } else {
-            class_table.semant_error(class_name, this) << "Found duplicate branch type " << branch_type_str << "." << std::endl;
-            found_err = true;
-        }
+        branch_types.push_back(branch_type);
     }
+    std::cerr << "~~~ branch_types.size() is: " << branch_types.size() << std::endl;
     Symbol* curr_common_ancestor = branch_types.at(0);
     for(unsigned i = 1; i < branch_types.size(); i ++) {
-        curr_common_ancestor = class_table.lca(*curr_common_ancestor, *(branch_types.at(i)));
+        curr_common_ancestor = class_table.lca(*curr_common_ancestor, *(branch_types.at(i)), class_name);
     }
     if(!found_err) {
         rtn = curr_common_ancestor;
@@ -626,7 +632,7 @@ Symbol* cond_class::check_type(const std::string& class_name, SymbolTable<std::s
     } else {
         Symbol* then_expr_type = then_exp->check_type(class_name, local_object_env, class_table);
         Symbol* else_expr_type = else_exp->check_type(class_name, local_object_env, class_table);
-        rtn = class_table.lca(*then_expr_type, *else_expr_type);
+        rtn = class_table.lca(*then_expr_type, *else_expr_type, class_name);
     }
     this->type = *rtn;
     return rtn;
@@ -746,7 +752,12 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
     // T1 ... Tn
     std::vector<Symbol*> arg_symbols;
     for(int i = 0; i < this->actual->len(); i ++) {
-        arg_symbols.push_back(this->actual->nth(i)->check_type(class_name, local_object_env, class_table));
+        Symbol* actual_symbol = actual->nth(i)->check_type(class_name, local_object_env, class_table);
+        if((*actual_symbol)->get_string() == SELF_TYPE->get_string()) {
+            arg_symbols.push_back(class_table.get_symbol(class_name));
+        } else {
+            arg_symbols.push_back(this->actual->nth(i)->check_type(class_name, local_object_env, class_table));
+        }
     }
     const std::string& method_id = name->get_string();
     // Check if method exists for method lookup type.

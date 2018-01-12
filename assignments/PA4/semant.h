@@ -129,7 +129,7 @@ public:
     return true;
   }
   bool is_sub_class(Symbol sub_class, Symbol base_class) {
-    // std::cerr << "~~~ Check sub class for: " << sub_class->get_string() << " and " << base_class->get_string() << std::endl; 
+    std::cerr << "~~~ Check sub class for: " << sub_class->get_string() << " and " << base_class->get_string() << std::endl; 
     // If sub_class is No_type.
     if(sub_class->get_string() == No_type->get_string()) {
       // std::cerr << "~~~ check rtn: true" << std::endl;
@@ -168,9 +168,17 @@ public:
 
   // Find the least common ancestor for symbol1 and symbol2.
   // FIXME: lca needs to handle SELF_TYPE! See lecture for more information.
-  Symbol* lca(const Symbol& s1, const Symbol& s2) {
+  Symbol* lca(const Symbol& s1, const Symbol& s2, const std::string& class_name) {
     bool base_of_s1 = false, base_of_s2 = false;
-    return lca_helper(Object->get_string(), s1->get_string(), s2->get_string(), base_of_s1, base_of_s2);
+    if(s1->get_string() == SELF_TYPE->get_string() && s2->get_string() == SELF_TYPE->get_string()) {
+      return get_symbol(SELF_TYPE->get_string());
+    } else if(s1->get_string() == SELF_TYPE->get_string()) {
+      return lca_helper(Object->get_string(), class_name, s2->get_string(), base_of_s1, base_of_s2);
+    } else if(s2->get_string() == SELF_TYPE->get_string()) {
+      return lca_helper(Object->get_string(), s1->get_string(), class_name, base_of_s1, base_of_s2);
+    } else {
+      return lca_helper(Object->get_string(), s1->get_string(), s2->get_string(), base_of_s1, base_of_s2);
+    }
   }
   Symbol* lca_helper(const std::string& curr_symbol, const std::string& s1, const std::string& s2, bool& base_of_s1, bool& base_of_s2) {
     const std::vector<std::string>& children = inheritance_graph_[curr_symbol];

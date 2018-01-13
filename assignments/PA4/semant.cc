@@ -434,22 +434,13 @@ Symbol* typcase_class::check_type(const std::string& class_name, SymbolTable<std
 
 Symbol* eq_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
     Symbol* rtn = class_table.get_symbol(Object->get_string());
-    bool found_err = false;
     Symbol* e1_type = e1->check_type(class_name, local_object_env, class_table);
     Symbol* e2_type = e2->check_type(class_name, local_object_env, class_table);
-    if(!class_table.isIntStringBool(e1_type)) {
-        class_table.semant_error(class_name, this) << "Found type " << (*e1_type)->get_string() << " for e1, need Int, String or Bool." << std::endl;
-        found_err = true;
-    }
-    if(!class_table.isIntStringBool(e2_type)) {
-        class_table.semant_error(class_name, this) << "Found type " << (*e2_type)->get_string() << " for e2, need Int, String or Bool." << std::endl;
-        found_err = true;
-    }
-    if((*e1_type)->get_string() != (*e2_type)->get_string()) {
-        class_table.semant_error(class_name, this) << "e1 type " << (*e1_type)->get_string() << " is not equal to e2 type " << (*e2_type)->get_string() << "." << std::endl;
-        found_err = true;
-    }
-    if(!found_err) {
+    if(class_table.isIntStringBool(e1_type) && 
+        class_table.isIntStringBool(e2_type) &&
+        (*e1_type)->get_string() != (*e2_type)->get_string()) {
+            class_table.semant_error(class_name, this) << "Both e1 and e2 type are Int, String or Bool, but e1 type " << (*e1_type)->get_string() << " is not equal to e2 type " << (*e2_type)->get_string() << "." << std::endl;
+    } else {
         rtn = class_table.get_symbol(Bool->get_string());
     }
     this->type = *rtn;

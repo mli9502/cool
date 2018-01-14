@@ -128,8 +128,23 @@ public:
     }
     return true;
   }
+  // SELF_TYPE_C <= SELF_TYPE_C
+  // SELF_TYPE_C <= T if C <= T
+  // T <= SELF_TYPE_C is always false !!! 
+  bool is_sub_class(Symbol sub_class, Symbol base_class, const std::string& class_name) {
+    if(sub_class->get_string() == SELF_TYPE->get_string() && base_class->get_string() == SELF_TYPE->get_string()) {
+      return true;
+    }
+    if(base_class->get_string() == SELF_TYPE->get_string()) {
+      return false;
+    }
+    if(sub_class->get_string() == SELF_TYPE->get_string()) {
+      sub_class = *get_symbol(class_name);
+    }
+    return is_sub_class(sub_class, base_class);
+  }
   bool is_sub_class(Symbol sub_class, Symbol base_class) {
-    std::cerr << "~~~ Check sub class for: " << sub_class->get_string() << " and " << base_class->get_string() << std::endl; 
+    // std::cerr << "~~~ Check sub class for: " << sub_class->get_string() << " and " << base_class->get_string() << std::endl; 
     // If sub_class is No_type.
     if(sub_class->get_string() == No_type->get_string()) {
       // std::cerr << "~~~ check rtn: true" << std::endl;
@@ -211,7 +226,7 @@ public:
     object_env_[class_name].addid(id, type);
   }
   Symbol* get_from_all_object_env(const std::string& class_name, const std::string& id, SymbolTable<std::string, Symbol>& local_object_env) {
-    std::cerr << "~~~ id is: " << id << std::endl;
+    // std::cerr << "~~~ id is: " << id << std::endl;
     auto prob_result = local_object_env.probe(id);
     auto lookup_result = local_object_env.lookup(id);
     auto global_result = get_from_object_env(class_name, id);
@@ -247,10 +262,12 @@ public:
   }
   // Give two methods, check whether they have the same argument types and return type.
   bool is_method_args_same(const std::vector<std::pair<std::string, Symbol>>& m1, const std::vector<std::pair<std::string, Symbol>>& m2) {
+    // std::cerr << "m1.size() is: " << m1.size() << " m2.size() is: " << m2.size() << std::endl; 
     if(m1.size() != m2.size()) {
       return false;
     }
     for(unsigned i = 0; i < m1.size(); i ++) {
+      // std::cerr << "m1: " << m1[i].second->get_string() << " m2: " << m2[i].second->get_string() << std::endl;
       if(m1[i].second->get_string() != m2[i].second->get_string()) {
         return false;
       }
@@ -272,7 +289,7 @@ public:
       return get_symbol(Object->get_string());
     }
     const std::pair<std::string, Symbol>& rtn_arg = args->back();
-    std::cerr << rtn_arg.second->get_string() << std::endl;
+    // std::cerr << rtn_arg.second->get_string() << std::endl;
     return get_symbol(rtn_arg.second->get_string());
   }
 

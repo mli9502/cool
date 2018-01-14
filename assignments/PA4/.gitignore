@@ -14,3 +14,4 @@ official_semant
 *.cl
 pout
 examples/*
+grading/*

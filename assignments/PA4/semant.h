@@ -238,6 +238,7 @@ public:
     }
     return global_result;
   }
+  /*
   Symbol* get_self_type_symbol(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env) {
     Symbol* rtn = get_from_all_object_env(class_name, SELF_TYPE->get_string(), local_object_env);
     if(rtn == nullptr) {
@@ -246,6 +247,7 @@ public:
       return rtn;
     }
   }
+  */
   // This method go through the inheritance tree to find attribute defination.
   Symbol* get_from_object_env(const std::string& class_name, const std::string& id);
   Symbol* get_from_object_env_local(const std::string& class_name, const std::string& id) {

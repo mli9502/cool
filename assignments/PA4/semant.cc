@@ -455,7 +455,7 @@ void attr_class::check_type(const std::string& class_name, SymbolTable<std::stri
     // std::cerr << "--- Start type checking for attr_class: " << name->get_string() << std::endl;
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
-    local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
+    // local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     Symbol* expr_type = init->check_type(class_name, local_object_env, class_table);
     // If there is an expr type.
     // if((expr_type != nullptr) && (*expr_type)->get_string() == SELF_TYPE->get_string()) {
@@ -523,7 +523,7 @@ void method_class::check_type(const std::string& class_name, SymbolTable<std::st
     // std::cerr << "--- Start type checking for method: " << this->name->get_string() << std::endl;
     local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
-    local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
+    // local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     // std::cerr << "------------------------" << std::endl;
     // local_object_env.dump();
     // std::cerr << "------------------------" << std::endl;
@@ -753,7 +753,8 @@ Symbol* dispatch_class::check_type(const std::string& class_name, SymbolTable<st
     // T0' (Type used for method lookup.)
     Symbol* method_lookup_type = caller_type;
     if((*method_lookup_type)->get_string() == SELF_TYPE->get_string()) {
-        method_lookup_type = class_table.get_self_type_symbol(class_name, local_object_env);
+        // method_lookup_type = class_table.get_self_type_symbol(class_name, local_object_env);
+        method_lookup_type = class_table.get_symbol(class_name);
     }
     // std::cerr << " !!!!!!!!!!!!!!!!!!!!!!!! " << std::endl; 
     // FIXME: Handle method_lookup_type is nullptr case.

@@ -1,3 +1,6 @@
+// FIXME: Each method should have a new local_object_env.
+// It can not use the passed in local_object_env!
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -518,10 +521,12 @@ Symbol* let_class::check_type(const std::string& class_name, SymbolTable<std::st
     this->type = *rtn;
     return rtn;
 }
-
+// NOTE: For method class, it does not use the passed in local_object_env.
+// Each method creates a new local_object_env, which is method_local_object_env, and pass that down.
 void method_class::check_type(const std::string& class_name, SymbolTable<std::string, Symbol>& local_object_env, ClassTable& class_table) {
+    SymbolTable<std::string, Symbol> method_local_object_env;
     // std::cerr << "--- Start type checking for method: " << this->name->get_string() << std::endl;
-    local_object_env.enterscope();
+    method_local_object_env.enterscope();
     Symbol* class_symbol = class_table.get_symbol(class_name);
     // local_object_env.addid(SELF_TYPE->get_string(), class_symbol);
     // std::cerr << "------------------------" << std::endl;
@@ -530,15 +535,15 @@ void method_class::check_type(const std::string& class_name, SymbolTable<std::st
     for(int i = 0; i < formals->len(); i ++) {
         std::pair<std::string, Symbol> formal_pair = formals->nth(i)->construct_id_type_pair(class_name, class_table);
         Symbol* formal_symbol = class_table.get_symbol(formal_pair.second->get_string());
-        local_object_env.addid(formal_pair.first, formal_symbol);
+        method_local_object_env.addid(formal_pair.first, formal_symbol);
     }
     // std::cerr << "~~~ Before expression check type" << std::endl;
-    Symbol* expr_type = expr->check_type(class_name, local_object_env, class_table);
+    Symbol* expr_type = expr->check_type(class_name, method_local_object_env, class_table);
     // std::cerr << (*expr_type)->get_string() << std::endl;
     // if((*expr_type)->get_string() == SELF_TYPE->get_string()) {
     //     expr_type = class_table.get_self_type_symbol(class_name, local_object_env);
     // }
-    local_object_env.exitscope();
+    method_local_object_env.exitscope();
     // Check T0'(expr_type_symbol) <= T0(return_type)
     Symbol* method_rtn_type = class_table.get_method_rtn_type(class_name, name->get_string());
     // std::cerr << "check for is_sub_class: " << (*expr_type)->get_string() << ", " << (*method_rtn_type)->get_string() << std::endl;

@@ -1,3 +1,7 @@
+Command to run qtspim: 
+
+qtspim -trap_file /usr/stanford_compilers/cool/lib/trap.handler -file /usr/stanford_compilers/cool/examples/hello_world.s
+
 README file for Programming Assignment 5  (C++ edition)
 =======================================================
 

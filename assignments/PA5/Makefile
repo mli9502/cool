@@ -74,4 +74,4 @@ clean-compile:
 
 -include ${CFIL:.cc=.d}
 
-
+# Command to run qtspim: qtspim -trap_file /usr/stanford_compilers/cool/lib/trap.handler -file /usr/stanford_compilers/cool/examples/hello_world.s 

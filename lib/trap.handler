@@ -459,10 +459,10 @@ equality_test:			# ops in $t1 $t2
 				# true in A0, false in A1
 				# assume $t1, $t2 are not equal
 	beq	$t1 $zero _eq_false # $t2 can't also be void   
-	beq     $t2 $zero _eq_false # $t1 can't also be void   
-	lw	$v0 obj_tag($t1)	# get tags
+	beq $t2 $zero _eq_false # $t1 can't also be void   
+	lw	$v0 obj_tag($t1)	# get tags. obj_tag is 0, indicating the first byte of the object is the object tag.
 	lw	$v1 obj_tag($t2)
-	bne	$v1 $v0 _eq_false	# compare tags
+	bne	$v1 $v0 _eq_false	# compare tags # TODO: first check whether these two objects have the same tag.
 	lw	$a2 _int_tag	# load int tag
 	beq	$v1 $a2 _eq_int	# Integers
 	lw	$a2 _bool_tag	# load bool tag
@@ -510,8 +510,8 @@ _eq_false:
 #
 	.globl	_dispatch_abort
 _dispatch_abort:		 
-        sw      $t1 0($sp)       # save line number
-        addiu   $sp $sp -4
+	sw      $t1 0($sp)       # save line number
+	addiu   $sp $sp -4
 	addiu   $a0 $a0 str_field # adjust to beginning of string
 	li      $v0 4
 	syscall                  # print file name
@@ -554,7 +554,7 @@ _case_abort2:
 	la	$a0 _cabort_msg2
 	syscall			 # print case-on-void message
 	li   	$v0 10
-        syscall			 # exit
+	syscall			 # exit
 	
 #
 #
@@ -573,14 +573,14 @@ _case_abort:			# $a0 contains case expression obj.
 	li	$v0 4
 	syscall			# print_str
 	la	$t1 class_nameTab
-	lw	$v0 obj_tag($s0)	# Get object tag
+	lw	$v0 obj_tag($s0)	# Get object tag # TODO: object tag should corresponds to the index of the object name in class_nameTab
 	sll	$v0 $v0 2	# *4
 	addu	$t1 $t1 $v0
 	lw	$t1 0($t1)	# Load class name string obj.
 	addiu	$a0 $t1 str_field # Adjust to beginning of str
 	li	$v0 4		# print_str
 	syscall
-	la	$a0 _nl
+	la	$a0 _nl		# TODO: new line character.
 	li	$v0 4		# print_str
 	syscall
 	li	$v0 10
@@ -777,9 +777,9 @@ IO.in_int:
 	addiu	$sp $sp -4
 	sw	$ra 4($sp)	# save return address
 
-        la      $a0 Int_protObj
-        jal     _quick_copy	# Call copy
-        jal     Int_init
+	la      $a0 Int_protObj
+	jal     _quick_copy	# Call copy
+	jal     Int_init
 
 	addiu	$sp $sp -4
 	sw	$a0 4($sp)	# save new object

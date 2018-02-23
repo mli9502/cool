@@ -101,7 +101,7 @@ str_const1:
 	.word	8
 	.word	String_dispTab
 	.word	int_const6
-	.ascii	"Hello, World.\n"
+	.ascii	"Hello, World.\n" # 8: Number of words (1 word = 4 bytes = 32 bits) of this object. 
 	.byte	0	
 	.align	2
 	.word	-1

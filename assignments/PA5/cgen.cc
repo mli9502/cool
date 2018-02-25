@@ -616,12 +616,23 @@ void CgenClassTable::code_constants()
   code_bools(boolclasstag);
 }
 
+void CgenClassTable::code_class_nameTab() {
+	str << CLASSNAMETAB << LABEL;
+	for(List<CgenNode>* l = nds; l; l = l->tl()) {
+		std::string class_name = l->hd()->get_name()->get_string();
+		StringEntry* class_name_entry = stringtable.lookup_string(const_cast<char*>(class_name.c_str()));
+		str << WORD;
+		class_name_entry->code_ref(str);
+		str << endl;
+	}
+}
+
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
-   stringclasstag = 1 /* Change to your String class tag here */;
-   intclasstag =    2 /* Change to your Int class tag here */;
-   boolclasstag =   3 /* Change to your Bool class tag here */;
+   stringclasstag = 4;
+   intclasstag =    2;
+   boolclasstag =   3;
 
    enterscope();
    if (cgen_debug) cout << "Building CgenClassTable" << endl;
@@ -819,28 +830,30 @@ void CgenNode::set_parentnd(CgenNodeP p)
 
 void CgenClassTable::code()
 {
-  if (cgen_debug) cout << "coding global data" << endl;
-  code_global_data();
+	if (cgen_debug) cout << "coding global data" << endl;
+    code_global_data();
 
-  if (cgen_debug) cout << "choosing gc" << endl;
-  code_select_gc();
+    if (cgen_debug) cout << "choosing gc" << endl;
+    code_select_gc();
 
-  if (cgen_debug) cout << "coding constants" << endl;
-  code_constants();
+    if (cgen_debug) cout << "coding constants" << endl;
+    code_constants();
 
-//                 Add your code to emit
-//                   - prototype objects
-//                   - class_nameTab
-//                   - dispatch tables
-//
+    //                 Add your code to emit
+    //                   - prototype objects
+    //                   - class_nameTab
+    if(cgen_debug) cout << "coding class_nameTab" << endl;
+	code_class_nameTab();
+    //                   - dispatch tables
+    //
 
-  if (cgen_debug) cout << "coding global text" << endl;
-  code_global_text();
+    if (cgen_debug) cout << "coding global text" << endl;
+    code_global_text();
 
-//                 Add your code to emit
-//                   - object initializer
-//                   - the class methods
-//                   - etc...
+    //                 Add your code to emit
+    //                   - object initializer
+    //                   - the class methods
+    //                   - etc...
 
 }
 

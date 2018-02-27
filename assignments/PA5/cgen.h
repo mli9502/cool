@@ -32,7 +32,11 @@ private:
    void code_select_gc();
    void code_constants();
    void code_class_nameTab();
+   // Get all methods (including methods from parents) of the given node.
+   std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node);
+   void code_class_dispTab();
 
+   
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed

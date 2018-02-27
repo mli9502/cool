@@ -41,6 +41,15 @@ void class__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, filename);
 }
 
+std::vector<method_class*> class__class::get_methods() {
+  std::vector<method_class*> rtn;
+  for(int i = 0; i < this->features->len(); i ++) {
+    if(this->features->nth(i)->is_method()) {
+      rtn.push_back(static_cast<method_class*>(this->features->nth(i)));
+    }
+  }
+  return rtn;
+} 
 
 Feature method_class::copy_Feature()
 {

@@ -400,10 +400,7 @@ void StringEntry::code_def(ostream& s, int stringclasstag)
       << WORD << stringclasstag << endl                                 // tag
       << WORD << (DEFAULT_OBJFIELDS + STRING_SLOTS + (len+4)/4) << endl // size
       << WORD;
-
-
- /***** Add dispatch information for class String ******/
-
+	  s << STRINGNAME << DISPTAB_SUFFIX;
       s << endl;                                              // dispatch table
       s << WORD;  lensym->code_ref(s);  s << endl;            // string length
   emit_string_constant(s,str);                                // ascii string
@@ -443,9 +440,7 @@ void IntEntry::code_def(ostream &s, int intclasstag)
       << WORD << intclasstag << endl                      // class tag
       << WORD << (DEFAULT_OBJFIELDS + INT_SLOTS) << endl  // object size
       << WORD; 
-
- /***** Add dispatch information for class Int ******/
-
+	  s << INTNAME << DISPTAB_SUFFIX;
       s << endl;                                          // dispatch table
       s << WORD << str << endl;                           // integer value
 }
@@ -487,9 +482,7 @@ void BoolConst::code_def(ostream& s, int boolclasstag)
       << WORD << boolclasstag << endl                       // class tag
       << WORD << (DEFAULT_OBJFIELDS + BOOL_SLOTS) << endl   // object size
       << WORD;
-
- /***** Add dispatch information for class Bool ******/
-
+	  s << BOOLNAME << DISPTAB_SUFFIX;
       s << endl;                                            // dispatch table
       s << WORD << val << endl;                             // value (0 or 1)
 }
@@ -624,6 +617,31 @@ void CgenClassTable::code_class_nameTab() {
 		str << WORD;
 		class_name_entry->code_ref(str);
 		str << endl;
+	}
+}
+
+void CgenClassTable::code_class_dispTab() {
+	for(List<CgenNode>* l = nds; l; l = l->tl()) {
+		const std::vector<std::pair<CgenNodeP, method_class*>>& class_methods = get_all_methods(l->hd());
+		str << l->hd()->get_name()->get_string() << DISPTAB_SUFFIX << LABEL;
+		for(const auto& class_method_pair : class_methods) {
+			Symbol curr_class_name = class_method_pair.first->get_name();
+			str << WORD << curr_class_name << METHOD_SEP << class_method_pair.second->name << endl;
+		}
+	}
+}
+
+std::vector<std::pair<CgenNodeP, method_class*>> CgenClassTable::get_all_methods(CgenNodeP node) {
+	std::vector<std::pair<CgenNodeP, method_class*>> rtn;
+	for(auto m : node->get_methods()) {
+		rtn.push_back(std::make_pair(node, m));
+	}
+	if(node == root()) {
+		return rtn;
+	} else {
+		auto parent_rtn = get_all_methods(node->get_parentnd());
+		rtn.insert(rtn.begin(), parent_rtn.begin(), parent_rtn.end());
+		return rtn;
 	}
 }
 
@@ -841,11 +859,12 @@ void CgenClassTable::code()
 
     //                 Add your code to emit
     //                   - prototype objects
-    //                   - class_nameTab
+    // class_nameTab
     if(cgen_debug) cout << "coding class_nameTab" << endl;
 	code_class_nameTab();
-    //                   - dispatch tables
-    //
+    // dispatch tables
+	if(cgen_debug) cout << "coding class_dispTab" << endl;
+    code_class_dispTab();
 
     if (cgen_debug) cout << "coding global text" << endl;
     code_global_text();

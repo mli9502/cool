@@ -67,8 +67,7 @@ class method_class;
 Symbol get_name()   { return name; }		       \
 Symbol get_parent() { return parent; }     	       \
 Symbol get_filename() { return filename; }             \
-void dump_with_types(ostream&,int);   \
-std::vector<method_class*> get_methods();                
+void dump_with_types(ostream&,int);           
 
 
 #define Feature_EXTRAS                                        \

@@ -152,6 +152,7 @@ public:
    Symbol parent;
    Features features;
    Symbol filename;
+   unsigned class_tag;
 public:
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
       name = a1;
@@ -161,6 +162,17 @@ public:
    }
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
+
+   template <typename T, bool check>
+   std::vector<T*> get_target_features() {
+        std::vector<T*> rtn;
+        for(int i = 0; i < this->features->len(); i ++) {
+            if(this->features->nth(i)->is_method() == check) {
+                rtn.push_back(static_cast<T*>(this->features->nth(i)));
+            }
+        }
+        return rtn;
+   }
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS

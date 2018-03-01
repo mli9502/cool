@@ -22,6 +22,10 @@
 //
 //**************************************************************
 
+// FIXME: 2/28/2017: <class>_init is only meaningful for classes that assign initial value for attributes.
+// This can be checked by checking the init field of attr_class.
+// Check Main class in arith.s/cl for example.
+
 #include "cgen.h"
 #include "cgen_gc.h"
 
@@ -631,20 +635,46 @@ void CgenClassTable::code_class_dispTab() {
 	}
 }
 
-std::vector<std::pair<CgenNodeP, method_class*>> CgenClassTable::get_all_methods(CgenNodeP node) {
-	std::vector<std::pair<CgenNodeP, method_class*>> rtn;
-	for(auto m : node->get_methods()) {
-		rtn.push_back(std::make_pair(node, m));
-	}
-	if(node == root()) {
-		return rtn;
-	} else {
-		auto parent_rtn = get_all_methods(node->get_parentnd());
-		rtn.insert(rtn.begin(), parent_rtn.begin(), parent_rtn.end());
-		return rtn;
+void CgenClassTable::code_class_protObj() {
+	for(List<CgenNode>* l = nds; l; l = l->tl()) {
+		code_single_class_protObj(l->hd());
 	}
 }
 
+void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
+	// Add -1 eye catcher
+  	str << WORD << "-1" << endl;
+	// Emit <object>_protObj: 
+	emit_protobj_ref(curr_class->get_name(), str); str << LABEL;
+	// Emit class tag.
+	str << WORD << curr_class->class_tag << endl;
+	// Get all attributes and calculate size.
+	unsigned prot_size = DEFAULT_OBJFIELDS; // Base size, containing tag, size and dispatch table.
+	const std::vector<std::pair<CgenNodeP, attr_class*>>& class_attrs = get_all_attrs(curr_class);
+	prot_size += class_attrs.size();
+	// Emit prototype size.
+	str << WORD << prot_size << endl;
+	// Emit dispatch table.
+	str << WORD; emit_disptable_ref(curr_class->get_name(), str); str << endl;
+	// Emit attributes.
+	StringEntryP defaultStringSym = stringtable.add_string("");
+	IntEntryP defaultIntSym = inttable.add_int(0);
+	BoolConst* defaultBoolPtr = &falsebool;
+	for(const auto& class_attr : class_attrs) {
+		const std::string& class_name = class_attr.second->type_decl->get_string();
+		str << WORD;
+		if(class_name == "Int") {
+			defaultIntSym->code_ref(str);
+		} else if(class_name == "String") {
+			defaultStringSym->code_ref(str);
+		} else if(class_name == "Bool") {
+			defaultBoolPtr->code_ref(str);
+		} else {
+			str << 0;
+		}
+		str << endl;
+	}
+}
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
@@ -657,9 +687,30 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
    install_basic_classes();
    install_classes(classes);
    build_inheritance_tree();
-
+   set_class_tags();
    code();
    exitscope();
+}
+
+void CgenClassTable::set_class_tags() {
+	unsigned start_class_tag = 5;
+	for(List<CgenNode>* l = nds; l; l = l->tl()) {
+		std::string class_name = l->hd()->get_name()->get_string();
+		if(class_name == "Object") {
+			l->hd()->class_tag = 0;	
+		} else if(class_name == "IO") {
+			l->hd()->class_tag = 1;
+		} else if(class_name == "Int") {
+			l->hd()->class_tag = intclasstag; // 2
+		} else if(class_name == "Bool") {
+			l->hd()->class_tag = boolclasstag; // 3
+		} else if(class_name == "String") {
+			l->hd()->class_tag = stringclasstag; // 4
+		} else {
+			l->hd()->class_tag = start_class_tag;
+			start_class_tag ++;
+		}
+	}
 }
 
 void CgenClassTable::install_basic_classes()
@@ -865,6 +916,9 @@ void CgenClassTable::code()
     // dispatch tables
 	if(cgen_debug) cout << "coding class_dispTab" << endl;
     code_class_dispTab();
+	// prototype objects
+	if(cgen_debug) cout << "coding class_protObj" << endl;
+	code_class_protObj();
 
     if (cgen_debug) cout << "coding global text" << endl;
     code_global_text();

@@ -396,19 +396,13 @@ label0:
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
-	lw	$a0 12($s0)		# Load the first attribute (a)
+	lw	$a0 12($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	lw	$a0 20($s0)
-	sw	$a0 0($sp)
-	addiu	$sp $sp -4
-	lw	$a0 24($s0)
-	sw	$a0 0($sp)
-	addiu	$sp $sp -4
-	lw	$a0 28($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	move	$a0 $s0
@@ -432,18 +426,18 @@ Main.hello:
 	sw	$ra 8($sp)
 	addiu	$fp $sp 4
 	move	$s0 $a0
-	sw	$s1 0($fp)
-	lw	$s1 32($fp)		# Load a.
-	lw	$a0 28($fp)		# Load b.
+	sw	$s1 0($fp)		# $s1 is callee saved. Which means that if $s1 is used in this method, it has to be restored before return. That's why it is saved here.
+	lw	$s1 24($fp)
+	lw	$a0 20($fp)
 	jal	Object.copy
-	lw	$t2 12($a0)		# Get the int value in Int object a.
-	lw	$t1 12($s1)		# Get the int value in Int object b.
+	lw	$t2 12($a0)
+	lw	$t1 12($s1)
 	add	$t1 $t1 $t2
-	sw	$t1 12($a0)		# Assign.
-	move	$a0 $s0		# Return self.
+	sw	$t1 12($a0)
+	move	$a0 $s0
 	lw	$s1 0($fp)
 	lw	$fp 16($sp)
 	lw	$s0 12($sp)
 	lw	$ra 8($sp)
-	addiu	$sp $sp 36
+	addiu	$sp $sp 28
 	jr	$ra	

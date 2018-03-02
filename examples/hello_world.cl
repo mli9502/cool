@@ -7,10 +7,10 @@ class Main inherits IO {
    main(): SELF_TYPE {
        {
 	out_string("Hello, World.\n");
-    hello(a,b,c,d,e);
+    hello(a,b,c);
        }
    };
-   hello(a : Int, b : Int, c : Int, d : Int, e : Int) : SELF_TYPE { 
+   hello(a : Int, b : Int, c : Int) : SELF_TYPE { 
        {
            a + b;
             self;

@@ -1044,13 +1044,13 @@ heap_start:
 	.globl	Bool_init
 	.globl	Main.main
 Object_init:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
+	addiu	$sp $sp -12		# $sp: Stack pointer
+	sw	$fp 12($sp)			# $fp: Frame pointer
+	sw	$s0 8($sp)			# $s0: Pointer to self
+	sw	$ra 4($sp)			# $ra: Return address
 	addiu	$fp $sp 4
-	move	$s0 $a0
-	move	$a0 $s0
+	move	$s0 $a0			# Set self.
+	move	$a0 $s0			# Return self.
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)

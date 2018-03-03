@@ -54,6 +54,11 @@ private:
   void code_class_dispTab();
   void code_class_protObj();
   void code_single_class_protObj(CgenNode* curr_class);
+
+  void code_caller_activation_record_setup(ostream& os, method_class* target_method);
+  void code_callee_activation_record_setup(ostream& os, method_class* method);
+  void code_callee_activation_record_cleanup(ostream& os, method_class* method);
+
   // Get all methods (including methods from parents) of the given node.
   template <typename T, bool check>
   std::vector<std::pair<CgenNodeP, T*>> get_target_features_helper(CgenNodeP node) {

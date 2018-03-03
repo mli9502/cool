@@ -357,7 +357,35 @@ static void emit_gc_check(char *source, ostream &s)
   if (source != (char*)A1) emit_move(A1, source, s);
   s << JAL << "_gc_check" << endl;
 }
-
+// TODO: Caller side, (which calls target method), set up activation record before calling the target method.
+// TODO: This should be called when generating code for dispatch.
+// TODO: The arguments should be found from environment.
+void CgenClassTable::code_caller_activation_record_setup(ostream& os, method_class* target_method) {
+  
+}
+// TODO: Callee side, (target method), set up of activation record after just entry the target method.
+// TODO: This should be called at the very start of every method.
+void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_class* target_method) {
+  // Setup new $fp.
+  emit_move(FP, SP, os);
+  // Store $ra at 0($sp). And advance $sp.
+  emit_store(RA, 0, SP, os);
+  emit_addiu(SP, SP, -4, os);
+}
+// TODO: Callee side, (target method), clean up stack after finish and return. 
+// TODO: This should be called after method return values is stored in $a0.
+void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, method_class* target_method) {
+  // Restore $ra.
+  emit_load(RA, 4, SP, os);
+  unsigned arg_count = target_method->formals->len();
+  unsigned offset = 4 * (2 + arg_count);
+  // Pop $ra, old $fp and all the argume nts out of stack.
+  emit_addiu(SP, SP, offset, os);
+  // Restore old $fp (which is now at 0($sp)).
+  emit_load(FP, 0, SP, os);
+  // Return.
+  emit_return(os);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //

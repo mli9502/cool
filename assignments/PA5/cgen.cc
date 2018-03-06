@@ -371,6 +371,7 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_cla
   // Store $ra at 0($sp). And advance $sp.
   emit_store(RA, 0, SP, os);
   emit_addiu(SP, SP, -4, os);
+  // FIXME: Set $s1 for keeping record of let variables.
 }
 // TODO: Callee side, (target method), clean up stack after finish and return. 
 // TODO: This should be called after method return values is stored in $a0.
@@ -990,6 +991,8 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //   constant integers, strings, and booleans are provided.
 //
 //*****************************************************************
+
+// TODO: Need to add environment, store and self as parameters.
 
 void assign_class::code(ostream &s) {
 }

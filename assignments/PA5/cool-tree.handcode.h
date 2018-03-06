@@ -47,19 +47,22 @@ typedef Cases_class *Cases;
 
 #define Program_EXTRAS                          \
 virtual void cgen(ostream&) = 0;		\
-virtual void dump_with_types(ostream&, int) = 0; 
+virtual void dump_with_types(ostream&, int) = 0; \
+virtual int count_max_let_vars() = 0;
 
 
 
 #define program_EXTRAS                          \
 void cgen(ostream&);     			\
-void dump_with_types(ostream&, int);            
+void dump_with_types(ostream&, int); \
+int count_max_let_vars();     
 
 #define Class__EXTRAS                   \
 virtual Symbol get_name() = 0;  	\
 virtual Symbol get_parent() = 0;    	\
 virtual Symbol get_filename() = 0;      \
-virtual void dump_with_types(ostream&,int) = 0; 
+virtual void dump_with_types(ostream&,int) = 0; \
+virtual int count_max_let_vars() = 0;
 
 class method_class;
 
@@ -67,32 +70,39 @@ class method_class;
 Symbol get_name()   { return name; }		       \
 Symbol get_parent() { return parent; }     	       \
 Symbol get_filename() { return filename; }             \
-void dump_with_types(ostream&,int);           
+void dump_with_types(ostream&,int);    \
+int count_max_let_vars();       
 
 
 #define Feature_EXTRAS                                        \
 virtual void dump_with_types(ostream&,int) = 0; \
-virtual bool is_method() = 0;
+virtual bool is_method() = 0;	\
+virtual int count_max_let_vars() = 0;
 
 
 #define Feature_SHARED_EXTRAS                                       \
-void dump_with_types(ostream&,int);	
+void dump_with_types(ostream&,int);	\
+int count_max_let_vars();
 
 
 #define Formal_EXTRAS                              \
-virtual void dump_with_types(ostream&,int) = 0;
+virtual void dump_with_types(ostream&,int) = 0;	\
+virtual int count_max_let_vars() = 0;
 
 
 #define formal_EXTRAS                           \
-void dump_with_types(ostream&,int);
+void dump_with_types(ostream&,int);	\
+int count_max_let_vars();
 
 
 #define Case_EXTRAS                             \
-virtual void dump_with_types(ostream& ,int) = 0;
+virtual void dump_with_types(ostream& ,int) = 0; \
+virtual int count_max_let_vars() = 0;
 
 
 #define branch_EXTRAS                                   \
-void dump_with_types(ostream& ,int);
+void dump_with_types(ostream& ,int); 	\
+int count_max_let_vars();
 
 
 #define Expression_EXTRAS                    \
@@ -101,11 +111,13 @@ Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
 virtual void code(ostream&) = 0; \
 virtual void dump_with_types(ostream&,int) = 0;  \
+virtual int count_max_let_vars() = 0; \
 void dump_type(ostream&, int);               \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \
 void code(ostream&); 			   \
+int count_max_let_vars();	\
 void dump_with_types(ostream&,int); 
 
 

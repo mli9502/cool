@@ -23,10 +23,26 @@ class A {
 
    method2(num1 : Int, num2 : Int) : B {  -- plus
       (let x : Int in
-	 {
-            x <- num1 + num2;
-	    (new B).set_var(x);
-	 }
+       {
+            let y : Int in {
+                let a : Int in {
+                    let b : Int in {
+                        let c : Int in {
+                            let d : Int in {
+                                let e : Int in {
+                                    let f : Int in {
+                                        let g : Int in {
+                                            x <- num1 + num2;
+                                            (new B).set_var(x);
+                                        };
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+       }
       )
    };
 

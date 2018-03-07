@@ -372,16 +372,28 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_cla
   emit_store(RA, 0, SP, os);
   emit_addiu(SP, SP, -4, os);
   // FIXME: Set $s1 for keeping record of let variables.
+  // Get let variables in target method.
+  int let_var_count = target_method->count_max_let_vars();
+  // Set $s1 to point to the start of let tmp variables.
+  emit_move(S1, SP, os);
+  // Allocate space for let tmp vars on stack.
+  emit_addiu(SP, SP, -4 * let_var_count, os);
 }
 // TODO: Callee side, (target method), clean up stack after finish and return. 
 // TODO: This should be called after method return values is stored in $a0.
 void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, method_class* target_method) {
+  int let_var_count = target_method->count_max_let_vars();
+  // Pop tmp let vars out of stack.
+  emit_addiu(SP, SP, 4 * let_var_count, os);
   // Restore $ra.
   emit_load(RA, 4, SP, os);
   unsigned arg_count = target_method->formals->len();
   unsigned offset = 4 * (2 + arg_count);
-  // Pop $ra, old $fp and all the argume nts out of stack.
+  // Pop $ra, old $s1, and all the argume nts out of stack.
   emit_addiu(SP, SP, offset, os);
+  // Restore $s1 and pop it.
+  emit_load(S1, 0, SP, os);
+  emit_addiu(SP, SP, 4, os);
   // Restore old $fp (which is now at 0($sp)).
   emit_load(FP, 0, SP, os);
   // Return.

@@ -35,11 +35,17 @@ public:
 
 class CgenClassTable : public SymbolTable<Symbol,CgenNode> {
 private:
-   List<CgenNode> *nds;
-   ostream& str;
-   int stringclasstag;
-   int intclasstag;
-   int boolclasstag;
+  List<CgenNode> *nds;
+  ostream& str;
+  int stringclasstag;
+  int intclasstag;
+  int boolclasstag;
+  /*
+  Key: variable name.
+  Value: val.first: Register name.
+          val.second: offset.
+  */
+  SymbolTable<std::string, std::pair<std::string, int>> environment;
 
 
 // The following methods emit code for
@@ -58,6 +64,8 @@ private:
   void code_caller_activation_record_setup(ostream& os, method_class* target_method);
   void code_callee_activation_record_setup(ostream& os, method_class* method);
   void code_callee_activation_record_cleanup(ostream& os, method_class* method);
+
+  void disp_count_let_vars();
 
   // Get all methods (including methods from parents) of the given node.
   template <typename T, bool check>
@@ -81,8 +89,6 @@ private:
     return this->get_target_features_helper<attr_class, false>(node);
   }
 
-
-   
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
 // a tree of `CgenNode', and class names are placed

@@ -682,6 +682,12 @@ void CgenClassTable::code_class_protObj() {
 	}
 }
 
+void CgenClassTable::disp_count_let_vars() {
+  for(List<CgenNode>* l = nds; l; l = l->tl()) {
+    std::cout << l->hd()->name << ": " << l->hd()->count_max_let_vars() << std::endl;
+  }
+}
+
 void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
 	// Add -1 eye catcher
   	str << WORD << "-1" << endl;
@@ -955,15 +961,21 @@ void CgenClassTable::code()
     if(cgen_debug) cout << "coding class_nameTab" << endl;
 	code_class_nameTab();
     // dispatch tables
-	if(cgen_debug) cout << "coding class_dispTab" << endl;
-    code_class_dispTab();
-	// prototype objects
-	if(cgen_debug) cout << "coding class_protObj" << endl;
-	code_class_protObj();
+    if(cgen_debug) cout << "coding class_dispTab" << endl;
+      code_class_dispTab();
+    // prototype objects
+    if(cgen_debug) cout << "coding class_protObj" << endl;
+    code_class_protObj();
 
     if (cgen_debug) cout << "coding global text" << endl;
     code_global_text();
 
+// FIXME: Comment this out latter.
+#if 0
+    std::cout << "let var count for each class..." << endl;
+    disp_count_let_vars();
+#endif
+    
     //                 Add your code to emit
     //                   - object initializer
     //                   - the class methods

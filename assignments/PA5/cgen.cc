@@ -360,12 +360,12 @@ static void emit_gc_check(char *source, ostream &s)
 // TODO: Caller side, (which calls target method), set up activation record before calling the target method.
 // TODO: This should be called when generating code for dispatch.
 // TODO: The arguments should be found from environment.
-void CgenClassTable::code_caller_activation_record_setup(ostream& os, method_class* target_method) {
+void method_class::code_caller_activation_record_setup(ostream& os, method_class* target_method) {
   
 }
 // TODO: Callee side, (target method), set up of activation record after just entry the target method.
 // TODO: This should be called at the very start of every method.
-void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_class* target_method) {
+void method_class::code_callee_activation_record_setup(ostream& os) {
   // Setup new $fp.
   emit_move(FP, SP, os);
   // Store $ra at 0($sp). And advance $sp.
@@ -373,7 +373,7 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_cla
   emit_addiu(SP, SP, -4, os);
   // FIXME: Set $s1 for keeping record of let variables.
   // Get let variables in target method.
-  int let_var_count = target_method->count_max_let_vars();
+  int let_var_count = this->count_max_let_vars();
   // Set $s1 to point to the start of let tmp variables.
   emit_move(S1, SP, os);
   // Allocate space for let tmp vars on stack.
@@ -381,13 +381,13 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os, method_cla
 }
 // TODO: Callee side, (target method), clean up stack after finish and return. 
 // TODO: This should be called after method return values is stored in $a0.
-void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, method_class* target_method) {
-  int let_var_count = target_method->count_max_let_vars();
+void method_class::code_callee_activation_record_cleanup(ostream& os) {
+  int let_var_count = this->count_max_let_vars();
   // Pop tmp let vars out of stack.
   emit_addiu(SP, SP, 4 * let_var_count, os);
   // Restore $ra.
   emit_load(RA, 4, SP, os);
-  unsigned arg_count = target_method->formals->len();
+  unsigned arg_count = this->formals->len();
   unsigned offset = 4 * (2 + arg_count);
   // Pop $ra, old $s1, and all the argume nts out of stack.
   emit_addiu(SP, SP, offset, os);
@@ -959,10 +959,10 @@ void CgenClassTable::code()
     //                   - prototype objects
     // class_nameTab
     if(cgen_debug) cout << "coding class_nameTab" << endl;
-	code_class_nameTab();
+    code_class_nameTab();
     // dispatch tables
     if(cgen_debug) cout << "coding class_dispTab" << endl;
-      code_class_dispTab();
+    code_class_dispTab();
     // prototype objects
     if(cgen_debug) cout << "coding class_protObj" << endl;
     code_class_protObj();
@@ -975,7 +975,10 @@ void CgenClassTable::code()
     std::cout << "let var count for each class..." << endl;
     disp_count_let_vars();
 #endif
-    
+    // TODO: Code init. 
+    // In order to code init, need code for expression and assign expression.
+    // Code methods for classes.
+
     //                 Add your code to emit
     //                   - object initializer
     //                   - the class methods
@@ -1017,6 +1020,21 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //*****************************************************************
 
 // TODO: Need to add environment, store and self as parameters.
+
+void method_class::code(ostream& os, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
+  // This needs to be passed down to expression.
+  // After entering let_expression, increase curr_let_used.
+  // Before exiting let_expression, decrease curr_let_used.
+  // To get the location of the let var for the current let expression, use (4 * curr_let_used)($s1)
+  int curr_let_used = 0;
+  // Setup activation record after method activation.
+  this->code_callee_activation_record_setup(os);
+
+  this->code_callee_activation_record_cleanup(os);
+}
 
 void assign_class::code(ostream &s) {
 }

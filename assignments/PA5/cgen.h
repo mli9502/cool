@@ -8,6 +8,19 @@ enum Basicness     {Basic, NotBasic};
 #define TRUE 1
 #define FALSE 0
 
+class MemAddr;
+bool operator==(const MemAddr& lhs, const MemAddr& rhs);
+
+class MemAddr {
+public:
+  std::string reg_name;
+  int offset;
+};
+
+bool operator==(const MemAddr& lhs, const MemAddr& rhs) {
+  return (lhs.reg_name == rhs.reg_name) && (lhs.offset == rhs.offset);
+}
+
 class CgenClassTable;
 typedef CgenClassTable *CgenClassTableP;
 
@@ -42,10 +55,16 @@ private:
   int boolclasstag;
   /*
   Key: variable name.
-  Value: val.first: Register name.
-          val.second: offset.
+  Val: MemAddr
   */
-  SymbolTable<std::string, std::pair<std::string, int>> environment;
+  SymbolTable<std::string, MemAddr> environment;
+  /*
+  Key: MemAddr
+  Val: Name of the object in the location specified by key.
+  */
+  SymbolTable<MemAddr, std::string> store;
+  // Class name of the current self object.
+  std::string self_class_name;
 
 
 // The following methods emit code for
@@ -60,10 +79,6 @@ private:
   void code_class_dispTab();
   void code_class_protObj();
   void code_single_class_protObj(CgenNode* curr_class);
-
-  void code_caller_activation_record_setup(ostream& os, method_class* target_method);
-  void code_callee_activation_record_setup(ostream& os, method_class* method);
-  void code_callee_activation_record_cleanup(ostream& os, method_class* method);
 
   void disp_count_let_vars();
 

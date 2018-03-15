@@ -1028,7 +1028,7 @@ void method_class::code(ostream& os,
   // This needs to be passed down to expression.
   // After entering let_expression, increase curr_let_used.
   // Before exiting let_expression, decrease curr_let_used.
-  // To get the location of the let var for the current let expression, use (4 * curr_let_used)($s1)
+  // To get the location of the let var for the current let expression, use (4 * curr_let_used)($s1).
   int curr_let_used = 0;
   // Setup activation record after method activation.
   this->code_callee_activation_record_setup(os);

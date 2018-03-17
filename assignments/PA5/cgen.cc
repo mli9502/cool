@@ -1032,7 +1032,6 @@ void method_class::code(ostream& os,
   int curr_let_used = 0;
   // Setup activation record after method activation.
   this->code_callee_activation_record_setup(os);
-
   this->code_callee_activation_record_cleanup(os);
 }
 

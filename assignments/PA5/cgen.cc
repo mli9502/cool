@@ -368,8 +368,11 @@ void method_class::code_caller_activation_record_setup(ostream& os, method_class
 void method_class::code_callee_activation_record_setup(ostream& os) {
   // Setup new $fp.
   emit_move(FP, SP, os);
-  // Store $ra at 0($sp). And advance $sp.
+  // Store $ra at 0($sp), and advance $sp.
   emit_store(RA, 0, SP, os);
+  emit_addiu(SP, SP, -4, os);
+  // Store $s0 at 0($sp), and advance $sp.
+  emit_store(SELF, 0, SP, os);
   emit_addiu(SP, SP, -4, os);
   // FIXME: Set $s1 for keeping record of let variables.
   // Get let variables in target method.
@@ -385,6 +388,9 @@ void method_class::code_callee_activation_record_cleanup(ostream& os) {
   int let_var_count = this->count_max_let_vars();
   // Pop tmp let vars out of stack.
   emit_addiu(SP, SP, 4 * let_var_count, os);
+  // Restore and pop $s0.
+  emit_load(SELF, 4, SP, os);
+  emit_addiu(SP, SP, 4, os);
   // Restore $ra.
   emit_load(RA, 4, SP, os);
   unsigned arg_count = this->formals->len();
@@ -681,6 +687,21 @@ void CgenClassTable::code_class_protObj() {
 		code_single_class_protObj(l->hd());
 	}
 }
+// emit method code for only the current class. 
+// this method will not emit code for parent classes of curr_class.
+void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
+  for(auto& m : curr_class->get_target_features<method_class, true>()) {
+    std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
+    str << method_tag << LABEL;
+    m->code(str, environment, store, self_class_name);
+  }
+}
+
+void CgenClassTable::code_class_methods() {
+  for(List<CgenNode>* l = nds; l; l = l->tl()) {
+    code_single_class_methods(l->hd());
+  }
+}
 
 void CgenClassTable::disp_count_let_vars() {
   for(List<CgenNode>* l = nds; l; l = l->tl()) {
@@ -690,7 +711,7 @@ void CgenClassTable::disp_count_let_vars() {
 
 void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
 	// Add -1 eye catcher
-  	str << WORD << "-1" << endl;
+  str << WORD << "-1" << endl;
 	// Emit <object>_protObj: 
 	emit_protobj_ref(curr_class->get_name(), str); str << LABEL;
 	// Emit class tag.
@@ -966,8 +987,8 @@ void CgenClassTable::code()
     // prototype objects
     if(cgen_debug) cout << "coding class_protObj" << endl;
     code_class_protObj();
-
-    if (cgen_debug) cout << "coding global text" << endl;
+    
+    if(cgen_debug) cout << "coding global text" << endl;
     code_global_text();
 
 // FIXME: Comment this out latter.
@@ -978,7 +999,11 @@ void CgenClassTable::code()
     // TODO: Code init. 
     // In order to code init, need code for expression and assign expression.
     // Code methods for classes.
-
+    // TODO: Code all the methods.
+    if(cgen_debug) {
+      cout << "coding methods for classes" << endl;
+      code_class_methods();
+    }
     //                 Add your code to emit
     //                   - object initializer
     //                   - the class methods
@@ -1032,6 +1057,7 @@ void method_class::code(ostream& os,
   int curr_let_used = 0;
   // Setup activation record after method activation.
   this->code_callee_activation_record_setup(os);
+  // TODO: Generate code for all the expressions.
   this->code_callee_activation_record_cleanup(os);
 }
 

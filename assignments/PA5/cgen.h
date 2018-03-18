@@ -79,6 +79,8 @@ private:
   void code_class_dispTab();
   void code_class_protObj();
   void code_single_class_protObj(CgenNode* curr_class);
+  void code_class_methods();
+  void code_single_class_methods(CgenNode* curr_class);
 
   void disp_count_let_vars();
 

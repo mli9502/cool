@@ -374,7 +374,7 @@ void method_class::code_callee_activation_record_setup(ostream& os) {
   // Store $s0 at 0($sp), and advance $sp.
   emit_store(SELF, 0, SP, os);
   emit_addiu(SP, SP, -4, os);
-  // FIXME: Set $s1 for keeping record of let variables.
+  // Set $s1 for keeping record of let variables.
   // Get let variables in target method.
   int let_var_count = this->count_max_let_vars();
   // Set $s1 to point to the start of let tmp variables.
@@ -1061,85 +1061,154 @@ void method_class::code(ostream& os,
   this->code_callee_activation_record_cleanup(os);
 }
 
-void assign_class::code(ostream &s) {
+void assign_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void static_dispatch_class::code(ostream &s) {
+void static_dispatch_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void dispatch_class::code(ostream &s) {
+void dispatch_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void cond_class::code(ostream &s) {
+void cond_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void loop_class::code(ostream &s) {
+void loop_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void typcase_class::code(ostream &s) {
+void typcase_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void block_class::code(ostream &s) {
+void block_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void let_class::code(ostream &s) {
+void let_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void plus_class::code(ostream &s) {
+void plus_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void sub_class::code(ostream &s) {
+void sub_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void mul_class::code(ostream &s) {
+void mul_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void divide_class::code(ostream &s) {
+void divide_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void neg_class::code(ostream &s) {
+void neg_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void lt_class::code(ostream &s) {
+void lt_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void eq_class::code(ostream &s) {
+void eq_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void leq_class::code(ostream &s) {
+void leq_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void comp_class::code(ostream &s) {
+void comp_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void int_const_class::code(ostream& s)  
-{
+void int_const_class::code(ostream& s , 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
   //
   // Need to be sure we have an IntEntry *, not an arbitrary Symbol
   //
   emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
 }
 
-void string_const_class::code(ostream& s)
-{
+void string_const_class::code(ostream& s , 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
 }
 
-void bool_const_class::code(ostream& s)
-{
+void bool_const_class::code(ostream& s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
   emit_load_bool(ACC, BoolConst(val), s);
 }
 
-void new__class::code(ostream &s) {
+void new__class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void isvoid_class::code(ostream &s) {
+void isvoid_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void no_expr_class::code(ostream &s) {
+void no_expr_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
-void object_class::code(ostream &s) {
+void object_class::code(ostream &s, 
+                          SymbolTable<std::string, MemAddr>& env, 
+                          SymbolTable<MemAddr, std::string>& store, 
+                          std::string& self) {
 }
 
 

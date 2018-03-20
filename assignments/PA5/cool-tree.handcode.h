@@ -104,19 +104,23 @@ virtual int count_max_let_vars() = 0;
 void dump_with_types(ostream& ,int); 	\
 int count_max_let_vars();
 
+template<typename TKey, typename TVal>
+class SymbolTable;
+
+class MemAddr;
 
 #define Expression_EXTRAS                    \
 Symbol type;                                 \
 Symbol get_type() { return type; }           \
 Expression set_type(Symbol s) { type = s; return this; } \
-virtual void code(ostream&) = 0; \
+virtual void code(ostream&, SymbolTable<std::string, MemAddr>& env, SymbolTable<MemAddr, std::string>& store, std::string& self) = 0;  \
 virtual void dump_with_types(ostream&,int) = 0;  \
 virtual int count_max_let_vars() = 0; \
 void dump_type(ostream&, int);               \
 Expression_class() { type = (Symbol) NULL; }
 
 #define Expression_SHARED_EXTRAS           \
-void code(ostream&); 			   \
+void code(ostream&, SymbolTable<std::string, MemAddr>& env, SymbolTable<MemAddr, std::string>& store, std::string& self); 			   \
 int count_max_let_vars();	\
 void dump_with_types(ostream&,int); 
 

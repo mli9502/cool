@@ -693,7 +693,7 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   for(auto& m : curr_class->get_target_features<method_class, true>()) {
     std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
     str << method_tag << LABEL;
-    m->code(str, environment, store, self_class_name);
+    m->code(str, *this);
   }
 }
 
@@ -1046,10 +1046,7 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 
 // TODO: Need to add environment, store and self as parameters.
 
-void method_class::code(ostream& os, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   // This needs to be passed down to expression.
   // After entering let_expression, increase curr_let_used.
   // Before exiting let_expression, decrease curr_let_used.
@@ -1061,154 +1058,97 @@ void method_class::code(ostream& os,
   this->code_callee_activation_record_cleanup(os);
 }
 
-void assign_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void static_dispatch_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void dispatch_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void cond_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void loop_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void typcase_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void block_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void let_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void plus_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void sub_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void mul_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void mul_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void divide_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void neg_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void lt_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void eq_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void leq_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void comp_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void int_const_class::code(ostream& s , 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void int_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   //
   // Need to be sure we have an IntEntry *, not an arbitrary Symbol
   //
   emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
 }
 
-void string_const_class::code(ostream& s , 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void string_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
 }
 
-void bool_const_class::code(ostream& s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void bool_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   emit_load_bool(ACC, BoolConst(val), s);
 }
 
-void new__class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  Symbol t0 = this->type_name;
+  if(t0->get_string() == SELF_TYPE->get_string()) {
+    t0 = cgenClassTable.self_class;
+  }
+  // Load <class>_protObj into $a0.
+  std::string class_protObj_name = t0->get_string() + std::string(PROTOBJ_SUFFIX);
+  emit_load_address(ACC, (char*)(class_protObj_name.c_str()), s);
+  // Call Object.copy.
+  emit_jal("Object.copy", s);
+  // Call <class>_init.
+  std::string class_init_name = t0->get_string() + std::string(CLASSINIT_SUFFIX);
+  emit_jal((char*)class_init_name.c_str(), s);
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = t0->get_string();
 }
 
-void isvoid_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void no_expr_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void object_class::code(ostream &s, 
-                          SymbolTable<std::string, MemAddr>& env, 
-                          SymbolTable<MemAddr, std::string>& store, 
-                          std::string& self) {
+void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 

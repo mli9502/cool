@@ -200,10 +200,7 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
    bool is_method() { return true; }
-   void code(ostream& os, 
-                SymbolTable<std::string, MemAddr>& env, 
-                SymbolTable<MemAddr, std::string>& store, 
-                std::string& self);
+   void code(ostream& os, CgenClassTable& cgenClassTable);
     void code_caller_activation_record_setup(ostream& os, method_class* target_method);
     void code_callee_activation_record_setup(ostream& os);
     void code_callee_activation_record_cleanup(ostream& os);

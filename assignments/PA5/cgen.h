@@ -15,6 +15,14 @@ class MemAddr {
 public:
   std::string reg_name;
   int offset;
+  MemAddr(const std::string& reg) {
+    reg_name = reg;
+    offset = 0;
+  }
+  MemAddr(const std::string& reg, int offset) {
+    reg_name = reg;
+    this->offset = offset;
+  }
 };
 
 bool operator==(const MemAddr& lhs, const MemAddr& rhs) {
@@ -53,19 +61,6 @@ private:
   int stringclasstag;
   int intclasstag;
   int boolclasstag;
-  /*
-  Key: variable name.
-  Val: MemAddr
-  */
-  SymbolTable<std::string, MemAddr> environment;
-  /*
-  Key: MemAddr
-  Val: Name of the object in the location specified by key.
-  */
-  SymbolTable<MemAddr, std::string> store;
-  // Class name of the current self object.
-  std::string self_class_name;
-
 
 // The following methods emit code for
 // constants and global declarations.
@@ -99,12 +94,6 @@ private:
       return rtn;
     }
   }
-  std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node) {
-    return this->get_target_features_helper<method_class, true>(node);
-  }
-  std::vector<std::pair<CgenNodeP, attr_class*>> get_all_attrs(CgenNodeP node) {
-    return this->get_target_features_helper<attr_class, false>(node);
-  }
 
 // The following creates an inheritance graph from
 // a list of classes.  The graph is implemented as
@@ -118,9 +107,27 @@ private:
    void set_relations(CgenNodeP nd);
    void set_class_tags();
 public:
-   CgenClassTable(Classes, ostream& str);
-   void code();
-   CgenNodeP root();
+    CgenClassTable(Classes, ostream& str);
+    void code();
+    CgenNodeP root();
+    std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node) {
+      return this->get_target_features_helper<method_class, true>(node);
+    }
+    std::vector<std::pair<CgenNodeP, attr_class*>> get_all_attrs(CgenNodeP node) {
+      return this->get_target_features_helper<attr_class, false>(node);
+    }
+     /*
+    Key: variable name.
+    Val: MemAddr
+    */
+    SymbolTable<std::string, MemAddr> environment;
+    /*
+    Key: MemAddr
+    Val: Name of the object in the location specified by key.
+    */
+    SymbolTable<MemAddr, std::string> store;
+    // Class name of the current self object.
+    Symbol self_class;
 };
 
 class BoolConst 

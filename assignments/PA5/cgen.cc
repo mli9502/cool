@@ -1044,8 +1044,7 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //
 //*****************************************************************
 
-// TODO: Need to add environment, store and self as parameters.
-
+// TODO: Need to add a member in CgenClassTable, to keep track of the count for labels.
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   // This needs to be passed down to expression.
   // After entering let_expression, increase curr_let_used.
@@ -1059,6 +1058,16 @@ void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
 }
 
 void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Gen code for expression. Result should be in ACC.
+  expr->code(s, cgenClassTable);
+  // Get the location of id from environment and value from ACC.
+  MemAddr* addr_ptr = cgenClassTable.environment.lookup(this->name->get_string());
+  // Get the value from ACC.
+  std::string* val = cgenClassTable.store.lookup(MemAddr(ACC, 0));
+  // Update value at addr_ptr in store.
+  *(cgenClassTable.store.lookup(*addr_ptr)) = *val;
+  // emit store.
+  emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1068,6 +1077,8 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // TODO: Work on this next.
+  // TODO: This need to use and update the lable count.
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {

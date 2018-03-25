@@ -26,6 +26,8 @@
 // This can be checked by checking the init field of attr_class.
 // Check Main class in arith.s/cl for example.
 
+#include <string>
+
 #include "cgen.h"
 #include "cgen_gc.h"
 
@@ -261,11 +263,19 @@ static void emit_label_def(int l, ostream &s)
   s << ":" << endl;
 }
 
+static void emit_label_def(std::string l, ostream& s) {
+  s << l << ":" << endl;
+}
+
 static void emit_beqz(char *source, int label, ostream &s)
 {
   s << BEQZ << source << " ";
   emit_label_ref(label,s);
   s << endl;
+}
+
+static void emit_beqz(char* source, std::string label, ostream& s) {
+  s << BEQZ << source << " " << label << endl;
 }
 
 static void emit_beq(char *src1, char *src2, int label, ostream &s)
@@ -315,6 +325,10 @@ static void emit_branch(int l, ostream& s)
   s << BRANCH;
   emit_label_ref(l,s);
   s << endl;
+}
+
+static void emit_branch(const std::string& l, ostream& s) {
+  s << BRANCH << l << endl;
 }
 
 //
@@ -1071,14 +1085,41 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // TODO: Finish this 3/25/2018.
 }
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // TODO: Finish this 3/25/2018.
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Work on this next.
-  // TODO: This need to use and update the lable count.
+  std::string true_tag = "cond_true_" + cgenClassTable.tag_cnt;
+  cgenClassTable.tag_cnt ++;
+  std::string false_tag = "cond_false_" + cgenClassTable.tag_cnt;
+  cgenClassTable.tag_cnt ++;
+  std::string finish_tag = "cond_finish_" + cgenClassTable.tag_cnt;
+  cgenClassTable.tag_cnt ++;
+  // Gen code for compare.
+  pred->code(s, cgenClassTable);
+  // Move prediction result to $t1.
+  emit_move(T1, ACC, s);
+  // Load the 1/0 from the bool object in $t1.
+  emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
+  // Jump to false_tag if 0.
+  emit_beqz(T1, false_tag, s);
+  // Gen code for true tag.
+  emit_label_def(true_tag, s);
+  then_exp->code(s, cgenClassTable);
+  // Jump to finish_tag after true branch finsh.
+  emit_branch(finish_tag, s);
+  // Gen code for false tag.
+  emit_label_def(false_tag, s);
+  else_exp->code(s, cgenClassTable);
+  // Finish tag. The result should be in ACC.
+  emit_label_def(finish_tag, s);
+  // Need to update store with the result of if statement.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = this->type->get_string();
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1093,7 +1134,7 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+void plus_class::code(o/stream &s, CgenClassTable& cgenClassTable) {
 }
 
 void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {

@@ -128,6 +128,8 @@ public:
     SymbolTable<MemAddr, std::string> store;
     // Class name of the current self object.
     Symbol self_class;
+    // count for tag.
+    int tag_cnt;
 };
 
 class BoolConst 

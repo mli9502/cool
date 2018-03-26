@@ -385,9 +385,6 @@ void method_class::code_callee_activation_record_setup(ostream& os) {
   // Store $ra at 0($sp), and advance $sp.
   emit_store(RA, 0, SP, os);
   emit_addiu(SP, SP, -4, os);
-  // Store $s0 at 0($sp), and advance $sp.
-  emit_store(SELF, 0, SP, os);
-  emit_addiu(SP, SP, -4, os);
   // Set $s1 for keeping record of let variables.
   // Get let variables in target method.
   int let_var_count = this->count_max_let_vars();
@@ -413,6 +410,9 @@ void method_class::code_callee_activation_record_cleanup(ostream& os) {
   emit_addiu(SP, SP, offset, os);
   // Restore $s1 and pop it.
   emit_load(S1, 0, SP, os);
+  emit_addiu(SP, SP, 4, os);
+  // Restore $s0 and pop it.
+  emit_load(SELF, 0, SP, os);
   emit_addiu(SP, SP, 4, os);
   // Restore old $fp (which is now at 0($sp)).
   emit_load(FP, 0, SP, os);
@@ -1084,12 +1084,83 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
 }
 
+void CgenClassTable::code_caller_activation_record_setup_start(ostream& s, int arg_cnt) {
+  // Save $fp at 0($sp), and advance $sp.
+  emit_store(FP, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Save $s0 at 0($sp), and advance $sp.
+  emit_store(SELF, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Save $s1 at 0($sp), and advance $sp.
+  emit_store(S1, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Advance $sp for saving args.
+  emit_addiu(SP, SP, -4 * arg_cnt, s);
+}
+
+void CgenClassTable::code_caller_activation_record_arg_setup(ostream& s, int offset) {
+  emit_store(ACC, offset, SP, s);
+}
+
+int CgenClassTable::get_method_offset(const std::string& class_name, const std::string& method_name) {
+  CgenNodeP class_node = get_cgen_node_from_class_name(class_name);
+  auto class_methods = get_all_methods(class_node);
+  // Start from the target class and going backwards.
+  unsigned start_idx = class_methods.size() - 1;
+  while(start_idx >= 0 && class_methods[start_idx].first->name->get_string() != class_name) {
+    start_idx --;
+  }
+  assert(start_idx < 0);
+  // Start from startIdx, find the first method with the given method_name.
+  while(start_idx >= 0 && class_methods[start_idx].second->name->get_string() != method_name) {
+    start_idx --;
+  }
+  assert(start_idx < 0);
+  return start_idx;
+}
+
+CgenNodeP CgenClassTable::get_cgen_node_from_class_name(const std::string& class_name) {
+  for(List<CgenNode> *l = nds; l; l = l->tl()) {
+    if(l->hd()->name->get_string() == class_name) {
+      return l->hd();
+    }
+  }
+  std::cerr << class_name << " is not found! This is not correct..." << std::endl;
+  return nullptr;
+}
+
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Finish this 3/25/2018.
 }
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Finish this 3/25/2018.
+  // Set up activation record.
+  cgenClassTable.code_caller_activation_record_setup_start(s, actual->len());
+  // Gen code for e1 through en.
+  for(int i = 0; i < actual->len(); i ++) {
+    actual->nth(i)->code(s, cgenClassTable);
+    // Setup activation record.
+    cgenClassTable.code_caller_activation_record_arg_setup(s, i + 1);
+  }
+  // Gen code for e0.
+  expr->code(s, cgenClassTable);
+  // Move ACC to SELF.
+  emit_move(SELF, ACC, s);
+  // Load dispatch table to $t1.
+  emit_load(T1, DISPTABLE_OFFSET, ACC, s);
+  // Get the class name stored in ACC.
+  std::string* class_name = cgenClassTable.store.lookup(MemAddr(ACC, 0));
+  // Get method offset.
+  int method_offset = cgenClassTable.get_method_offset(*class_name, name->get_string());
+  // Load method tag into $t1.
+  emit_load(T1, method_offset, T1, s);
+  // Jump to method.
+  // FIXME: May need to update store for ACC ???
+  emit_jalr(T1, s);
+  // FIXME: At the start of code for each method, need to update environment!
+  // All the class attributes can be referenced by offset of SELF.
+  // All the actual parameters can be referenced by offset of FP.
+  // Dispath will not update environment because it does not actually gen code for method.
+  // Also, dispatch does not need to restore $s0, $s1, $ra and $fp because these are restored by callee at the end.
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1134,7 +1205,7 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
-void plus_class::code(o/stream &s, CgenClassTable& cgenClassTable) {
+void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {

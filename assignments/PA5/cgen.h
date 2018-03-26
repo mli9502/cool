@@ -76,10 +76,10 @@ private:
   void code_single_class_protObj(CgenNode* curr_class);
   void code_class_methods();
   void code_single_class_methods(CgenNode* curr_class);
-
   void disp_count_let_vars();
 
   // Get all methods (including methods from parents) of the given node.
+  // Order: Parent first, node at the end.
   template <typename T, bool check>
   std::vector<std::pair<CgenNodeP, T*>> get_target_features_helper(CgenNodeP node) {
     std::vector<std::pair<CgenNodeP, T*>> rtn;
@@ -108,6 +108,10 @@ private:
    void set_class_tags();
 public:
     CgenClassTable(Classes, ostream& str);
+    void code_caller_activation_record_setup_start(ostream& s, int arg_cnt);
+    void code_caller_activation_record_arg_setup(ostream& s, int offset);
+    int get_method_offset(const std::string& class_name, const std::string& method_name);
+    CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     void code();
     CgenNodeP root();
     std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node) {

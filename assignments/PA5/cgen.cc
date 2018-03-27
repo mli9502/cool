@@ -704,11 +704,24 @@ void CgenClassTable::code_class_protObj() {
 // emit method code for only the current class. 
 // this method will not emit code for parent classes of curr_class.
 void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
+  // Add class attributes to environment.
+  environment.enterscope();
+  int cnt = 0;
+  for(auto& attr : get_all_attrs(curr_class)) {
+    environment.addid(attr.second->name->get_string(), new MemAddr(SELF, DEFAULT_OBJFIELDS + cnt));
+  }
   for(auto& m : curr_class->get_target_features<method_class, true>()) {
+    environment.enterscope();
+    // Add actual parameters to environment.
+    for(int i = 0; i < m->formals->len(); i ++) {
+      environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, 1 + i));
+    }
     std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
     str << method_tag << LABEL;
     m->code(str, *this);
+    environment.exitscope();
   }
+  environment.exitscope();
 }
 
 void CgenClassTable::code_class_methods() {
@@ -1130,6 +1143,27 @@ CgenNodeP CgenClassTable::get_cgen_node_from_class_name(const std::string& class
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Set up activation record.
+  cgenClassTable.code_caller_activation_record_setup_start(s, actual->len());
+  // Gen code for e1 through en.
+  for(int i = 0; i < actual->len(); i ++) {
+    actual->nth(i)->code(s, cgenClassTable);
+    // Setup activation record.
+    cgenClassTable.code_caller_activation_record_arg_setup(s, i + 1);
+  }
+  // Gen code for e0.
+  expr->code(s, cgenClassTable);
+  // Move ACC to SELF.
+  emit_move(SELF, ACC, s);
+  // Load dispatch table to $t1.
+  emit_load(T1, DISPTABLE_OFFSET, ACC, s);
+  // Get method offset based on the static type name.
+  int method_offset = cgenClassTable.get_method_offset(type_name->get_string(), name->get_string());
+  // Load method tag into $t1.
+  emit_load(T1, method_offset, T1, s);
+  // Jump to method.
+  // FIXME: May need to update store for ACC ???
+  emit_jalr(T1, s);
 }
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {

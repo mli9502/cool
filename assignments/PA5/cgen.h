@@ -14,6 +14,7 @@ bool operator==(const MemAddr& lhs, const MemAddr& rhs);
 class MemAddr {
 public:
   std::string reg_name;
+  // offsets are 0, 1, ... Does not include * WORD_SIZE.
   int offset;
   MemAddr(const std::string& reg) {
     reg_name = reg;

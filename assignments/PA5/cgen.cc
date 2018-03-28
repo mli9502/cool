@@ -1198,12 +1198,9 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string true_tag = "cond_true_" + cgenClassTable.tag_cnt;
-  cgenClassTable.tag_cnt ++;
-  std::string false_tag = "cond_false_" + cgenClassTable.tag_cnt;
-  cgenClassTable.tag_cnt ++;
-  std::string finish_tag = "cond_finish_" + cgenClassTable.tag_cnt;
-  cgenClassTable.tag_cnt ++;
+  std::string true_tag = "cond_true_" + cgenClassTable.tag_cnt ++;
+  std::string false_tag = "cond_false_" + cgenClassTable.tag_cnt ++;
+  std::string finish_tag = "cond_finish_" + cgenClassTable.tag_cnt ++;
   // Gen code for compare.
   pred->code(s, cgenClassTable);
   // Move prediction result to $t1.
@@ -1215,7 +1212,7 @@ void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Gen code for true tag.
   emit_label_def(true_tag, s);
   then_exp->code(s, cgenClassTable);
-  // Jump to finish_tag after true branch finsh.
+  // Jump to finish_tag after true branch finish.
   emit_branch(finish_tag, s);
   // Gen code for false tag.
   emit_label_def(false_tag, s);
@@ -1228,9 +1225,32 @@ void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  std::string loop_start_tag = "loop_start_" + cgenClassTable.tag_cnt ++;
+  std::string loop_end_tag = "loop_end_" + cgenClassTable.tag_cnt ++;
+  // Emit loop start label.
+  emit_label_def(loop_start_tag, s);
+  // Gen code for prediction expression.
+  pred->code(s, cgenClassTable);
+  // Move prediction result to $t1.
+  emit_move(T1, ACC, s);
+  // Load the 1/0 from the bool object in $t1.
+  emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
+  // Jump to loop finish if 0.
+  emit_beqz(T1, loop_end_tag, s);
+  // Gen code for loop body.
+  body->code(s, cgenClassTable);
+  // Jump to loop_start_tag.
+  emit_branch(loop_start_tag, s);
+  // Emit loop end label.
+  emit_label_def(loop_end_tag, s);
+  // Need to update store with the result of if statement.
+  // FIXME: Do we need this? Loop will always have NULL as type?
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // FIXME: Finish this 3/27/2018.
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {

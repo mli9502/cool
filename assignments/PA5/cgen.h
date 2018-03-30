@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
+#include <map>
+#include <utility>
 #include "emit.h"
 #include "cool-tree.h"
 #include "symtab.h"
@@ -63,8 +65,12 @@ private:
   int intclasstag;
   int boolclasstag;
 
-// The following methods emit code for
-// constants and global declarations.
+  // The following methods emit code for
+  // constants and global declarations.
+  
+  // val.first: class tag.
+  // val.second: max class tag of its subclass. This is needed to generate case expression.
+  std::map<CgenNodeP, std::pair<int, int>> _class_tags;
 
   void code_global_data();
   void code_global_text();
@@ -78,6 +84,8 @@ private:
   void code_class_methods();
   void code_single_class_methods(CgenNode* curr_class);
   void disp_count_let_vars();
+  void set_class_tags_member();
+  void set_class_tags_member_helper(CgenNodeP node, int& tag);
 
   // Get all methods (including methods from parents) of the given node.
   // Order: Parent first, node at the end.
@@ -113,6 +121,7 @@ public:
     void code_caller_activation_record_arg_setup(ostream& s, int offset);
     int get_method_offset(const std::string& class_name, const std::string& method_name);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
+    CgenNodeP get_cgen_node_from_symbol(Symbol s);
     void code();
     CgenNodeP root();
     std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node) {

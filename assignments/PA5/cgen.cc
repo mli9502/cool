@@ -25,6 +25,7 @@
 // FIXME: 2/28/2017: <class>_init is only meaningful for classes that assign initial value for attributes.
 // This can be checked by checking the init field of attr_class.
 // Check Main class in arith.s/cl for example.
+// FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 
 #include <string>
 
@@ -773,39 +774,29 @@ void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
-   stringclasstag = 4;
-   intclasstag =    2;
-   boolclasstag =   3;
+  stringclasstag = -1;
+  intclasstag =    -1;
+  boolclasstag =   -1;
 
-   enterscope();
-   if (cgen_debug) cout << "Building CgenClassTable" << endl;
-   install_basic_classes();
-   install_classes(classes);
-   build_inheritance_tree();
-   set_class_tags();
-   code();
-   exitscope();
+  enterscope();
+  if (cgen_debug) cout << "Building CgenClassTable" << endl;
+  install_basic_classes();
+  install_classes(classes);
+  build_inheritance_tree();
+  // Set class tags by inorder traverse the inheritance tree.
+  set_class_tags_member();
+  stringclasstag = _class_tags[get_cgen_node_from_symbol(Str)].first;
+  intclasstag = _class_tags[get_cgen_node_from_symbol(Int)].first;
+  boolclasstag = _class_tags[get_cgen_node_from_symbol(Bool)].first;
+  set_class_tags();
+  code();
+  exitscope();
 }
 
 void CgenClassTable::set_class_tags() {
-	unsigned start_class_tag = 5;
-	for(List<CgenNode>* l = nds; l; l = l->tl()) {
-		std::string class_name = l->hd()->get_name()->get_string();
-		if(class_name == "Object") {
-			l->hd()->class_tag = 0;	
-		} else if(class_name == "IO") {
-			l->hd()->class_tag = 1;
-		} else if(class_name == "Int") {
-			l->hd()->class_tag = intclasstag; // 2
-		} else if(class_name == "Bool") {
-			l->hd()->class_tag = boolclasstag; // 3
-		} else if(class_name == "String") {
-			l->hd()->class_tag = stringclasstag; // 4
-		} else {
-			l->hd()->class_tag = start_class_tag;
-			start_class_tag ++;
-		}
-	}
+  for(List<CgenNode>* l = nds; l; l = l->tl()) {
+    l->hd()->class_tag = _class_tags[l->hd()].first;
+  }
 }
 
 void CgenClassTable::install_basic_classes()
@@ -1044,6 +1035,19 @@ CgenNodeP CgenClassTable::root()
    return probe(Object);
 }
 
+void CgenClassTable::set_class_tags_member() {
+  CgenNodeP object_node = root();
+  int tag = 0;
+  set_class_tags_member_helper(object_node, tag);
+}
+
+void CgenClassTable::set_class_tags_member_helper(CgenNodeP node, int& tag) {
+  int class_tag = tag ++;  
+  for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
+    set_class_tags_member_helper(l->hd(), tag);
+  }
+  _class_tags[node] = std::make_pair(class_tag, tag);
+}
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -1140,6 +1144,10 @@ CgenNodeP CgenClassTable::get_cgen_node_from_class_name(const std::string& class
   }
   std::cerr << class_name << " is not found! This is not correct..." << std::endl;
   return nullptr;
+}
+
+CgenNodeP CgenClassTable::get_cgen_node_from_symbol(Symbol s) {
+  return probe(s);
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1250,7 +1258,9 @@ void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // FIXME: Finish this 3/27/2018.
+  // TODO:
+  // 1. Sort cases with class tag in decending order.
+  // 2. Go through these cases and generate code based on their class tag and the max tag value representing the most decendent child class.
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {

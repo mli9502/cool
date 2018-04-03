@@ -67,10 +67,8 @@ private:
 
   // The following methods emit code for
   // constants and global declarations.
-  
-  // val.first: class tag.
-  // val.second: max class tag of its subclass. This is needed to generate case expression.
-  std::map<CgenNodeP, std::pair<int, int>> _class_tags;
+  // count for tag.
+  int tag_cnt;
 
   void code_global_data();
   void code_global_text();
@@ -122,6 +120,7 @@ public:
     int get_method_offset(const std::string& class_name, const std::string& method_name);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     CgenNodeP get_cgen_node_from_symbol(Symbol s);
+    std::vector<branch_class*> sort_branches(Cases cases);
     void code();
     CgenNodeP root();
     std::vector<std::pair<CgenNodeP, method_class*>> get_all_methods(CgenNodeP node) {
@@ -129,6 +128,9 @@ public:
     }
     std::vector<std::pair<CgenNodeP, attr_class*>> get_all_attrs(CgenNodeP node) {
       return this->get_target_features_helper<attr_class, false>(node);
+    }
+    int get_tag_cnt() {
+      return this->tag_cnt ++;
     }
      /*
     Key: variable name.
@@ -142,8 +144,9 @@ public:
     SymbolTable<MemAddr, std::string> store;
     // Class name of the current self object.
     Symbol self_class;
-    // count for tag.
-    int tag_cnt;
+    // val.first: class tag.
+    // val.second: max class tag of its subclass. This is needed to generate case expression.
+    std::map<CgenNodeP, std::pair<int, int>> _class_tags;
 };
 
 class BoolConst 

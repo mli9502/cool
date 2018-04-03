@@ -28,6 +28,7 @@
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 
 #include <string>
+#include <limits>
 
 #include "cgen.h"
 #include "cgen_gc.h"
@@ -314,11 +315,21 @@ static void emit_blti(char *src1, int imm, int label, ostream &s)
   s << endl;
 }
 
+static void emit_blti(char *src1, int imm, const std::string& label, ostream &s)
+{
+  s << BLT << src1 << " " << imm << " " << label << endl;
+}
+
 static void emit_bgti(char *src1, int imm, int label, ostream &s)
 {
   s << BGT << src1 << " " << imm << " ";
   emit_label_ref(label,s);
   s << endl;
+}
+
+static void emit_bgti(char *src1, int imm, const std::string& label, ostream &s)
+{
+  s << BGT << src1 << " " << imm << " " << label << endl;
 }
 
 static void emit_branch(int l, ostream& s)
@@ -1075,7 +1086,6 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //
 //*****************************************************************
 
-// TODO: Need to add a member in CgenClassTable, to keep track of the count for labels.
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   // This needs to be passed down to expression.
   // After entering let_expression, increase curr_let_used.
@@ -1206,9 +1216,9 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string true_tag = "cond_true_" + cgenClassTable.tag_cnt ++;
-  std::string false_tag = "cond_false_" + cgenClassTable.tag_cnt ++;
-  std::string finish_tag = "cond_finish_" + cgenClassTable.tag_cnt ++;
+  std::string true_tag = "cond_true_" + cgenClassTable.get_tag_cnt();
+  std::string false_tag = "cond_false_" + cgenClassTable.get_tag_cnt();
+  std::string finish_tag = "cond_finish_" + cgenClassTable.get_tag_cnt();
   // Gen code for compare.
   pred->code(s, cgenClassTable);
   // Move prediction result to $t1.
@@ -1233,8 +1243,8 @@ void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string loop_start_tag = "loop_start_" + cgenClassTable.tag_cnt ++;
-  std::string loop_end_tag = "loop_end_" + cgenClassTable.tag_cnt ++;
+  std::string loop_start_tag = "loop_start_" + cgenClassTable.get_tag_cnt();
+  std::string loop_end_tag = "loop_end_" + cgenClassTable.get_tag_cnt();
   // Emit loop start label.
   emit_label_def(loop_start_tag, s);
   // Gen code for prediction expression.
@@ -1257,10 +1267,74 @@ void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
+std::vector<branch_class*> CgenClassTable::sort_branches(Cases cases) {
+  std::vector<branch_class*> rtn;
+  // Sort in reverse order.
+  // Keep the origional order if two tags are the same.
+  int len = cases->len();
+  std::vector<bool> visited(len, false);
+  while(rtn.size() != len) {
+    branch_class* max_branch = nullptr;
+    int max_branch_tag = INT_MIN;
+    int max_branch_idx = 0;
+    for(int i = 0; i < len; i ++) {
+      if(visited[i]) {
+        continue;
+      }
+      branch_class* curr_branch = static_cast<branch_class*>(cases->nth(i));
+      CgenNodeP curr_branch_class = get_cgen_node_from_symbol(curr_branch->type_decl);
+      int curr_branch_class_tag = _class_tags[curr_branch_class].first;
+      if(curr_branch_class_tag > max_branch_tag) {
+        max_branch_tag = curr_branch_class_tag;
+        max_branch_idx = i;
+        max_branch = curr_branch;
+      }
+    }
+    visited[max_branch_idx] = true;
+    rtn.push_back(max_branch);
+  }
+  return rtn;
+}
+
 void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // TODO:
   // 1. Sort cases with class tag in decending order.
   // 2. Go through these cases and generate code based on their class tag and the max tag value representing the most decendent child class.
+  // FIXME: What if two branches have the same class? Is this valid?
+  // Gen code for expression.
+  expr->code(s, cgenClassTable);
+  // FIXME: Check for null object.
+  // Load class tag to $t2.
+  emit_load(T2, TAG_OFFSET, ACC, s);
+  // Gen code for branches.
+  std::vector<branch_class*> branches = cgenClassTable.sort_branches(cases);
+  std::string next_label = "branch_" + cgenClassTable.get_tag_cnt();
+  for(auto branch : branches) {
+    CgenNodeP curr_branch_class = cgenClassTable.get_cgen_node_from_symbol(branch->type_decl);
+    int class_tag = cgenClassTable._class_tags[curr_branch_class].first;
+    int greatest_child_class_tag = cgenClassTable._class_tags[curr_branch_class].second;
+    std::string curr_label = next_label;
+    next_label = "branch_" + cgenClassTable.get_tag_cnt();
+    emit_label_def(curr_label, s);
+    emit_blti(T2, class_tag, next_label, s);
+    emit_bgti(T2, greatest_child_class_tag, next_label, s);
+    // Move $a0 to $s2, which could later be used by the expression for the branch.
+    emit_move(S2, ACC, s);
+    // Add new location ($s2) to environment.
+    cgenClassTable.enterscope();
+    cgenClassTable.environment.addid(curr_branch_class->name->get_string(), new MemAddr(S2, 0));
+    // Gen code for branch expression.
+    branch->expr->code(s, cgenClassTable);
+    // TODO: Gen code for branching to case_finish label.
+    cgenClassTable.exitscope();
+    // FIXME: May need to gen code here to handle NULL object.
+  }
+  // TODO: Gen code for _case_abort if nothing matches.
+  // TODO: Use next_label as label.
+
+  // TODO: Gen code for label case_finish.
+  
+
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {

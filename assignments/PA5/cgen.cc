@@ -1297,7 +1297,6 @@ std::vector<branch_class*> CgenClassTable::sort_branches(Cases cases) {
 }
 
 void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO:
   // 1. Sort cases with class tag in decending order.
   // 2. Go through these cases and generate code based on their class tag and the max tag value representing the most decendent child class.
   // FIXME: What if two branches have the same class? Is this valid?
@@ -1308,6 +1307,7 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load(T2, TAG_OFFSET, ACC, s);
   // Gen code for branches.
   std::vector<branch_class*> branches = cgenClassTable.sort_branches(cases);
+  std::string finish_label = "case_finish_" + cgenClassTable.get_tag_cnt();
   std::string next_label = "branch_" + cgenClassTable.get_tag_cnt();
   for(auto branch : branches) {
     CgenNodeP curr_branch_class = cgenClassTable.get_cgen_node_from_symbol(branch->type_decl);
@@ -1325,22 +1325,26 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
     cgenClassTable.environment.addid(curr_branch_class->name->get_string(), new MemAddr(S2, 0));
     // Gen code for branch expression.
     branch->expr->code(s, cgenClassTable);
-    // TODO: Gen code for branching to case_finish label.
+    // Gen code for branching to case_finish label.
+    emit_branch(finish_label, s);
     cgenClassTable.exitscope();
     // FIXME: May need to gen code here to handle NULL object.
   }
-  // TODO: Gen code for _case_abort if nothing matches.
-  // TODO: Use next_label as label.
-
-  // TODO: Gen code for label case_finish.
-  
-
+  // Gen code for _case_abort if nothing matches.
+  emit_label_def(next_label, s);
+  emit_jal(CASE_ABORT, s);
+  // Gen code for label case_finish.
+  emit_label_def(finish_label, s);
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  
 }
 
 void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {

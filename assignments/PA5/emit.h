@@ -35,6 +35,7 @@
 #define INTCONST_PREFIX      "int_const"
 #define STRCONST_PREFIX      "str_const"
 #define BOOLCONST_PREFIX     "bool_const"
+#define CASE_ABORT           "_case_abort"
 
 
 #define EMPTYSLOT            0

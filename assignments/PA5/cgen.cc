@@ -1321,13 +1321,17 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
     // Move $a0 to $s2, which could later be used by the expression for the branch.
     emit_move(S2, ACC, s);
     // Add new location ($s2) to environment.
-    cgenClassTable.enterscope();
-    cgenClassTable.environment.addid(curr_branch_class->name->get_string(), new MemAddr(S2, 0));
+    cgenClassTable.environment.enterscope();
+    cgenClassTable.store.enterscope();
+    MemAddr* var_addr = new MemAddr(S2, 0);
+    cgenClassTable.environment.addid(curr_branch_class->name->get_string(), var_addr);
+    cgenClassTable.store.addid(*var_addr, new std::string(branch->type_decl->get_string()));
     // Gen code for branch expression.
     branch->expr->code(s, cgenClassTable);
     // Gen code for branching to case_finish label.
     emit_branch(finish_label, s);
-    cgenClassTable.exitscope();
+    cgenClassTable.store.exitscope();
+    cgenClassTable.environment.exitscope();
     // FIXME: May need to gen code here to handle NULL object.
   }
   // Gen code for _case_abort if nothing matches.
@@ -1344,7 +1348,7 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  
+  // TODO: Start working on let...
 }
 
 void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {

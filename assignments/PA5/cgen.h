@@ -69,6 +69,12 @@ private:
   // constants and global declarations.
   // count for tag.
   int tag_cnt;
+  // After entering let_expression, increase curr_let_cnt.
+  // Before exiting let_expression, decrease curr_let_cnt.
+  // To get the location of the let var for the current let expression, use (4 * curr_let_cnt)($s1).
+  // Setup activation record after method activation.
+  // Initial value is 1.
+  int curr_let_cnt;
 
   void code_global_data();
   void code_global_text();
@@ -132,6 +138,16 @@ public:
     int get_tag_cnt() {
       return this->tag_cnt ++;
     }
+    int init_curr_let_cnt() {
+      this->curr_let_cnt = 1;
+    }
+    int get_curr_let_cnt() {
+      return this->curr_let_cnt ++;
+    }
+    int dec_curr_let_cnt() {
+      this->curr_let_cnt --;
+    }
+
      /*
     Key: variable name.
     Val: MemAddr

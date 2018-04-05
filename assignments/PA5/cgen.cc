@@ -383,12 +383,6 @@ static void emit_gc_check(char *source, ostream &s)
   if (source != (char*)A1) emit_move(A1, source, s);
   s << JAL << "_gc_check" << endl;
 }
-// TODO: Caller side, (which calls target method), set up activation record before calling the target method.
-// TODO: This should be called when generating code for dispatch.
-// TODO: The arguments should be found from environment.
-void method_class::code_caller_activation_record_setup(ostream& os, method_class* target_method) {
-  
-}
 // TODO: Callee side, (target method), set up of activation record after just entry the target method.
 // TODO: This should be called at the very start of every method.
 void method_class::code_callee_activation_record_setup(ostream& os) {
@@ -400,10 +394,11 @@ void method_class::code_callee_activation_record_setup(ostream& os) {
   // Set $s1 for keeping record of let variables.
   // Get let variables in target method.
   int let_var_count = this->count_max_let_vars();
-  // Set $s1 to point to the start of let tmp variables.
-  emit_move(S1, SP, os);
   // Allocate space for let tmp vars on stack.
   emit_addiu(SP, SP, -4 * let_var_count, os);
+  // Set $s1 to point to the start of let tmp variables.
+  // The k-th let var is stored in 4*k($s1).
+  emit_move(S1, SP, os);
 }
 // TODO: Callee side, (target method), clean up stack after finish and return. 
 // TODO: This should be called after method return values is stored in $a0.
@@ -789,6 +784,8 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
   intclasstag =    -1;
   boolclasstag =   -1;
 
+  curr_let_cnt = 0;
+
   enterscope();
   if (cgen_debug) cout << "Building CgenClassTable" << endl;
   install_basic_classes();
@@ -1087,12 +1084,7 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //*****************************************************************
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
-  // This needs to be passed down to expression.
-  // After entering let_expression, increase curr_let_used.
-  // Before exiting let_expression, decrease curr_let_used.
-  // To get the location of the let var for the current let expression, use (4 * curr_let_used)($s1).
-  int curr_let_used = 0;
-  // Setup activation record after method activation.
+  cgenClassTable.init_curr_let_cnt();
   this->code_callee_activation_record_setup(os);
   // TODO: Generate code for all the expressions.
   this->code_callee_activation_record_cleanup(os);
@@ -1348,7 +1340,26 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Start working on let...
+  // Gen code for init expression.
+  init->code(s, cgenClassTable);
+  // Move ACC to location of let var.
+  int curr_let_cnt = cgenClassTable.get_curr_let_cnt();
+  emit_store(ACC, curr_let_cnt, S1, s);
+  // Update environment and store.
+  // FIXME: What's the difference between type from init and this->type_decl???
+  MemAddr* var_addr = new MemAddr(S1, curr_let_cnt);
+  cgenClassTable.environment.enterscope();
+  cgenClassTable.store.enterscope();
+  cgenClassTable.environment.addid(this->identifier->get_string(), var_addr);
+  cgenClassTable.store.addid(*var_addr, new std::string(init->type->get_string()));
+  // Gen code for body.
+  body->code(s, cgenClassTable);
+  cgenClassTable.environment.exitscope();
+  cgenClassTable.store.exitscope();
+  cgenClassTable.dec_curr_let_cnt();
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {

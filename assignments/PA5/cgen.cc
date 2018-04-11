@@ -1337,6 +1337,12 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  for(int i = 0; i < body->len(); i ++) {
+    body->nth(i)->code(s, cgenClassTable);
+  }
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1363,6 +1369,7 @@ void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+
 }
 
 void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1426,9 +1433,22 @@ void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // FIXME: Not sure what to do about this...
+  // For now, just put 0 in ACC.
+  emit_load_imm(ACC, 0, s);
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = this->type->get_string(); 
 }
 
 void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // First get the location of id from environment.
+  MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
+  // Load this register to ACC.
+  emit_load(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 

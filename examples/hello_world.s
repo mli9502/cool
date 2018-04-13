@@ -352,11 +352,12 @@ Main.main:
 	sw	$s1 0($fp)
 	lw	$s1 12($s0)
 	lw	$a0 16($s0)
-	jal	Object.copy
-	lw	$t2 12($a0)
 	lw	$t1 12($s1)
-	add	$t1 $t1 $t2
-	sw	$t1 12($a0)
+	lw	$t2 12($a0)
+	la	$a0 bool_const1
+	blt	$t1 $t2 label0
+	la	$a0 bool_const0
+label0:
 	move	$a0 $s0
 	lw	$s1 0($fp)
 	lw	$fp 16($sp)

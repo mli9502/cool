@@ -1451,12 +1451,12 @@ void mul_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 
 void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Emit code for the left expression.
-  this->e1->code(s, cgenClassTable);
+  e1->code(s, cgenClassTable);
   // Store result on stack.
   emit_store(ACC, 0, SP, s);
   emit_addiu(SP, SP, -4, s);
   // Emit code for the right epxression.
-  this->e2->code(s, cgenClassTable);
+  e2->code(s, cgenClassTable);
   // Make a copy of the right Int.
   // The new object is now in ACC.
   emit_jal("Object.copy", s);
@@ -1468,7 +1468,7 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Load the actual int in ACC to T2.
   emit_load(T2, DEFAULT_OBJFIELDS, ACC, s);
   // FIXME: Need to handle divide by 0 here...
-  
+
   // Divide and store result in T1.
   emit_div(T1, T1, T2, s);
   // Store this result back to ACC.
@@ -1477,19 +1477,87 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   MemAddr rtn_loc(ACC);
   *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
-
+// ~e1
 void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Emit code for the left expression.
+  e1->code(s, cgenClassTable);
+  // Store result on stack.
+  emit_store(ACC, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Emit code for the right epxression.
+  e2->code(s, cgenClassTable);
+  // Load left result from stack.
+  emit_load(T1, 4, SP, s);
+  emit_addiu(SP, SP, 4, s);
+  // Load the actual int from T1 to T1.
+  emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
+  // Load the actual int in ACC to T2.
+  emit_load(T2, DEFAULT_OBJFIELDS, ACC, s);
+  // Load true to ACC.
+  emit_load_bool(ACC, BoolConst(1), s);
+  int label_cnt = cgenClassTable.get_tag_cnt();
+  // Compare T1 and T2.
+  emit_blt(T1, T2, label_cnt, s);
+  emit_load_bool(ACC, BoolConst(0), s);
+  emit_label_def(label_cnt, s);
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Emit code for the left expression.
+  e1->code(s, cgenClassTable);
+  // Store result on stack.
+  emit_store(ACC, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Emit code for the right epxression.
+  e2->code(s, cgenClassTable);
+  // Put result in T2.
+  emit_move(T2, ACC, s);
+  // Load left result from stack.
+  emit_load(T1, 4, SP, s);
+  emit_addiu(SP, SP, 4, s);
+  // Move true to ACC, false to A1.
+  emit_load_bool(ACC, BoolConst(1), s);
+  emit_load_bool(A1, BoolConst(0), s);
+  // Call equality_test.
+  emit_jal("equality_test", s);
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Emit code for the left expression.
+  e1->code(s, cgenClassTable);
+  // Store result on stack.
+  emit_store(ACC, 0, SP, s);
+  emit_addiu(SP, SP, -4, s);
+  // Emit code for the right epxression.
+  e2->code(s, cgenClassTable);
+  // Load left result from stack.
+  emit_load(T1, 4, SP, s);
+  emit_addiu(SP, SP, 4, s);
+  // Load the actual int from T1 to T1.
+  emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
+  // Load the actual int in ACC to T2.
+  emit_load(T2, DEFAULT_OBJFIELDS, ACC, s);
+  // Load true to ACC.
+  emit_load_bool(ACC, BoolConst(1), s);
+  int label_cnt = cgenClassTable.get_tag_cnt();
+  // Compare T1 and T2.
+  emit_bleq(T1, T2, label_cnt, s);
+  emit_load_bool(ACC, BoolConst(0), s);
+  emit_label_def(label_cnt, s);
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
-
+// not e1.
 void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 

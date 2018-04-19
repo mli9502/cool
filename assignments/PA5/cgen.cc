@@ -1479,6 +1479,7 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 // ~e1
 void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // TODO: Work on this 4/19/2018.
 }
 
 void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1559,6 +1560,7 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 // not e1.
 void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // TODO: Work on this 4/19/2018.
 }
 
 void int_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
@@ -1595,6 +1597,25 @@ void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  std::string isvoid_true_tag = "is_void_true_" + cgenClassTable.get_tag_cnt();
+  std::string isvoid_finish_tag = "is_void_finish_" + cgenClassTable.get_tag_cnt();
+  // Gen code for e1.
+  e1->code(s, cgenClassTable);
+  // If ACC is void, jump to true tag.
+  emit_beqz(ACC, isvoid_true_tag, s);
+  // Load false to ACC.
+  emit_load_bool(ACC, BoolConst(0), s);
+  // Jump to finish tag.
+  emit_branch(isvoid_finish_tag, s);
+  // Label def for true tag.
+  emit_label_def(isvoid_true_tag, s);
+  // Load true to ACC.
+  emit_load_bool(ACC, BoolConst(1), s);
+  // Label def for finish tag.
+  emit_label_def(isvoid_finish_tag, s);
+  // The result is now in $a0. Update store for $a0.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {

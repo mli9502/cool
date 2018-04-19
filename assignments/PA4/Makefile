@@ -72,12 +72,11 @@ ${HSRC}:
 	-ln -s ${CLASSDIR}/include/PA${ASSN}/$@ $@
 
 clean :
-	find . -type f | xargs touch
+	# find . -type f | xargs touch
 	-rm -f ${OUTPUT} *.s core ${OBJS} semant cgen symtab_example parser lexer *~ *.a *.o
 
 clean-compile:
-	@-rm -f core ${OBJS} ${LSRC}
-
+	@-rm -f core ${OBJS} 
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'
 

@@ -1479,7 +1479,19 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 // ~e1
 void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Work on this 4/19/2018.
+  // Emit code for e1.
+  e1->code(s, cgenClassTable);
+  // Make a new copy of $ACC.
+  emit_jal("Object.copy", s);
+  // Load the value from bool to $t1.
+  emit_load(T1, DEFAULT_OBJFIELDS, ACC, s);
+  // neg $t1.
+  emit_neg(T1, T1, s);
+  // Store T1 back to ACC.
+  emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1560,7 +1572,22 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 // not e1.
 void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // TODO: Work on this 4/19/2018.
+  std::string comp_finish_label = "comp_finish_" + cgenClassTable.get_tag_cnt();
+  // Emit code for e1.
+  e1->code(s, cgenClassTable);
+  // Load the value from bool to $t1.
+  emit_load(T1, DEFAULT_OBJFIELDS, ACC, s);
+  // Load true to ACC.
+  emit_load_bool(ACC, BoolConst(1), s);
+  // If $t1 is 0, not $t1 is true, so jump to finish.
+  emit_beqz(T1, comp_finish_label, s);
+  // Load false to ACC.
+  emit_load_bool(ACC, BoolConst(0), s);
+  // Emit label def for comp_finish_label.
+  emit_label_def(comp_finish_label, s);
+  // Update store for ACC.
+  MemAddr rtn_loc(ACC);
+  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
 }
 
 void int_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {

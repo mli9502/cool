@@ -69,6 +69,9 @@ clean :
 clean-compile:
 	@-rm -f core ${OBJS} ${LSRC}
 
+code :
+	sudo code . --user-data-dir="./~"
+
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'
 

@@ -250,6 +250,9 @@ static void emit_disptable_ref(Symbol sym, ostream& s)
 static void emit_init_ref(Symbol sym, ostream& s)
 { s << sym << CLASSINIT_SUFFIX; }
 
+static void emit_init_def(Symbol sym, ostream& s)
+{ s << sym << CLASSINIT_SUFFIX << ":" << endl; }
+
 static void emit_label_ref(int l, ostream &s)
 { s << "label" << l; }
 
@@ -385,7 +388,7 @@ static void emit_gc_check(char *source, ostream &s)
 }
 // TODO: Callee side, (target method), set up of activation record after just entry the target method.
 // TODO: This should be called at the very start of every method.
-void method_class::code_callee_activation_record_setup(ostream& os) {
+void CgenClassTable::code_callee_activation_record_setup(ostream& os, int let_var_cnt, int arg_cnt) {
   // Setup new $fp.
   emit_move(FP, SP, os);
   // Store $ra at 0($sp), and advance $sp.
@@ -393,26 +396,24 @@ void method_class::code_callee_activation_record_setup(ostream& os) {
   emit_addiu(SP, SP, -4, os);
   // Set $s1 for keeping record of let variables.
   // Get let variables in target method.
-  int let_var_count = this->count_max_let_vars();
   // Allocate space for let tmp vars on stack.
-  emit_addiu(SP, SP, -4 * let_var_count, os);
+  emit_addiu(SP, SP, -4 * let_var_cnt, os);
   // Set $s1 to point to the start of let tmp variables.
   // The k-th let var is stored in 4*k($s1).
   emit_move(S1, SP, os);
 }
 // TODO: Callee side, (target method), clean up stack after finish and return. 
 // TODO: This should be called after method return values is stored in $a0.
-void method_class::code_callee_activation_record_cleanup(ostream& os) {
-  int let_var_count = this->count_max_let_vars();
+void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, int let_var_cnt, int arg_cnt) {
   // Pop tmp let vars out of stack.
-  emit_addiu(SP, SP, 4 * let_var_count, os);
+  emit_addiu(SP, SP, 4 * let_var_cnt, os);
   // Restore and pop $s0.
   emit_load(SELF, 4, SP, os);
   emit_addiu(SP, SP, 4, os);
   // Restore $ra.
   emit_load(RA, 4, SP, os);
-  unsigned arg_count = this->formals->len();
-  unsigned offset = 4 * (2 + arg_count);
+  // unsigned arg_count = this->formals->len();
+  unsigned offset = 4 * (2 + arg_cnt);
   // Pop $ra, old $s1, and all the argume nts out of stack.
   emit_addiu(SP, SP, offset, os);
   // Restore $s1 and pop it.
@@ -717,6 +718,9 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   for(auto& attr : get_all_attrs(curr_class)) {
     environment.addid(attr.second->name->get_string(), new MemAddr(SELF, DEFAULT_OBJFIELDS + cnt));
   }
+  // Emit code for class init.
+  // This needs to be put here because we need the attributes to be in the environment before we init variables.
+  code_single_class_init(curr_class);
   for(auto& m : curr_class->get_target_features<method_class, true>()) {
     environment.enterscope();
     // Add actual parameters to environment.
@@ -735,6 +739,34 @@ void CgenClassTable::code_class_methods() {
   for(List<CgenNode>* l = nds; l; l = l->tl()) {
     code_single_class_methods(l->hd());
   }
+}
+
+// Emit code for class init.
+// This is called together when emiting code for class method.
+void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
+  // Emit def for init.
+  emit_init_def(curr_class->name, str);
+  const auto& attributes = get_all_attrs(curr_class);
+  int let_var_cnt = 0;
+  // arg_cnt is always 0 for init.
+  int arg_cnt = 0;
+  for(const auto& attr : attributes) {
+    let_var_cnt = std::max(let_var_cnt, attr.second->init->count_max_let_vars());
+  }
+  CgenNode* parent_class = curr_class->get_parentnd();
+  // First set up called activation record.
+  this->code_callee_activation_record_setup(str, let_var_cnt, arg_cnt);
+  // If parent class is not NULL, init parent class first.
+  if(parent_class != nullptr) {
+    std::string parent_init_name = parent_class->get_name()->get_string() + std::string(CLASSINIT_SUFFIX);
+    emit_jal((char*)parent_init_name.c_str(), str);
+  }
+  // Init attributes.
+  for(const auto& attr : attributes) {
+    attr.second->init->code(str, *this);
+  }
+  // Restore save variables.
+  this->code_callee_activation_record_cleanup(str, let_var_cnt, arg_cnt);
 }
 
 void CgenClassTable::disp_count_let_vars() {
@@ -1017,26 +1049,20 @@ void CgenClassTable::code()
     if(cgen_debug) cout << "coding global text" << endl;
     code_global_text();
 
-// FIXME: Comment this out latter.
 #if 0
     std::cout << "let var count for each class..." << endl;
     disp_count_let_vars();
-#endif
-    // TODO: Code init. 
+#endif 
     // In order to code init, need code for expression and assign expression.
     // Code methods for classes.
-    // TODO: Code all the methods.
-    if(cgen_debug) {
-      cout << "coding methods for classes" << endl;
-      code_class_methods();
-    }
+    if(cgen_debug) cout << "coding methods and inits for classes" << endl;
+    code_class_methods();
     //                 Add your code to emit
     //                   - object initializer
     //                   - the class methods
     //                   - etc...
 
 }
-
 
 CgenNodeP CgenClassTable::root()
 {
@@ -1085,9 +1111,11 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   cgenClassTable.init_curr_let_cnt();
-  this->code_callee_activation_record_setup(os);
-  // TODO: Generate code for all the expressions.
-  this->code_callee_activation_record_cleanup(os);
+  int let_var_count = this->count_max_let_vars();
+  int arg_cnt = this->formals->len();
+  cgenClassTable.code_callee_activation_record_setup(os, let_var_count, arg_cnt);
+  expr->code(os, cgenClassTable);
+  cgenClassTable.code_callee_activation_record_cleanup(os, let_var_count, arg_cnt);
 }
 
 void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {

@@ -85,6 +85,7 @@ private:
   void code_class_dispTab();
   void code_class_protObj();
   void code_single_class_protObj(CgenNode* curr_class);
+  void code_single_class_init(CgenNode* curr_class);
   void code_class_methods();
   void code_single_class_methods(CgenNode* curr_class);
   void disp_count_let_vars();
@@ -121,6 +122,8 @@ private:
    void set_class_tags();
 public:
     CgenClassTable(Classes, ostream& str);
+    void code_callee_activation_record_setup(ostream& s, int let_var_count, int arg_cnt);
+    void code_callee_activation_record_cleanup(ostream& s, int let_var_count, int arg_cnt);
     void code_caller_activation_record_setup_start(ostream& s, int arg_cnt);
     void code_caller_activation_record_arg_setup(ostream& s, int offset);
     int get_method_offset(const std::string& class_name, const std::string& method_name);

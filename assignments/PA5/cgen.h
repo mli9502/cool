@@ -141,13 +141,13 @@ public:
     int get_tag_cnt() {
       return this->tag_cnt ++;
     }
-    int init_curr_let_cnt() {
+    void init_curr_let_cnt() {
       this->curr_let_cnt = 1;
     }
     int get_curr_let_cnt() {
       return this->curr_let_cnt ++;
     }
-    int dec_curr_let_cnt() {
+    void dec_curr_let_cnt() {
       this->curr_let_cnt --;
     }
 

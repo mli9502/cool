@@ -29,6 +29,7 @@
 
 #include <string>
 #include <limits>
+#include <limits.h>
 
 #include "cgen.h"
 #include "cgen_gc.h"
@@ -1291,13 +1292,13 @@ std::vector<branch_class*> CgenClassTable::sort_branches(Cases cases) {
   std::vector<branch_class*> rtn;
   // Sort in reverse order.
   // Keep the origional order if two tags are the same.
-  int len = cases->len();
+  unsigned len = cases->len();
   std::vector<bool> visited(len, false);
   while(rtn.size() != len) {
     branch_class* max_branch = nullptr;
     int max_branch_tag = INT_MIN;
     int max_branch_idx = 0;
-    for(int i = 0; i < len; i ++) {
+    for(unsigned i = 0; i < len; i ++) {
       if(visited[i]) {
         continue;
       }

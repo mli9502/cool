@@ -6,6 +6,8 @@
 #include "cool-tree.h"
 #include "symtab.h"
 
+extern int cgen_debug;
+
 enum Basicness     {Basic, NotBasic};
 #define TRUE 1
 #define FALSE 0
@@ -122,6 +124,22 @@ private:
    void set_class_tags();
 public:
     CgenClassTable(Classes, ostream& str);
+    void update_store(const std::string& mem_addr, int offset, Symbol type) {
+      if(type == nullptr) {
+        std::cout << "type is NULL!" << std::endl;
+        return;
+      }
+      update_store(mem_addr, offset, type->get_string());
+    }
+    void update_store(const std::string& mem_addr, int offset, const std::string& type) {
+      MemAddr addr(mem_addr, offset);
+      auto store_rtn = this->store.lookup(addr);
+      // If this address is not found, add it first.
+      if(store_rtn == nullptr) {
+        store.addid(addr, new std::string(""));
+      }
+      *(store.lookup(addr)) = type;
+    }
     void code_callee_activation_record_setup(ostream& s, int let_var_count, int arg_cnt);
     void code_callee_activation_record_cleanup(ostream& s, int let_var_count, int arg_cnt);
     void code_caller_activation_record_setup_start(ostream& s, int arg_cnt);

@@ -5,6 +5,8 @@
 #include "cool-tree.h"
 #include "cgen_gc.h"
 
+#include "util.h"
+
 extern int optind;            // for option processing
 extern char *out_filename;    // name of output assembly
 extern Program ast_root;             // root of the abstract syntax tree
@@ -17,6 +19,8 @@ char *curr_filename;
 void handle_flags(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
+    signal(SIGSEGV, handler);
+
   int firstfile_index;
 
   handle_flags(argc,argv);

@@ -35,7 +35,6 @@
 #include "cgen_gc.h"
 
 extern void emit_string_constant(ostream& str, char *s);
-extern int cgen_debug;
 
 //
 // Three symbols from the semantic analyzer (semant.cc) are used.
@@ -721,9 +720,12 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   }
   // Emit code for class init.
   // This needs to be put here because we need the attributes to be in the environment before we init variables.
+  if (cgen_debug) cout << "Before coding init for class " << curr_class->name << endl;
   code_single_class_init(curr_class);
+  if (cgen_debug) cout << "After coding init for class " << curr_class->name << endl;
   for(auto& m : curr_class->get_target_features<method_class, true>()) {
     environment.enterscope();
+    store.enterscope();
     // Add actual parameters to environment.
     for(int i = 0; i < m->formals->len(); i ++) {
       environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, 1 + i));
@@ -731,6 +733,7 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
     std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
     str << method_tag << LABEL;
     m->code(str, *this);
+    store.exitscope();
     environment.exitscope();
   }
   environment.exitscope();
@@ -1117,6 +1120,7 @@ void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   cgenClassTable.code_callee_activation_record_setup(os, let_var_count, arg_cnt);
   expr->code(os, cgenClassTable);
   cgenClassTable.code_callee_activation_record_cleanup(os, let_var_count, arg_cnt);
+  // FIXME: update store? Probably not needed.
 }
 
 void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1127,7 +1131,8 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Get the value from ACC.
   std::string* val = cgenClassTable.store.lookup(MemAddr(ACC, 0));
   // Update value at addr_ptr in store.
-  *(cgenClassTable.store.lookup(*addr_ptr)) = *val;
+  // TODO: This is needed because of dynamic type? Need to test this...
+  cgenClassTable.update_store(addr_ptr->reg_name, addr_ptr->offset, *val);
   // emit store.
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
 }
@@ -1258,9 +1263,8 @@ void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   else_exp->code(s, cgenClassTable);
   // Finish tag. The result should be in ACC.
   emit_label_def(finish_tag, s);
-  // Need to update store with the result of if statement.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = this->type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1284,8 +1288,8 @@ void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_label_def(loop_end_tag, s);
   // Need to update store with the result of if statement.
   // FIXME: Do we need this? Loop will always have NULL as type?
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 std::vector<branch_class*> CgenClassTable::sort_branches(Cases cases) {
@@ -1360,18 +1364,16 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_jal(CASE_ABORT, s);
   // Gen code for label case_finish.
   emit_label_def(finish_label, s);
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   for(int i = 0; i < body->len(); i ++) {
     body->nth(i)->code(s, cgenClassTable);
   }
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1392,9 +1394,7 @@ void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   cgenClassTable.environment.exitscope();
   cgenClassTable.store.exitscope();
   cgenClassTable.dec_curr_let_cnt();
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1419,9 +1419,8 @@ void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_add(T1, T1, T2, s);
   // Store this result back to ACC.
   emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1446,9 +1445,8 @@ void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_sub(T1, T1, T2, s);
   // Store this result back to ACC.
   emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void mul_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1473,9 +1471,8 @@ void mul_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_mul(T1, T1, T2, s);
   // Store this result back to ACC.
   emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1502,9 +1499,8 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_div(T1, T1, T2, s);
   // Store this result back to ACC.
   emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 // ~e1
 void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1518,9 +1514,8 @@ void neg_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_neg(T1, T1, s);
   // Store T1 back to ACC.
   emit_store(T1, DEFAULT_OBJFIELDS, ACC, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1545,9 +1540,8 @@ void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_blt(T1, T2, label_cnt, s);
   emit_load_bool(ACC, BoolConst(0), s);
   emit_label_def(label_cnt, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1568,9 +1562,8 @@ void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load_bool(A1, BoolConst(0), s);
   // Call equality_test.
   emit_jal("equality_test", s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1595,9 +1588,8 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_bleq(T1, T2, label_cnt, s);
   emit_load_bool(ACC, BoolConst(0), s);
   emit_label_def(label_cnt, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 // not e1.
 void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1614,9 +1606,8 @@ void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load_bool(ACC, BoolConst(0), s);
   // Emit label def for comp_finish_label.
   emit_label_def(comp_finish_label, s);
-  // Update store for ACC.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void int_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
@@ -1647,9 +1638,8 @@ void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Call <class>_init.
   std::string class_init_name = t0->get_string() + std::string(CLASSINIT_SUFFIX);
   emit_jal((char*)class_init_name.c_str(), s);
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = t0->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, t0->get_string());
 }
 
 void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1669,28 +1659,34 @@ void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load_bool(ACC, BoolConst(1), s);
   // Label def for finish tag.
   emit_label_def(isvoid_finish_tag, s);
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // FIXME: Not sure what to do about this...
-  // For now, just put 0 in ACC.
-  emit_load_imm(ACC, 0, s);
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = this->type->get_string(); 
+  // // For now, just put 0 in ACC.
+  // emit_load_imm(ACC, 0, s);
+  // // Update store.
+  // cgenClassTable.update_store(ACC, 0, type);
 }
 
 void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  if(cgen_debug) std::cout << name << std::endl;
+  std::string reg = "";
+  int offset = 0;
   // First get the location of id from environment.
-  MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
+  if(std::string(name->get_string()) == "self") {
+    reg = SELF;
+  } else {
+    MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
+    reg = addr_ptr->reg_name;
+    offset = addr_ptr->offset;
+  }
   // Load this register to ACC.
-  emit_load(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
-  // The result is now in $a0. Update store for $a0.
-  MemAddr rtn_loc(ACC);
-  *(cgenClassTable.store.lookup(rtn_loc)) = type->get_string();
+  emit_load(ACC, offset, (char*)(reg.c_str()), s);
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 

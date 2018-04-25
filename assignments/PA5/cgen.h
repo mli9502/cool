@@ -140,11 +140,11 @@ public:
       }
       *(store.lookup(addr)) = type;
     }
-    void code_callee_activation_record_setup(ostream& s, int let_var_count, int arg_cnt);
-    void code_callee_activation_record_cleanup(ostream& s, int let_var_count, int arg_cnt);
-    void code_caller_activation_record_setup_start(ostream& s, int arg_cnt);
-    void code_caller_activation_record_arg_setup(ostream& s, int offset);
+    void code_callee_activation_record_setup(ostream& s);
+    void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_let_var_cnt);
+    void code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable);
     int get_method_offset(const std::string& class_name, const std::string& method_name);
+    int get_method_let_var_cnt(const std::string& class_name, const std::string& method_name);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     CgenNodeP get_cgen_node_from_symbol(Symbol s);
     std::vector<branch_class*> sort_branches(Cases cases);
@@ -184,6 +184,10 @@ public:
     // val.first: class tag.
     // val.second: max class tag of its subclass. This is needed to generate case expression.
     std::map<CgenNodeP, std::pair<int, int>> _class_tags;
+    // Curr method arg cnt. This is updated by caller activation record setup.
+    int curr_arg_cnt;
+    // Curr method max let var cnt. This is also updated by caller activation record setup.
+    int curr_max_let_var_cnt;
 };
 
 class BoolConst 

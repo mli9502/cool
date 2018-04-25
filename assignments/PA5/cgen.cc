@@ -386,47 +386,6 @@ static void emit_gc_check(char *source, ostream &s)
   if (source != (char*)A1) emit_move(A1, source, s);
   s << JAL << "_gc_check" << endl;
 }
-// TODO: Callee side, (target method), set up of activation record after just entry the target method.
-// TODO: This should be called at the very start of every method.
-void CgenClassTable::code_callee_activation_record_setup(ostream& os, int let_var_cnt, int arg_cnt) {
-  // Setup new $fp.
-  emit_move(FP, SP, os);
-  // Store $ra at 0($sp), and advance $sp.
-  emit_store(RA, 0, SP, os);
-  emit_addiu(SP, SP, -4, os);
-  // Set $s1 for keeping record of let variables.
-  // Get let variables in target method.
-  // Allocate space for let tmp vars on stack.
-  emit_addiu(SP, SP, -4 * let_var_cnt, os);
-  // Set $s1 to point to the start of let tmp variables.
-  // The k-th let var is stored in 4*k($s1).
-  emit_move(S1, SP, os);
-}
-// TODO: Callee side, (target method), clean up stack after finish and return. 
-// TODO: This should be called after method return values is stored in $a0.
-void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, int let_var_cnt, int arg_cnt) {
-  // Pop tmp let vars out of stack.
-  emit_addiu(SP, SP, 4 * let_var_cnt, os);
-  // Restore and pop $s0.
-  emit_load(SELF, 4, SP, os);
-  emit_addiu(SP, SP, 4, os);
-  // Restore $ra.
-  emit_load(RA, 4, SP, os);
-  // unsigned arg_count = this->formals->len();
-  unsigned offset = 4 * (2 + arg_cnt);
-  // Pop $ra, old $s1, and all the argume nts out of stack.
-  emit_addiu(SP, SP, offset, os);
-  // Restore $s1 and pop it.
-  emit_load(S1, 0, SP, os);
-  emit_addiu(SP, SP, 4, os);
-  // Restore $s0 and pop it.
-  emit_load(SELF, 0, SP, os);
-  emit_addiu(SP, SP, 4, os);
-  // Restore old $fp (which is now at 0($sp)).
-  emit_load(FP, 0, SP, os);
-  // Return.
-  emit_return(os);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -759,7 +718,7 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   }
   CgenNode* parent_class = curr_class->get_parentnd();
   // First set up called activation record.
-  this->code_callee_activation_record_setup(str, let_var_cnt, arg_cnt);
+  this->code_callee_activation_record_setup(str);
   // If parent class is not NULL, init parent class first.
   if(parent_class != nullptr) {
     std::string parent_init_name = parent_class->get_name()->get_string() + std::string(CLASSINIT_SUFFIX);
@@ -770,7 +729,7 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
     attr.second->init->code(str, *this);
   }
   // Restore save variables.
-  this->code_callee_activation_record_cleanup(str, let_var_cnt, arg_cnt);
+  this->code_callee_activation_record_cleanup(str, arg_cnt, let_var_cnt);
 }
 
 void CgenClassTable::disp_count_let_vars() {
@@ -1115,11 +1074,9 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   cgenClassTable.init_curr_let_cnt();
-  int let_var_count = this->count_max_let_vars();
-  int arg_cnt = this->formals->len();
-  cgenClassTable.code_callee_activation_record_setup(os, let_var_count, arg_cnt);
+  cgenClassTable.code_callee_activation_record_setup(os);
   expr->code(os, cgenClassTable);
-  cgenClassTable.code_callee_activation_record_cleanup(os, let_var_count, arg_cnt);
+  cgenClassTable.code_callee_activation_record_cleanup(os, cgenClassTable.curr_arg_cnt, cgenClassTable.curr_max_let_var_cnt);
   // FIXME: update store? Probably not needed.
 }
 
@@ -1137,24 +1094,54 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
 }
 
-void CgenClassTable::code_caller_activation_record_setup_start(ostream& s, int arg_cnt) {
-  // Save $fp at 0($sp), and advance $sp.
-  emit_store(FP, 0, SP, s);
-  emit_addiu(SP, SP, -4, s);
-  // Save $s0 at 0($sp), and advance $sp.
-  emit_store(SELF, 0, SP, s);
-  emit_addiu(SP, SP, -4, s);
-  // Save $s1 at 0($sp), and advance $sp.
-  emit_store(S1, 0, SP, s);
-  emit_addiu(SP, SP, -4, s);
-  // Advance $sp for saving args.
+void CgenClassTable::code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable) {
+  int arg_cnt = args->len();
+  // Allocate space on stack for let vars.
+  emit_addiu(SP, SP, -4 * let_var_cnt, s);
+  // Allocate space on stack for args.
   emit_addiu(SP, SP, -4 * arg_cnt, s);
+  // Gen code for e1 through en and store args on stack.
+  for(int i = 0; i < args->len(); i ++) {
+    args->nth(i)->code(s, cgenClassTable);
+    // Put arg on stack.
+    // First arg in 4($sp), second arg in 8($sp)...
+    emit_store(ACC, i + 1, SP, s);
+  }
+  // Update arg_cnt and let_var_cnt in cgenClassTable.
+  cgenClassTable.curr_arg_cnt = arg_cnt;
+  cgenClassTable.curr_max_let_var_cnt = let_var_cnt;
 }
 
-void CgenClassTable::code_caller_activation_record_arg_setup(ostream& s, int offset) {
-  emit_store(ACC, offset, SP, s);
+void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
+  // Allocate stack space for old $fp, $s0 and $ra.
+  emit_addiu(SP, SP, -12, os);
+  // Store old $fp, $s0 and $ra.
+  emit_store(FP, 3, SP, os);
+  emit_store(SELF, 2, SP, os);
+  emit_store(RA, 1, SP, os);
+  // NOTE: 4/24/2018: How to access args and let vars: 
+  // To access first arg, use 4($fp). To accss the first let var, use (arg_cnt * 4 + 4)($fp)
+  // To access ith arg (starting from 1), use (4 * i)($fp).
+  // To access ith let var (starting from 1), use (4 * (arg_cnt + i))($fp).
+  // Set new $fp to $sp + 12.
+  emit_addiu(FP, SP, 12, os);
+  // Move $a0 to $s0 since $a0 stores SELF.
+  // FIXME: 4/24/2018: For dispatch and static dispatch, e0 needs to be evaluated AFTER actuals are evaluated! 
+  emit_move(SELF, ACC, os);
 }
 
+void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, int curr_arg_cnt, int curr_max_let_var_cnt) {
+  // Restore saved $fp, $s0 and $ra.
+  emit_load(FP, 3, SP, os);
+  emit_load(SELF, 2, SP, os);
+  emit_load(RA, 1, SP, os);
+  // Pop old $fp, $sa, $ra, args and let_vars out of stack.
+  emit_addiu(SP, SP, 4 * (3 + curr_arg_cnt + curr_max_let_var_cnt), os);
+  // Return.
+  emit_return(os);
+}
+
+// Find the class first, then, for this class and all its parent class, find the method.
 int CgenClassTable::get_method_offset(const std::string& class_name, const std::string& method_name) {
   CgenNodeP class_node = get_cgen_node_from_class_name(class_name);
   auto class_methods = get_all_methods(class_node);
@@ -1172,6 +1159,24 @@ int CgenClassTable::get_method_offset(const std::string& class_name, const std::
   return start_idx;
 }
 
+// Find the class first, then, for this class and all its parent class, find the method and return its let var cnt.
+int CgenClassTable::get_method_let_var_cnt(const std::string& class_name, const std::string& method_name) {
+  CgenNodeP class_node = get_cgen_node_from_class_name(class_name);
+  auto class_methods = get_all_methods(class_node);
+  // Start from the target class and going backwards.
+  unsigned start_idx = class_methods.size() - 1;
+  while(start_idx >= 0 && class_methods[start_idx].first->name->get_string() != class_name) {
+    start_idx --;
+  }
+  assert(start_idx < 0);
+  // Start from startIdx, find the first method with the given method_name.
+  while(start_idx >= 0 && class_methods[start_idx].second->name->get_string() != method_name) {
+    start_idx --;
+  }
+  assert(start_idx < 0);
+  return class_methods[start_idx].second->count_max_let_vars();
+}
+
 CgenNodeP CgenClassTable::get_cgen_node_from_class_name(const std::string& class_name) {
   for(List<CgenNode> *l = nds; l; l = l->tl()) {
     if(l->hd()->name->get_string() == class_name) {
@@ -1187,42 +1192,32 @@ CgenNodeP CgenClassTable::get_cgen_node_from_symbol(Symbol s) {
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // Set up activation record.
-  cgenClassTable.code_caller_activation_record_setup_start(s, actual->len());
-  // Gen code for e1 through en.
-  for(int i = 0; i < actual->len(); i ++) {
-    actual->nth(i)->code(s, cgenClassTable);
-    // Setup activation record.
-    cgenClassTable.code_caller_activation_record_arg_setup(s, i + 1);
-  }
-  // Gen code for e0.
-  expr->code(s, cgenClassTable);
-  // Move ACC to SELF.
-  emit_move(SELF, ACC, s);
-  // Load dispatch table to $t1.
-  emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Get method offset based on the static type name.
   int method_offset = cgenClassTable.get_method_offset(type_name->get_string(), name->get_string());
+  // Get method max let var cnt.
+  int let_var_cnt = cgenClassTable.get_method_let_var_cnt(type_name->get_string(), name->get_string());
+  // Set up activation record.
+  cgenClassTable.code_caller_activation_record_setup(s, let_var_cnt, actual, cgenClassTable);
+  // Gen code for e0.
+  expr->code(s, cgenClassTable);
+  // Load dispatch table to $t1.
+  emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Load method tag into $t1.
   emit_load(T1, method_offset, T1, s);
   // Jump to method.
-  // FIXME: May need to update store for ACC ???
   emit_jalr(T1, s);
+  // FIXME: May need to update store for ACC ???
 }
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // Get method offset based on the static type name.
+  int method_offset = cgenClassTable.get_method_offset(type_name->get_string(), name->get_string());
+  // Get method max let var cnt.
+  int let_var_cnt = cgenClassTable.get_method_let_var_cnt(type_name->get_string(), name->get_string());
   // Set up activation record.
-  cgenClassTable.code_caller_activation_record_setup_start(s, actual->len());
-  // Gen code for e1 through en.
-  for(int i = 0; i < actual->len(); i ++) {
-    actual->nth(i)->code(s, cgenClassTable);
-    // Setup activation record.
-    cgenClassTable.code_caller_activation_record_arg_setup(s, i + 1);
-  }
+  cgenClassTable.code_caller_activation_record_setup(s, let_var_cnt, actual, cgenClassTable);
   // Gen code for e0.
   expr->code(s, cgenClassTable);
-  // Move ACC to SELF.
-  emit_move(SELF, ACC, s);
   // Load dispatch table to $t1.
   emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Get the class name stored in ACC.

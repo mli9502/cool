@@ -126,7 +126,7 @@ public:
     CgenClassTable(Classes, ostream& str);
     void update_store(const std::string& mem_addr, int offset, Symbol type) {
       if(type == nullptr) {
-        std::cout << "type is NULL!" << std::endl;
+        if(cgen_debug) std::cout << "[CgenClassTable::update_store]: type is NULL!" << std::endl;
         return;
       }
       update_store(mem_addr, offset, type->get_string());

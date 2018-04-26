@@ -679,21 +679,24 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   }
   // Emit code for class init.
   // This needs to be put here because we need the attributes to be in the environment before we init variables.
-  if (cgen_debug) cout << "Before coding init for class " << curr_class->name << endl;
+  // if (cgen_debug) cout << "Before coding init for class " << curr_class->name << endl;
   code_single_class_init(curr_class);
-  if (cgen_debug) cout << "After coding init for class " << curr_class->name << endl;
-  for(auto& m : curr_class->get_target_features<method_class, true>()) {
-    environment.enterscope();
-    store.enterscope();
-    // Add actual parameters to environment.
-    for(int i = 0; i < m->formals->len(); i ++) {
-      environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, 1 + i));
+  // if (cgen_debug) cout << "After coding init for class " << curr_class->name << endl;
+  // If current class is not one of the basic class.
+  if(!curr_class->basic()) {
+    for(auto& m : curr_class->get_target_features<method_class, true>()) {
+      environment.enterscope();
+      store.enterscope();
+      // Add actual parameters to environment.
+      for(int i = 0; i < m->formals->len(); i ++) {
+        environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, 1 + i));
+      }
+      std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
+      str << method_tag << LABEL;
+      m->code(str, *this);
+      store.exitscope();
+      environment.exitscope();
     }
-    std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
-    str << method_tag << LABEL;
-    m->code(str, *this);
-    store.exitscope();
-    environment.exitscope();
   }
   environment.exitscope();
 }
@@ -1075,7 +1078,9 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   cgenClassTable.init_curr_let_cnt();
   cgenClassTable.code_callee_activation_record_setup(os);
+  // if(cgen_debug) std::cout << "before coding expr" << std::endl;
   expr->code(os, cgenClassTable);
+  // if(cgen_debug) std::cout << "after coding expr" << std::endl;
   cgenClassTable.code_callee_activation_record_cleanup(os, cgenClassTable.curr_arg_cnt, cgenClassTable.curr_max_let_var_cnt);
   // FIXME: update store? Probably not needed.
 }
@@ -1222,8 +1227,6 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Get the class name stored in ACC.
   std::string* class_name = cgenClassTable.store.lookup(MemAddr(ACC, 0));
-  // Get method offset.
-  int method_offset = cgenClassTable.get_method_offset(*class_name, name->get_string());
   // Load method tag into $t1.
   emit_load(T1, method_offset, T1, s);
   // Jump to method.
@@ -1667,13 +1670,13 @@ void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  if(cgen_debug) std::cout << name << std::endl;
   std::string reg = "";
   int offset = 0;
   // First get the location of id from environment.
   if(std::string(name->get_string()) == "self") {
     reg = SELF;
   } else {
+    if(cgen_debug) std::cout << "[object_class] before lookup." << std::endl;
     MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
     reg = addr_ptr->reg_name;
     offset = addr_ptr->offset;

@@ -294,320 +294,102 @@ heap_start:
 	.globl	Bool_init
 	.globl	Main.main
 coding methods and inits for classes
-Before coding init for class Main
 Main_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	IO_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 12
 	jr	$ra	
-After coding init for class Main
 Main.main:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-a
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
+[object_class] before lookup.
 	lw	$a0 12($s0)
 	jal	Object.copy
 	lw	$t1 12($a0)
 	neg	$t1 $t1
 	sw	$t1 12($a0)
-self
 	lw	$a0 0($s0)
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 12
 	jr	$ra	
-Before coding init for class String
 String_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	Object_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-After coding init for class String
-String.length:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-String.concat:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
 	addiu	$sp $sp 12
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
 	jr	$ra	
-String.substr:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 16
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-Before coding init for class Bool
 Bool_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	Object_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 12
 	jr	$ra	
-After coding init for class Bool
-Before coding init for class Int
 Int_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	Object_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 12
 	jr	$ra	
-After coding init for class Int
-Before coding init for class IO
 IO_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	Object_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-After coding init for class IO
-IO.out_string:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
 	addiu	$sp $sp 12
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
 	jr	$ra	
-IO.out_int:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 12
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-IO.in_string:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-IO.in_int:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-Before coding init for class Object
 Object_init:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
 	jal	_no_class_init
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-After coding init for class Object
-Object.abort:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-Object.type_name:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
-	jr	$ra	
-Object.copy:
-	move	$fp $sp
-	sw	$ra 0($sp)
-	addiu	$sp $sp -4
-	addiu	$sp $sp 0
-	move	$s1 $sp
-	addiu	$sp $sp 0
-	lw	$s0 16($sp)
-	addiu	$sp $sp 4
-	lw	$ra 16($sp)
-	addiu	$sp $sp 8
-	lw	$s1 0($sp)
-	addiu	$sp $sp 4
-	lw	$s0 0($sp)
-	addiu	$sp $sp 4
-	lw	$fp 0($sp)
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 12
 	jr	$ra	
 
 # end of generated code

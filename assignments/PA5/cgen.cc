@@ -652,14 +652,29 @@ void CgenClassTable::code_class_nameTab() {
 	}
 }
 
+void CgenClassTable::bfs_init_classes_dispatch_table() {
+  CgenNodeP object_node = this->get_cgen_node_from_class_name("Object");
+  std::queue<CgenNodeP> q;
+  q.push(object_node);
+  while(!q.empty()) {
+    CgenNodeP node = q.front();
+    q.pop();
+    node->set_dispatch_table();
+    for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
+      q.push(l->hd());
+    }
+  }
+}
+
 void CgenClassTable::code_class_dispTab() {
 	for(List<CgenNode>* l = nds; l; l = l->tl()) {
-		const std::vector<std::pair<CgenNodeP, method_class*>>& class_methods = get_all_methods(l->hd());
-		str << l->hd()->get_name()->get_string() << DISPTAB_SUFFIX << LABEL;
-		for(const auto& class_method_pair : class_methods) {
-			Symbol curr_class_name = class_method_pair.first->get_name();
-			str << WORD << curr_class_name << METHOD_SEP << class_method_pair.second->name << endl;
-		}
+    const auto& dispatch_table = l->hd()->get_dispatch_table();
+    str << l->hd()->get_name()->get_string() << DISPTAB_SUFFIX << LABEL;
+    for(const auto& class_method_pair : dispatch_table) {
+      Symbol class_name = class_method_pair.first->get_name();
+      std::string method_name = class_method_pair.second->name->get_string();
+      str << WORD << class_name << METHOD_SEP << method_name << endl;
+    }
 	}
 }
 
@@ -1005,9 +1020,12 @@ void CgenClassTable::code()
     // class_nameTab
     if(cgen_debug) cout << "coding class_nameTab" << endl;
     code_class_nameTab();
+    // Initialize class dispatch tables.
+    bfs_init_classes_dispatch_table();
     // dispatch tables
     if(cgen_debug) cout << "coding class_dispTab" << endl;
     code_class_dispTab();
+    // exit(-1);
     // prototype objects
     if(cgen_debug) cout << "coding class_protObj" << endl;
     code_class_protObj();
@@ -1059,7 +1077,9 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
    class__class((const class__class &) *nd),
    parentnd(NULL),
    children(NULL),
-   basic_status(bstatus)
+   basic_status(bstatus),
+   method_included(),
+   dispatch_table()
 { 
    stringtable.add_string(name->get_string());          // Add class name to string table
 }
@@ -1215,18 +1235,46 @@ void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // Get method offset based on the static type name.
-  int method_offset = cgenClassTable.get_method_offset(type_name->get_string(), name->get_string());
+  if(cgen_debug) std::cout << "[dispatch_class::code]" << std::endl;
+  // FIXME: 4/26/2018
+  /*
+  Consider this example, where B is a child of A:
+  
+  A a = new B;
+  a.func(arg1);
+
+  In this example, a.func(arg1) will actually call the B's override version of "func" (This is done through vtable.)
+  As a result, during code gen, it is not possible to know exactly which method will be called for a given class type T and method name M.
+  So, to pre-allocate space for let vars, we need to find the max let var used by method M for class T, and all T's child classes.
+
+  When creating dispatch table for a class, C, we first go through the base class, B, for C. (C inherits B). 
+  We need to put B's dispatch table before C's dispatch table.
+  Say that B's dispatch table looks like this:
+  --B::dispatch_tbl--
+  B::m1
+  B::m2
+  -------------------
+  If class C overrides B's m1, and C has an additional method C::m3. Then, the dispatch table for C should look something like this:
+  --C::dispatch_tbl--
+  C::m1
+  B::m2
+  C::m3
+  -------------------
+  */
   // Get method max let var cnt.
   int let_var_cnt = cgenClassTable.get_method_let_var_cnt(type_name->get_string(), name->get_string());
   // Set up activation record.
   cgenClassTable.code_caller_activation_record_setup(s, let_var_cnt, actual, cgenClassTable);
-  // Gen code for e0.
+  // Gen code for e0. 
+  if(cgen_debug) std::cout << "[dispatch_class::code]: before gen code for expr" << std::endl;
   expr->code(s, cgenClassTable);
+  if(cgen_debug) std::cout << "[dispatch_class::code]: after gen code for expr" << std::endl;
   // Load dispatch table to $t1.
   emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Get the class name stored in ACC.
   std::string* class_name = cgenClassTable.store.lookup(MemAddr(ACC, 0));
+  // Get method offset based on the static type name.
+  int method_offset = cgenClassTable.get_method_offset(*class_name, name->get_string());
   // Load method tag into $t1.
   emit_load(T1, method_offset, T1, s);
   // Jump to method.

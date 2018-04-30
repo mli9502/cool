@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <map>
+#include <queue>
 #include <utility>
+#include <stdlib.h>
 #include "emit.h"
 #include "cool-tree.h"
 #include "symtab.h"
@@ -42,21 +44,67 @@ typedef CgenNode *CgenNodeP;
 
 class CgenNode : public class__class {
 private: 
-   CgenNodeP parentnd;                        // Parent of class
-   List<CgenNode> *children;                  // Children of class
-   Basicness basic_status;                    // `Basic' if class is basic
-                                              // `NotBasic' otherwise
+  CgenNodeP parentnd;                        // Parent of class
+  List<CgenNode> *children;                  // Children of class
+  Basicness basic_status;                    // `Basic' if class is basic
+                                            // `NotBasic' otherwise
+  // A map keeping track of which method of current class has been included in the dispatch table while going through the methods in parent class.
+  std::map<std::string, std::pair<method_class*, bool>> method_included;
+  // Dispatch table.
+  // This includes all the methods from parent class and the current class.
+  // In the form of: <P, m1>, <C, m2>, <P, m3>, <P, m4>, <C, m5>, <C, m6>.
+  // In which parent class P contains m1, m2, m3, and current class C contains m2 (override), m5, m6.
+  std::vector<std::pair<CgenNodeP, method_class*>> dispatch_table;
 
 public:
    CgenNode(Class_ c,
             Basicness bstatus,
             CgenClassTableP class_table);
 
-   void add_child(CgenNodeP child);
-   List<CgenNode> *get_children() { return children; }
-   void set_parentnd(CgenNodeP p);
-   CgenNodeP get_parentnd() { return parentnd; }
-   int basic() { return (basic_status == Basic); }
+  void add_child(CgenNodeP child);
+  List<CgenNode> *get_children() { return children; }
+  void set_parentnd(CgenNodeP p);
+  CgenNodeP get_parentnd() { return parentnd; }
+  int basic() { return (basic_status == Basic); }
+  const std::vector<std::pair<CgenNodeP, method_class*>>& get_dispatch_table() {
+    return this->dispatch_table;
+  }
+  void set_dispatch_table() {
+    // First put all methods into method_included map.
+    const auto& node_methods = get_target_features<method_class, true>();
+    for(auto& node_method : node_methods) {
+      method_included[node_method->name->get_string()] = {node_method, false};
+    }
+    // If there's no parent. (This should be true only for Object class.)
+    if(parentnd == nullptr) {
+      for(auto& node_method : node_methods) {
+        dispatch_table.push_back({this, node_method});
+      }
+      return;
+    }
+    const auto& parent_dispatch_table = parentnd->get_dispatch_table();
+    // Go through parent dispatch table first.
+    for(auto& entry : parent_dispatch_table) {
+      std::string method_name = entry.second->name->get_string();
+      if(method_included.find(method_name) != method_included.end()) { // If this method in parent is overriden by child.
+        // Mark this method as visited.
+        method_included[method_name].second = true;
+        // Push this into dispatch table.
+        dispatch_table.push_back({this, method_included[method_name].first});
+      } else {
+        dispatch_table.push_back(entry);
+      }
+    }
+    // Then, go through methods of current class, and put in remaining ones.
+    for(auto& node_method : node_methods) {
+      const auto& val = method_included[node_method->name->get_string()];
+      if(val.second) { // If this method is already included in the dispatch table.
+        continue;
+      } else {
+        dispatch_table.push_back({this, node_method});
+      }
+    }
+  }
 };
 
 class CgenClassTable : public SymbolTable<Symbol,CgenNode> {
@@ -140,6 +188,9 @@ public:
       }
       *(store.lookup(addr)) = type;
     }
+    // Using BFS to initialize dispatch table for classes.
+    // Note that BFS is needed because dispatch table for parent classes needs to be setup before proceeding to child classes.
+    void bfs_init_classes_dispatch_table();
     void code_callee_activation_record_setup(ostream& s);
     void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_let_var_cnt);
     void code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable);

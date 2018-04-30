@@ -9,10 +9,11 @@ _program
     #2
     _attr
       a
-      Int
-      #0
-      _no_expr
-      : _no_type
+      String
+      #2
+      _string
+        "Hello World!\n"
+      : String
     #3
     _method
       main
@@ -20,12 +21,19 @@ _program
       #4
       _block
         #5
-        _neg
+        _dispatch
+          #5
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
           #5
           _object
             a
-          : Int
-        : Int
+          : String
+          )
+        : SELF_TYPE
         #6
         _object
           self

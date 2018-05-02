@@ -666,6 +666,41 @@ void CgenClassTable::bfs_init_classes_dispatch_table() {
   }
 }
 
+void CgenClassTable::bfs_init_classes_let_var_cnt_map() {
+  CgenNodeP object_node = this->get_cgen_node_from_class_name("Object");
+  std::queue<CgenNodeP> q;
+  q.push(object_node);
+  while(!q.empty()) {
+    CgenNodeP node = q.front();
+    q.pop();
+    node->set_let_var_map();
+    for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
+      q.push(l->hd());
+    }
+  }
+}
+
+void CgenClassTable::dfs_correct_classes_let_var_cnt_map() {
+  CgenNodeP object_node = this->get_cgen_node_from_class_name("Object");
+  this->dfs_correct_classes_let_var_cnt_map_helper(object_node);
+}
+
+void CgenClassTable::dfs_correct_classes_let_var_cnt_map_helper(CgenNodeP node) {
+  for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
+    dfs_correct_classes_let_var_cnt_map_helper(l->hd());
+  }
+  auto& curr_map = node->get_let_var_map();
+  for(auto& entry : curr_map) {
+    std::string method_name = entry.first;
+    int curr_cnt = entry.second;
+    // Go through each children to make sure that max let_var_cnt for this method is used.
+    for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
+      curr_cnt = std::max(curr_cnt, l->hd()->get_let_var_map().at(method_name));
+    }
+    node->set_let_var_map(method_name, curr_cnt);
+  }
+}
+
 void CgenClassTable::code_class_dispTab() {
 	for(List<CgenNode>* l = nds; l; l = l->tl()) {
     const auto& dispatch_table = l->hd()->get_dispatch_table();
@@ -1022,6 +1057,12 @@ void CgenClassTable::code()
     code_class_nameTab();
     // Initialize class dispatch tables.
     bfs_init_classes_dispatch_table();
+    // Initialize and correctly set let var cnt for each method in each class.
+    // By doing this, we make sure that when using static type to get let var cnt, we guarantee allocate enough location on stack.
+    bfs_init_classes_let_var_cnt_map();
+    dfs_correct_classes_let_var_cnt_map();
+    if(cgen_debug) cout << "NEED TO DEBUG LET_VAR_MAP" << endl;
+    if(cgen_debug) exit(1);
     // dispatch tables
     if(cgen_debug) cout << "coding class_dispTab" << endl;
     code_class_dispTab();
@@ -1079,6 +1120,7 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
    children(NULL),
    basic_status(bstatus),
    method_included(),
+   let_var_map(),
    dispatch_table()
 { 
    stringtable.add_string(name->get_string());          // Add class name to string table
@@ -1236,31 +1278,30 @@ void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) std::cout << "[dispatch_class::code]" << std::endl;
-  // FIXME: 4/26/2018
-  /*
-  Consider this example, where B is a child of A:
+
+  // Consider this example, where B is a child of A:
   
-  A a = new B;
-  a.func(arg1);
+  // A a = new B;
+  // a.func(arg1);
 
-  In this example, a.func(arg1) will actually call the B's override version of "func" (This is done through vtable.)
-  As a result, during code gen, it is not possible to know exactly which method will be called for a given class type T and method name M.
-  So, to pre-allocate space for let vars, we need to find the max let var used by method M for class T, and all T's child classes.
+  // In this example, a.func(arg1) will actually call the B's override version of "func" (This is done through vtable.)
+  // As a result, during code gen, it is not possible to know exactly which method will be called for a given class type T and method name M.
+  // So, to pre-allocate space for let vars, we need to find the max let var used by method M for class T, and all T's child classes.
 
-  When creating dispatch table for a class, C, we first go through the base class, B, for C. (C inherits B). 
-  We need to put B's dispatch table before C's dispatch table.
-  Say that B's dispatch table looks like this:
-  --B::dispatch_tbl--
-  B::m1
-  B::m2
-  -------------------
-  If class C overrides B's m1, and C has an additional method C::m3. Then, the dispatch table for C should look something like this:
-  --C::dispatch_tbl--
-  C::m1
-  B::m2
-  C::m3
-  -------------------
-  */
+  // When creating dispatch table for a class, C, we first go through the base class, B, for C. (C inherits B). 
+  // We need to put B's dispatch table before C's dispatch table.
+  // Say that B's dispatch table looks like this:
+  // --B::dispatch_tbl--
+  // B::m1
+  // B::m2
+  // -------------------
+  // If class C overrides B's m1, and C has an additional method C::m3. Then, the dispatch table for C should look something like this:
+  // --C::dispatch_tbl--
+  // C::m1
+  // B::m2
+  // C::m3
+  // -------------------
+
   // Get method max let var cnt.
   int let_var_cnt = cgenClassTable.get_method_let_var_cnt(type_name->get_string(), name->get_string());
   // Set up activation record.

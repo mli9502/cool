@@ -50,6 +50,8 @@ private:
                                             // `NotBasic' otherwise
   // A map keeping track of which method of current class has been included in the dispatch table while going through the methods in parent class.
   std::map<std::string, std::pair<method_class*, bool>> method_included;
+  // A map keeping track of let var cnt for methods.
+  std::map<std::string, int> let_var_map;
   // Dispatch table.
   // This includes all the methods from parent class and the current class.
   // In the form of: <P, m1>, <C, m2>, <P, m3>, <P, m4>, <C, m5>, <C, m6>.
@@ -68,6 +70,12 @@ public:
   int basic() { return (basic_status == Basic); }
   const std::vector<std::pair<CgenNodeP, method_class*>>& get_dispatch_table() {
     return this->dispatch_table;
+  }
+  const std::map<std::string, int>& get_let_var_map() {
+    return this->let_var_map;
+  }
+  void set_let_var_map(const std::string& key, int val) {
+    this->let_var_map[key] = val;
   }
   void set_dispatch_table() {
     // First put all methods into method_included map.
@@ -102,6 +110,22 @@ public:
         continue;
       } else {
         dispatch_table.push_back({this, node_method});
+      }
+    }
+  }
+  // This depends on dispatch table.
+  // TODO: Call this method when doing BFS to correctly setup let var map.
+  // TODO: Do a bottom-up DFS to update let-var-cnt to max of a class's children.
+  void set_let_var_map() {
+    for(auto& entry : this->dispatch_table) {
+      std::string method_name = entry.second->name->get_string();
+      // If this method is inherited from a parent class.
+      // Use the let var cnt from parent class.
+      if(entry.first != this) {
+        auto& parent_let_var_map = entry.first->get_let_var_map();
+        this->let_var_map[method_name] = parent_let_var_map.at(method_name);
+      } else {
+        this->let_var_map[method_name] = entry.second->count_max_let_vars();
       }
     }
   }
@@ -191,6 +215,11 @@ public:
     // Using BFS to initialize dispatch table for classes.
     // Note that BFS is needed because dispatch table for parent classes needs to be setup before proceeding to child classes.
     void bfs_init_classes_dispatch_table();
+    // Using BFS to initialize let var cnt map after dispatch table is set up.
+    void bfs_init_classes_let_var_cnt_map();
+    // Using bottom-up dfs to update let var cnt to correct value.
+    void dfs_correct_classes_let_var_cnt_map();
+    void dfs_correct_classes_let_var_cnt_map_helper(CgenNodeP node);
     void code_callee_activation_record_setup(ostream& s);
     void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_let_var_cnt);
     void code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable);

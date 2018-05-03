@@ -1,0 +1,297 @@
+#1
+_program
+  #1
+  _class
+    Main
+    IO
+    "hello_world.cl"
+    (
+    #2
+    _attr
+      a
+      String
+      #2
+      _string
+        "Hello World!"
+      : String
+    #3
+    _method
+      main
+      SELF_TYPE
+      #4
+      _block
+        #5
+        _dispatch
+          #5
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #5
+          _object
+            a
+          : String
+          )
+        : SELF_TYPE
+        #6
+        _object
+          self
+        : SELF_TYPE
+      : SELF_TYPE
+    )
+  #11
+  _class
+    A
+    Object
+    "hello_world.cl"
+    (
+    #12
+    _method
+      m
+      Int
+      #13
+      _block
+        #14
+        _let
+          x
+          Int
+          #0
+          _no_expr
+          : _no_type
+          #14
+          _block
+            #15
+            _int
+              0
+            : Int
+          : Int
+        : Int
+      : Int
+    )
+  #21
+  _class
+    B
+    A
+    "hello_world.cl"
+    (
+    #22
+    _method
+      m
+      Int
+      #23
+      _block
+        #24
+        _let
+          x
+          Int
+          #0
+          _no_expr
+          : _no_type
+          #24
+          _block
+            #25
+            _let
+              y
+              Int
+              #0
+              _no_expr
+              : _no_type
+              #25
+              _block
+                #26
+                _int
+                  0
+                : Int
+              : Int
+            : Int
+          : Int
+        : Int
+      : Int
+    )
+  #34
+  _class
+    D
+    B
+    "hello_world.cl"
+    (
+    #35
+    _method
+      m
+      Int
+      #36
+      _block
+        #37
+        _let
+          x
+          Int
+          #0
+          _no_expr
+          : _no_type
+          #37
+          _block
+            #38
+            _let
+              y
+              Int
+              #0
+              _no_expr
+              : _no_type
+              #38
+              _block
+                #39
+                _let
+                  z
+                  Int
+                  #0
+                  _no_expr
+                  : _no_type
+                  #39
+                  _block
+                    #40
+                    _int
+                      0
+                    : Int
+                  : Int
+                : Int
+              : Int
+            : Int
+          : Int
+        : Int
+      : Int
+    )
+  #49
+  _class
+    E
+    B
+    "hello_world.cl"
+    (
+    #50
+    _method
+      m
+      Int
+      #51
+      _block
+        #52
+        _let
+          x
+          Int
+          #0
+          _no_expr
+          : _no_type
+          #52
+          _block
+            #53
+            _let
+              y
+              Int
+              #0
+              _no_expr
+              : _no_type
+              #53
+              _block
+                #54
+                _let
+                  z
+                  Int
+                  #0
+                  _no_expr
+                  : _no_type
+                  #54
+                  _block
+                    #55
+                    _let
+                      xx
+                      Int
+                      #0
+                      _no_expr
+                      : _no_type
+                      #55
+                      _block
+                        #56
+                        _int
+                          0
+                        : Int
+                      : Int
+                    : Int
+                  : Int
+                : Int
+              : Int
+            : Int
+          : Int
+        : Int
+      : Int
+    )
+  #65
+  _class
+    C
+    A
+    "hello_world.cl"
+    (
+    #66
+    _method
+      m
+      Int
+      #67
+      _block
+        #68
+        _let
+          x
+          Int
+          #0
+          _no_expr
+          : _no_type
+          #68
+          _block
+            #69
+            _let
+              y
+              Int
+              #0
+              _no_expr
+              : _no_type
+              #69
+              _block
+                #70
+                _let
+                  z
+                  Int
+                  #0
+                  _no_expr
+                  : _no_type
+                  #70
+                  _block
+                    #71
+                    _let
+                      xx
+                      Int
+                      #0
+                      _no_expr
+                      : _no_type
+                      #71
+                      _block
+                        #72
+                        _let
+                          yy
+                          Int
+                          #0
+                          _no_expr
+                          : _no_type
+                          #72
+                          _block
+                            #73
+                            _int
+                              0
+                            : Int
+                          : Int
+                        : Int
+                      : Int
+                    : Int
+                  : Int
+                : Int
+              : Int
+            : Int
+          : Int
+        : Int
+      : Int
+    )

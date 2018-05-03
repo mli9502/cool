@@ -12,7 +12,7 @@ _program
       String
       #2
       _string
-        "Hello World!\n"
+        "Hello World!"
       : String
     #3
     _method

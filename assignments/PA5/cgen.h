@@ -224,7 +224,8 @@ public:
     void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_let_var_cnt);
     void code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable);
     int get_method_offset(const std::string& class_name, const std::string& method_name);
-    int get_method_let_var_cnt(const std::string& class_name, const std::string& method_name);
+    int get_method_let_var_cnt_dynamic(const std::string& class_name, const std::string& method_name);
+    int get_method_let_var_cnt_static(const std::string& class_name, const std::string& method_name);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     CgenNodeP get_cgen_node_from_symbol(Symbol s);
     std::vector<branch_class*> sort_branches(Cases cases);

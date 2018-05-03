@@ -720,6 +720,8 @@ void CgenClassTable::code_class_protObj() {
 }
 // emit method code for only the current class. 
 // this method will not emit code for parent classes of curr_class.
+// FIXME: 5/2/2018: Need to udpate a variable "self", that keeps track which class is currently being used. 
+// This is needed for self.<method> to work.
 void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   // Add class attributes to environment.
   environment.enterscope();

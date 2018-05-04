@@ -723,6 +723,8 @@ void CgenClassTable::code_class_protObj() {
 // FIXME: 5/2/2018: Need to udpate a variable "self", that keeps track which class is currently being used. 
 // This is needed for self.<method> to work.
 void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
+  // Set self_class.
+  self_class = curr_class->name;
   // Add class attributes to environment.
   environment.enterscope();
   int cnt = 0;
@@ -1175,6 +1177,7 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 
 void CgenClassTable::code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable) {
   int arg_cnt = args->len();
+  // if(cgen_debug) std::cout << args->nth(0)->code() << std::endl;
   // Allocate space on stack for let vars.
   emit_addiu(SP, SP, -4 * let_var_cnt, s);
   // Allocate space on stack for args.
@@ -1272,12 +1275,16 @@ CgenNodeP CgenClassTable::get_cgen_node_from_symbol(Symbol s) {
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string static_dispatch_table = type_name->get_string() + std::string(DISPTAB_SUFFIX);
+  std::string class_name = type_name->get_string();
+  if(class_name == SELF_TYPE->get_string()) {
+    class_name = cgenClassTable.self_class->get_string();
+  }
+  std::string static_dispatch_table = class_name + std::string(DISPTAB_SUFFIX);
   if(cgen_debug) cout << "[static_dispatch_class::code]: " << "static_dispatch_table is: " << static_dispatch_table << endl;
   // Get method offset based on the static type name.
-  int method_offset = cgenClassTable.get_method_offset(type_name->get_string(), name->get_string());
+  int method_offset = cgenClassTable.get_method_offset(class_name, name->get_string());
   // Get method max let var cnt.
-  int let_var_cnt = cgenClassTable.get_method_let_var_cnt_static(type_name->get_string(), name->get_string());
+  int let_var_cnt = cgenClassTable.get_method_let_var_cnt_static(class_name, name->get_string());
   // Set up activation record.
   cgenClassTable.code_caller_activation_record_setup(s, let_var_cnt, actual, cgenClassTable);
   // Gen code for e0.
@@ -1318,16 +1325,23 @@ void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) std::cout << "[dispatch_class::code]" << std::endl;
   std::string class_name = expr->type->get_string();
+  if(class_name == SELF_TYPE->get_string()) {
+    class_name = cgenClassTable.self_class->get_string();
+  }
   // Get method max let var cnt.
   int let_var_cnt = cgenClassTable.get_method_let_var_cnt_dynamic(class_name, name->get_string());
   // Get method offset from dispatch table.
   int method_offset = cgenClassTable.get_method_offset(class_name, name->get_string());
+  if(cgen_debug) std::cout << "[dispatch_class::code]: let_var_cnt: " << let_var_cnt << std::endl;
+  if(cgen_debug) std::cout << "[dispatch_class::code]: method_offset: " << method_offset << std::endl;
   // Gen code for actuals and set up activation record.
+  if(cgen_debug) std::cout << "[dispatch_class::code]: --- Before caller activation record setup ---" << std::endl;
   cgenClassTable.code_caller_activation_record_setup(s, let_var_cnt, actual, cgenClassTable);
+  if(cgen_debug) std::cout << "[dispatch_class::code]: ---------------------------------------------" << std::endl;
   // Gen code for e0. 
-  if(cgen_debug) std::cout << "[dispatch_class::code]: before gen code for expr" << std::endl;
+  if(cgen_debug) std::cout << "[dispatch_class::code]: --------- Gen code for expr -----------------" << std::endl;
   expr->code(s, cgenClassTable);
-  if(cgen_debug) std::cout << "[dispatch_class::code]: after gen code for expr" << std::endl;
+  if(cgen_debug) std::cout << "[dispatch_class::code]: ---------------------------------------------" << std::endl;
   // Load dispatch table to $t1.
   emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Load method tag into $t1.
@@ -1765,6 +1779,7 @@ void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // if(cgen_debug) std::cout << "[no_expr_class::code]: no_expr" << std::endl;
   // FIXME: Not sure what to do about this...
   // // For now, just put 0 in ACC.
   // emit_load_imm(ACC, 0, s);
@@ -1773,13 +1788,15 @@ void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  // if(cgen_debug) std::cout << "[object_class::code]: " << name->get_string() << std::endl;
   std::string reg = "";
   int offset = 0;
   // First get the location of id from environment.
   if(std::string(name->get_string()) == "self") {
+    // if(cgen_debug) std::cout << "[object_class::code]: self" << std::endl;
     reg = SELF;
   } else {
-    if(cgen_debug) std::cout << "[object_class] before lookup." << std::endl;
+    // if(cgen_debug) std::cout << "[object_class] before lookup." << std::endl;
     MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
     reg = addr_ptr->reg_name;
     offset = addr_ptr->offset;

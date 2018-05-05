@@ -64,7 +64,7 @@ ${HSRC}:
 	-ln -s ${CLASSDIR}/include/PA${ASSN}/$@ $@
 
 clean :
-	-rm -f ${OUTPUT} *.s core ${OBJS} cgen parser semant lexer *~ *.a *.o
+	-rm -f ${OUTPUT} core ${OBJS} cgen parser semant lexer *~ *.a *.o
 
 clean-compile:
 	@-rm -f core ${OBJS} ${LSRC}
@@ -75,9 +75,17 @@ code :
 gen_hello:
 	lexer hello_world.cl | parser | semant > hello_world.tmp
 
+test_hello:
+	$(MAKE) cgen
+	lexer hello_world.cl | parser | semant > hello_world.tmp
+	./cgen < hello_world.tmp > hello_world.test.s
+	@echo "--------------------------------------------------------"
+	spim hello_world.test.s
+
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'
 
 -include ${CFIL:.cc=.d}
 
+# NOTE: 32 bit qtspim is needed!
 # Command to run qtspim: qtspim -trap_file /usr/stanford_compilers/cool/lib/trap.handler -file /usr/stanford_compilers/cool/examples/hello_world.s 

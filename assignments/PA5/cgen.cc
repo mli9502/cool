@@ -777,14 +777,16 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   // First set up called activation record.
   this->code_callee_activation_record_setup(str);
   // If parent class is not NULL, init parent class first.
-  if(parent_class != nullptr) {
+  if(parent_class != nullptr && curr_class->name->get_string() != Object->get_string()) {
     std::string parent_init_name = parent_class->get_name()->get_string() + std::string(CLASSINIT_SUFFIX);
     emit_jal((char*)parent_init_name.c_str(), str);
   }
   // Init attributes.
   for(const auto& attr : attributes) {
-    attr.second->init->code(str, *this);
+    attr.second->code(str, *this);
   }
+  // Move $SELF to $ACC.
+  emit_move(ACC, SELF, str);
   // Restore save variables.
   this->code_callee_activation_record_cleanup(str, arg_cnt, let_var_cnt);
 }
@@ -1150,6 +1152,15 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //   constant integers, strings, and booleans are provided.
 //
 //*****************************************************************
+
+void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
+  // Code init first.
+  init->code(os, cgenClassTable);
+  // Lookup attribute from environment.
+  MemAddr* addr_ptr = cgenClassTable.environment.lookup(this->name->get_string());
+  // Store init result into addr.
+  emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), os);
+}
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   cgenClassTable.init_curr_let_cnt();
@@ -1793,16 +1804,19 @@ void object_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   int offset = 0;
   // First get the location of id from environment.
   if(std::string(name->get_string()) == "self") {
-    // if(cgen_debug) std::cout << "[object_class::code]: self" << std::endl;
-    reg = SELF;
+    // Need to emit move for SELF.
+    emit_move(ACC, SELF, s);
   } else {
     // if(cgen_debug) std::cout << "[object_class] before lookup." << std::endl;
     MemAddr* addr_ptr = cgenClassTable.environment.lookup(name->get_string());
     reg = addr_ptr->reg_name;
     offset = addr_ptr->offset;
+    // Load the WORD stored at the address indicated by reg and offset to ACC.
+    // NOTE: LOAD and MOVE are different. 
+    // lw	$fp 12($sp): Use $sp + 12 as base address, and read a WORD(32 bits) at base address into $fp.
+    // move	$a0 $s0: Assign the value of $s0 to $a0.
+    emit_load(ACC, offset, (char*)(reg.c_str()), s);
   }
-  // Load this register to ACC.
-  emit_load(ACC, offset, (char*)(reg.c_str()), s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, type);
 }

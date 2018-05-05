@@ -1,8 +1,12 @@
 class Main inherits IO {
-    a : String <- "Hello World!";
+    a : String <- "Hello World!\n";
    main(): SELF_TYPE {
        {
             out_string(a);
+            out_int(9);
+            out_string("\n");
+            out_string("hello");
+            out_string("\n");
             self;
        }
    };

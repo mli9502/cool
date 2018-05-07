@@ -85,6 +85,11 @@ test_hello:
 	@echo "------------------------ Official cgen output --------------------"
 	spim hello_world.s	
 
+debug_hello:
+	$(MAKE) cgen
+	lexer hello_world.cl | parser | semant > hello_world.tmp
+	./cgen < hello_world.tmp -c
+
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'
 

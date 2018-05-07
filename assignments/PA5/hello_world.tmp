@@ -9,62 +9,162 @@ _program
     #2
     _attr
       a
-      String
+      Int
       #2
-      _string
-        "a"
-      : String
+      _int
+        2
+      : Int
     #3
     _attr
       b
-      String
+      Bool
       #3
-      _string
-        "b"
-      : String
+      _bool
+        0
+      : Bool
     #4
-    _attr
-      c
-      String
-      #4
-      _string
-        "c"
-      : String
-    #5
     _method
       main
       SELF_TYPE
-      #6
+      #5
       _block
+        #6
+        _cond
+          #6
+          _comp
+            #6
+            _object
+              b
+            : Bool
+          : Bool
+          #6
+          _dispatch
+            #6
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #6
+            _string
+              "not b is true\n"
+            : String
+            )
+          : SELF_TYPE
+          #6
+          _dispatch
+            #6
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #6
+            _string
+              "not b is false\n"
+            : String
+            )
+          : SELF_TYPE
+        : SELF_TYPE
         #7
-        _dispatch
+        _cond
           #7
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
+          _eq
+            #7
+            _object
+              a
+            : Int
+            #7
+            _int
+              0
+            : Int
+          : Bool
           #7
-          _object
-            c
-          : String
-          )
-        : SELF_TYPE
-        #8
-        _dispatch
-          #8
-          _object
-            self
+          _dispatch
+            #7
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #7
+            _string
+              "0\n"
+            : String
+            )
           : SELF_TYPE
-          out_string
-          (
           #8
-          _string
-            "\n"
-          : String
-          )
+          _cond
+            #8
+            _eq
+              #8
+              _object
+                a
+              : Int
+              #8
+              _int
+                1
+              : Int
+            : Bool
+            #8
+            _dispatch
+              #8
+              _object
+                self
+              : SELF_TYPE
+              out_string
+              (
+              #8
+              _string
+                "1\n"
+              : String
+              )
+            : SELF_TYPE
+            #9
+            _cond
+              #9
+              _eq
+                #9
+                _object
+                  a
+                : Int
+                #9
+                _int
+                  2
+                : Int
+              : Bool
+              #9
+              _dispatch
+                #9
+                _object
+                  self
+                : SELF_TYPE
+                out_string
+                (
+                #9
+                _string
+                  "2\n"
+                : String
+                )
+              : SELF_TYPE
+              #10
+              _dispatch
+                #10
+                _object
+                  self
+                : SELF_TYPE
+                out_string
+                (
+                #10
+                _string
+                  "not 0, 1, 2\n"
+                : String
+                )
+              : SELF_TYPE
+            : SELF_TYPE
+          : SELF_TYPE
         : SELF_TYPE
-        #9
+        #14
         _object
           self
         : SELF_TYPE

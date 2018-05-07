@@ -24,8 +24,11 @@
 
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
-// TODO: 5/6/2018: Test if statements.
-// TODO: 5/6/2018: Test dispatch and static dispatch.
+// TODO: 5/7/2018: Test dispatch and static dispatch.
+// TODO: 5/7/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
+// TODO: 5/7/2018: Test loop.
+// TODO: 5/7/2018: Test new.
+// TODO: 5/7/2018: Test isvoid.
 
 #include <string>
 #include <limits>
@@ -835,6 +838,11 @@ void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
+  tag_cnt = 0;
+  curr_let_cnt = 0;
+  curr_arg_cnt = 0;
+  curr_max_let_var_cnt = 0; 
+
   stringclasstag = -1;
   intclasstag =    -1;
   boolclasstag =   -1;
@@ -1369,9 +1377,13 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string true_tag = "cond_true_" + cgenClassTable.get_tag_cnt();
-  std::string false_tag = "cond_false_" + cgenClassTable.get_tag_cnt();
-  std::string finish_tag = "cond_finish_" + cgenClassTable.get_tag_cnt();
+  std::string true_tag = "cond_true_" + std::to_string(cgenClassTable.get_tag_cnt());
+  std::string false_tag = "cond_false_" + std::to_string(cgenClassTable.get_tag_cnt());
+  std::string finish_tag = "cond_finish_" + std::to_string(cgenClassTable.get_tag_cnt());
+  if(cgen_debug) cout << "[cond_class::code]" << endl;
+  if(cgen_debug) cout << "[cond_class::code]: " << true_tag << endl;
+  if(cgen_debug) cout << "[cond_class::code]: " << false_tag << endl;
+  if(cgen_debug) cout << "[cond_class::code]: " << finish_tag << endl;
   // Gen code for compare.
   pred->code(s, cgenClassTable);
   // Move prediction result to $t1.
@@ -1395,8 +1407,8 @@ void cond_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string loop_start_tag = "loop_start_" + cgenClassTable.get_tag_cnt();
-  std::string loop_end_tag = "loop_end_" + cgenClassTable.get_tag_cnt();
+  std::string loop_start_tag = "loop_start_" + std::to_string(cgenClassTable.get_tag_cnt());
+  std::string loop_end_tag = "loop_end_" + std::to_string(cgenClassTable.get_tag_cnt());
   // Emit loop start label.
   emit_label_def(loop_start_tag, s);
   // Gen code for prediction expression.
@@ -1459,14 +1471,14 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_load(T2, TAG_OFFSET, ACC, s);
   // Gen code for branches.
   std::vector<branch_class*> branches = cgenClassTable.sort_branches(cases);
-  std::string finish_label = "case_finish_" + cgenClassTable.get_tag_cnt();
-  std::string next_label = "branch_" + cgenClassTable.get_tag_cnt();
+  std::string finish_label = "case_finish_" + std::to_string(cgenClassTable.get_tag_cnt());
+  std::string next_label = "branch_" + std::to_string(cgenClassTable.get_tag_cnt());
   for(auto branch : branches) {
     CgenNodeP curr_branch_class = cgenClassTable.get_cgen_node_from_symbol(branch->type_decl);
     int class_tag = cgenClassTable._class_tags[curr_branch_class].first;
     int greatest_child_class_tag = cgenClassTable._class_tags[curr_branch_class].second;
     std::string curr_label = next_label;
-    next_label = "branch_" + cgenClassTable.get_tag_cnt();
+    next_label = "branch_" + std::to_string(cgenClassTable.get_tag_cnt());
     emit_label_def(curr_label, s);
     emit_blti(T2, class_tag, next_label, s);
     emit_bgti(T2, greatest_child_class_tag, next_label, s);
@@ -1721,7 +1733,7 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 // not e1.
 void comp_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string comp_finish_label = "comp_finish_" + cgenClassTable.get_tag_cnt();
+  std::string comp_finish_label = "comp_finish_" + std::to_string(cgenClassTable.get_tag_cnt());
   // Emit code for e1.
   e1->code(s, cgenClassTable);
   // Load the value from bool to $t1.
@@ -1771,8 +1783,8 @@ void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  std::string isvoid_true_tag = "is_void_true_" + cgenClassTable.get_tag_cnt();
-  std::string isvoid_finish_tag = "is_void_finish_" + cgenClassTable.get_tag_cnt();
+  std::string isvoid_true_tag = "is_void_true_" + std::to_string(cgenClassTable.get_tag_cnt());
+  std::string isvoid_finish_tag = "is_void_finish_" + std::to_string(cgenClassTable.get_tag_cnt());
   // Gen code for e1.
   e1->code(s, cgenClassTable);
   // If ACC is void, jump to true tag.

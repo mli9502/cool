@@ -1,15 +1,14 @@
 class Main inherits IO {
-    a : String <- "Hello World!\n";
-   main(): SELF_TYPE {
-       {
-            out_string(a);
-            out_int(9);
-            out_string("\n");
-            out_string("hello");
+    a : String <- "a";
+    b : String <- "b";
+    c : String <- "c";
+    main(): SELF_TYPE {
+        {
+            out_string(c);
             out_string("\n");
             self;
-       }
-   };
+        }
+    };
 };
 
 -- class A {

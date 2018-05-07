@@ -12,42 +12,30 @@ _program
       String
       #2
       _string
-        "Hello World!\n"
+        "a"
       : String
     #3
+    _attr
+      b
+      String
+      #3
+      _string
+        "b"
+      : String
+    #4
+    _attr
+      c
+      String
+      #4
+      _string
+        "c"
+      : String
+    #5
     _method
       main
       SELF_TYPE
-      #4
+      #6
       _block
-        #5
-        _dispatch
-          #5
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
-          #5
-          _object
-            a
-          : String
-          )
-        : SELF_TYPE
-        #6
-        _dispatch
-          #6
-          _object
-            self
-          : SELF_TYPE
-          out_int
-          (
-          #6
-          _int
-            9
-          : Int
-          )
-        : SELF_TYPE
         #7
         _dispatch
           #7
@@ -57,8 +45,8 @@ _program
           out_string
           (
           #7
-          _string
-            "\n"
+          _object
+            c
           : String
           )
         : SELF_TYPE
@@ -72,25 +60,11 @@ _program
           (
           #8
           _string
-            "hello"
-          : String
-          )
-        : SELF_TYPE
-        #9
-        _dispatch
-          #9
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
-          #9
-          _string
             "\n"
           : String
           )
         : SELF_TYPE
-        #10
+        #9
         _object
           self
         : SELF_TYPE

@@ -22,10 +22,10 @@
 //
 //**************************************************************
 
-// FIXME: 2/28/2017: <class>_init is only meaningful for classes that assign initial value for attributes.
-// This can be checked by checking the init field of attr_class.
-// Check Main class in arith.s/cl for example.
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
+// FIXME: 5/7/2018: Need to handle divide by 0.
+// TODO: 5/6/2018: Test if statements.
+// TODO: 5/6/2018: Test dispatch and static dispatch.
 
 #include <string>
 #include <limits>
@@ -730,6 +730,7 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   int cnt = 0;
   for(auto& attr : get_all_attrs(curr_class)) {
     environment.addid(attr.second->name->get_string(), new MemAddr(SELF, DEFAULT_OBJFIELDS + cnt));
+    cnt ++;
   }
   // Emit code for class init.
   // This needs to be put here because we need the attributes to be in the environment before we init variables.
@@ -1533,9 +1534,10 @@ void plus_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   this->e2->code(s, cgenClassTable);
   // Make a copy of the right Int.
   // The new object is now in ACC.
+  // FIXME: 5/7/2018: Why do we have to do a copy here?
   emit_jal("Object.copy", s);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
@@ -1561,7 +1563,7 @@ void sub_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // The new object is now in ACC.
   emit_jal("Object.copy", s);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
@@ -1587,7 +1589,7 @@ void mul_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // The new object is now in ACC.
   emit_jal("Object.copy", s);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
@@ -1613,13 +1615,13 @@ void divide_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // The new object is now in ACC.
   emit_jal("Object.copy", s);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
   // Load the actual int in ACC to T2.
   emit_load(T2, DEFAULT_OBJFIELDS, ACC, s);
-  // FIXME: Need to handle divide by 0 here...
+  // FIXME: 5/7/2018: Need to handle divide by 0 here...
 
   // Divide and store result in T1.
   emit_div(T1, T1, T2, s);
@@ -1653,7 +1655,7 @@ void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Emit code for the right epxression.
   e2->code(s, cgenClassTable);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);
@@ -1681,7 +1683,7 @@ void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Put result in T2.
   emit_move(T2, ACC, s);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Move true to ACC, false to A1.
   emit_load_bool(ACC, BoolConst(1), s);
@@ -1701,7 +1703,7 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Emit code for the right epxression.
   e2->code(s, cgenClassTable);
   // Load left result from stack.
-  emit_load(T1, 4, SP, s);
+  emit_load(T1, 1, SP, s);
   emit_addiu(SP, SP, 4, s);
   // Load the actual int from T1 to T1.
   emit_load(T1, DEFAULT_OBJFIELDS, T1, s);

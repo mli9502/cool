@@ -76,6 +76,7 @@ typedef class Expression_class *Expression;
 class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
+   virtual bool is_noexpr() { return false; }
    virtual Expression copy_Expression() = 0;
 
 #ifdef Expression_EXTRAS
@@ -771,6 +772,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   bool is_noexpr() override { return true; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS

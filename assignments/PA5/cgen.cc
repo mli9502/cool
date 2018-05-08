@@ -1163,6 +1163,10 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //*****************************************************************
 
 void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
+  // Do not do anything if there's no init presented.
+  if(init->is_noexpr()) {
+    return;
+  }
   // Code init first.
   init->code(os, cgenClassTable);
   // Lookup attribute from environment.

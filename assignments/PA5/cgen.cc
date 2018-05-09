@@ -24,11 +24,9 @@
 
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
-// TODO: 5/7/2018: Test dispatch and static dispatch.
-// TODO: 5/7/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
-// TODO: 5/7/2018: Test loop.
-// TODO: 5/7/2018: Test new.
-// TODO: 5/7/2018: Test isvoid.
+// TODO: 5/9/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
+// TODO: 5/9/2018: Test loop.
+// TODO: 5/9/2018: Test isvoid.
 
 #include <string>
 #include <limits>
@@ -730,6 +728,7 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   self_class = curr_class->name;
   // Add class attributes to environment.
   environment.enterscope();
+  store.enterscope();
   int cnt = 0;
   for(auto& attr : get_all_attrs(curr_class)) {
     environment.addid(attr.second->name->get_string(), new MemAddr(SELF, DEFAULT_OBJFIELDS + cnt));
@@ -756,6 +755,7 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
       environment.exitscope();
     }
   }
+  store.exitscope();
   environment.exitscope();
 }
 
@@ -770,12 +770,12 @@ void CgenClassTable::code_class_methods() {
 void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   // Emit def for init.
   emit_init_def(curr_class->name, str);
-  const auto& attributes = get_all_attrs(curr_class);
+  const auto& attributes = curr_class->get_target_features<attr_class, false>();
   int let_var_cnt = 0;
   // arg_cnt is always 0 for init.
   int arg_cnt = 0;
   for(const auto& attr : attributes) {
-    let_var_cnt = std::max(let_var_cnt, attr.second->init->count_max_let_vars());
+    let_var_cnt = std::max(let_var_cnt, attr->init->count_max_let_vars());
   }
   CgenNode* parent_class = curr_class->get_parentnd();
   // First set up called activation record.
@@ -787,7 +787,7 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   }
   // Init attributes.
   for(const auto& attr : attributes) {
-    attr.second->code(str, *this);
+    attr->code(str, *this);
   }
   // Move $SELF to $ACC.
   emit_move(ACC, SELF, str);
@@ -840,8 +840,6 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
   tag_cnt = 0;
   curr_let_cnt = 0;
-  curr_arg_cnt = 0;
-  curr_max_let_var_cnt = 0; 
 
   stringclasstag = -1;
   intclasstag =    -1;
@@ -1176,12 +1174,16 @@ void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
 }
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
+  // Get method max let var cnt and arg cnt.
+  int arg_cnt = this->formals->len();
+  int let_var_cnt = cgenClassTable.get_method_let_var_cnt_static(cgenClassTable.self_class->get_string(), name->get_string());
+
   cgenClassTable.init_curr_let_cnt();
   cgenClassTable.code_callee_activation_record_setup(os);
   // if(cgen_debug) std::cout << "before coding expr" << std::endl;
   expr->code(os, cgenClassTable);
   // if(cgen_debug) std::cout << "after coding expr" << std::endl;
-  cgenClassTable.code_callee_activation_record_cleanup(os, cgenClassTable.curr_arg_cnt, cgenClassTable.curr_max_let_var_cnt);
+  cgenClassTable.code_callee_activation_record_cleanup(os, arg_cnt, let_var_cnt);
   // FIXME: update store? Probably not needed.
 }
 
@@ -1201,7 +1203,7 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 
 void CgenClassTable::code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable) {
   int arg_cnt = args->len();
-  // if(cgen_debug) std::cout << args->nth(0)->code() << std::endl;
+  if(cgen_debug) std::cout << "[code_caller_activation_record_setup]: arg_cnt: " << arg_cnt << std::endl;
   // Allocate space on stack for let vars.
   emit_addiu(SP, SP, -4 * let_var_cnt, s);
   // Allocate space on stack for args.
@@ -1213,9 +1215,6 @@ void CgenClassTable::code_caller_activation_record_setup(ostream& s, int let_var
     // First arg in 4($sp), second arg in 8($sp)...
     emit_store(ACC, i + 1, SP, s);
   }
-  // Update arg_cnt and let_var_cnt in cgenClassTable.
-  cgenClassTable.curr_arg_cnt = arg_cnt;
-  cgenClassTable.curr_max_let_var_cnt = let_var_cnt;
 }
 
 void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
@@ -1236,13 +1235,13 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
   emit_move(SELF, ACC, os);
 }
 
-void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, int curr_arg_cnt, int curr_max_let_var_cnt) {
+void CgenClassTable::code_callee_activation_record_cleanup(ostream& os, int arg_cnt, int let_var_cnt) {
   // Restore saved $fp, $s0 and $ra.
   emit_load(FP, 3, SP, os);
   emit_load(SELF, 2, SP, os);
   emit_load(RA, 1, SP, os);
   // Pop old $fp, $sa, $ra, args and let_vars out of stack.
-  emit_addiu(SP, SP, 4 * (3 + curr_arg_cnt + curr_max_let_var_cnt), os);
+  emit_addiu(SP, SP, 4 * (3 + arg_cnt + let_var_cnt), os);
   // Return.
   emit_return(os);
 }
@@ -1356,7 +1355,9 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   int let_var_cnt = cgenClassTable.get_method_let_var_cnt_dynamic(class_name, name->get_string());
   // Get method offset from dispatch table.
   int method_offset = cgenClassTable.get_method_offset(class_name, name->get_string());
+  if(cgen_debug) std::cout << "[dispatch_class::code]: method_name: " << name << std::endl;
   if(cgen_debug) std::cout << "[dispatch_class::code]: let_var_cnt: " << let_var_cnt << std::endl;
+  if(cgen_debug) std::cout << "[dispatch_class::code]: actual_size: " << actual->len() << std::endl;
   if(cgen_debug) std::cout << "[dispatch_class::code]: method_offset: " << method_offset << std::endl;
   // Gen code for actuals and set up activation record.
   if(cgen_debug) std::cout << "[dispatch_class::code]: --- Before caller activation record setup ---" << std::endl;
@@ -1808,7 +1809,7 @@ void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
-  // if(cgen_debug) std::cout << "[no_expr_class::code]: no_expr" << std::endl;
+  if(cgen_debug) std::cout << "[no_expr_class::code]: no_expr" << std::endl;
   // FIXME: Not sure what to do about this...
   // // For now, just put 0 in ACC.
   // emit_load_imm(ACC, 0, s);

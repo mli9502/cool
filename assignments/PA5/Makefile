@@ -88,7 +88,7 @@ test_hello:
 debug_hello:
 	$(MAKE) cgen
 	lexer hello_world.cl | parser | semant > hello_world.tmp
-	./cgen < hello_world.tmp -c
+	./cgen < hello_world.tmp -c > hello_world.debug.s
 
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'

@@ -265,10 +265,6 @@ public:
     // val.first: class tag.
     // val.second: max class tag of its subclass. This is needed to generate case expression.
     std::map<CgenNodeP, std::pair<int, int>> _class_tags;
-    // Curr method arg cnt. This is updated by caller activation record setup.
-    int curr_arg_cnt;
-    // Curr method max let var cnt. This is also updated by caller activation record setup.
-    int curr_max_let_var_cnt;
 };
 
 class BoolConst 

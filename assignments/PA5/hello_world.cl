@@ -1,24 +1,38 @@
 class Main inherits IO {
-    a : String;
-    b : Int;
-    c : Bool;
-    test : A;
+    a : A <- new B;
     main(): SELF_TYPE {
         {
-            out_string(a);
+            a.ma(1, 2);
+            out_int((new A).ma(3, 4));
             out_string("\n");
-            out_int(b);
-            out_string("\n");
-            if c then out_string("c is true\n") else out_string("c is false\n") fi;
             self;
         }
     };
 };
 
-class A {
-    a : Int;
-    ma() : Int {
-        5
+class A inherits IO {
+    a : Int <- 10;
+    ma(i: Int, j: Int) : Int {
+        {
+            out_string("A::i: ");
+            out_int(i);
+            out_string("\nA::j: ");
+            out_int(j);
+            out_string("\n");
+            a;
+        }
+    };
+};
+class B inherits A {
+    ma(i: Int, j: Int) : Int {
+        {
+            out_string("B::i: ");
+            out_int(i);
+            out_string("\nB::j: ");
+            out_int(j);
+            out_string("\n");
+            a;
+        }
     };
 };
 -- class A {

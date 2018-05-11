@@ -24,9 +24,9 @@
 
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
-// TODO: 5/9/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
-// TODO: 5/9/2018: Test loop.
-// TODO: 5/9/2018: Test isvoid.
+// TODO: 5/10/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
+// TODO: 5/10/2018: Test isvoid. (cool.cl)
+// TODO: 5/11/2018: Test case.
 
 #include <string>
 #include <limits>
@@ -257,6 +257,10 @@ static void emit_init_def(Symbol sym, ostream& s)
 static void emit_label_ref(int l, ostream &s)
 { s << "label" << l; }
 
+static void emit_label_ref(const std::string& label, ostream& s) {
+  s << label;
+}
+
 static void emit_protobj_ref(Symbol sym, ostream& s)
 { s << sym << PROTOBJ_SUFFIX; }
 
@@ -305,8 +309,20 @@ static void emit_bleq(char *src1, char *src2, int label, ostream &s)
   s << endl;
 }
 
+static void emit_bleq(char* src1, char* src2, const std::string& label, ostream& s) {
+  s << BLEQ << src1 << " " << src2 << " ";
+  emit_label_ref(label, s);
+  s << endl;
+}
+
 static void emit_blt(char *src1, char *src2, int label, ostream &s)
 {
+  s << BLT << src1 << " " << src2 << " ";
+  emit_label_ref(label,s);
+  s << endl;
+}
+
+static void emit_blt(char *src1, char *src2, const std::string& label, ostream& s) {
   s << BLT << src1 << " " << src2 << " ";
   emit_label_ref(label,s);
   s << endl;
@@ -1681,10 +1697,11 @@ void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Load true to ACC.
   emit_load_bool(ACC, BoolConst(1), s);
   int label_cnt = cgenClassTable.get_tag_cnt();
+  std::string lt_label = "lt_label_" + std::to_string(label_cnt);
   // Compare T1 and T2.
-  emit_blt(T1, T2, label_cnt, s);
+  emit_blt(T1, T2, lt_label, s);
   emit_load_bool(ACC, BoolConst(0), s);
-  emit_label_def(label_cnt, s);
+  emit_label_def(lt_label, s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, type);
 }
@@ -1729,10 +1746,11 @@ void leq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Load true to ACC.
   emit_load_bool(ACC, BoolConst(1), s);
   int label_cnt = cgenClassTable.get_tag_cnt();
+  std::string leq_label = "leq_label_" + std::to_string(label_cnt);
   // Compare T1 and T2.
-  emit_bleq(T1, T2, label_cnt, s);
+  emit_bleq(T1, T2, leq_label, s);
   emit_load_bool(ACC, BoolConst(0), s);
-  emit_label_def(label_cnt, s);
+  emit_label_def(leq_label, s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, type);
 }

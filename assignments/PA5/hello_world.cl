@@ -1,17 +1,30 @@
 class Main inherits IO {
     a : A <- new B;
+    y : Int <- 0;
     main(): SELF_TYPE {
         {
-            a.ma(1, 2);
-            out_int((new A).ma(3, 4));
-            out_string("\n");
-            self;
+            while y <= (new A).getA() loop
+	          {
+                  out_int(y);
+                  out_string("\n");
+	             y <- y + 1;
+	          }
+	       pool;
+           self;
+
+            -- a.ma(1, 2);
+            -- out_int((new A).ma(3, 4));
+            -- out_string("\n");
+            -- self;
         }
     };
 };
 
 class A inherits IO {
     a : Int <- 10;
+    getA() : Int {
+        a
+    };
     ma(i: Int, j: Int) : Int {
         {
             out_string("A::i: ");

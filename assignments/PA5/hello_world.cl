@@ -3,13 +3,29 @@ class Main inherits IO {
     y : Int <- 0;
     main(): SELF_TYPE {
         {
-            while y <= (new A).getA() loop
-	          {
-                  out_int(y);
-                  out_string("\n");
-	             y <- y + 1;
-	          }
-	       pool;
+            -- (let position : Int <- 1 in
+            --     {
+            --         (let num : Int <- 2 in
+            --             (let temp : String <- "temp" in
+            --                 {
+            --                     out_int(position);
+            --                     out_string("\n");
+            --                     out_int(num);
+            --                     out_string("\n");
+            --                     out_string(temp);
+            --                     out_string("\n");
+            --                 }
+            --             ) 
+            --         );
+            --         out_string("first let\n");
+            --         out_int(position);
+            --         out_string("\n"); 
+            --     }
+                
+            -- );
+
+	       out_string((isvoid self).type_name().substr(3, 1));
+           out_string("\n");
            self;
 
             -- a.ma(1, 2);

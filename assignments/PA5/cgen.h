@@ -265,6 +265,10 @@ public:
     // val.first: class tag.
     // val.second: max class tag of its subclass. This is needed to generate case expression.
     std::map<CgenNodeP, std::pair<int, int>> _class_tags;
+    // The parameter cnt for current method.
+    // This is set at code_single_class_methods.
+    // This is needed for let expression to locate 
+    int curr_method_actual_cnt;
 };
 
 class BoolConst 

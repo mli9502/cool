@@ -24,8 +24,10 @@
 
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
-// TODO: 5/10/2018: let_class::code need to be fixed. It does not depend on $S1 anymore, use $FP instead.
-// TODO: 5/10/2018: Test isvoid. (cool.cl)
+// TODO: 5/13/2018: Need to handle case_class as the same as let_class.
+//                  The old approach does not work because in the expr for case, there could be another case...
+//                  As a result, we need to pre-allocate the local variables used by case also on stack.
+// TODO: 5/13/2018: Need to revert the order arguments are stored on stack to get String.substr() to work...
 // TODO: 5/11/2018: Test case.
 
 #include <string>
@@ -660,13 +662,21 @@ void CgenClassTable::code_constants()
 
 void CgenClassTable::code_class_nameTab() {
 	str << CLASSNAMETAB << LABEL;
+  unsigned max_class_tag = 0;
+  for(List<CgenNode>* l = nds; l; l = l->tl()) {
+    max_class_tag = std::max(max_class_tag, l->hd()->class_tag);
+  }
+  std::vector<StringEntry*> class_name_entries(max_class_tag + 1, nullptr);
 	for(List<CgenNode>* l = nds; l; l = l->tl()) {
 		std::string class_name = l->hd()->get_name()->get_string();
 		StringEntry* class_name_entry = stringtable.lookup_string(const_cast<char*>(class_name.c_str()));
-		str << WORD;
-		class_name_entry->code_ref(str);
-		str << endl;
+		class_name_entries[l->hd()->class_tag] = class_name_entry;
 	}
+  for(auto entry : class_name_entries) {
+    str << WORD;
+		entry->code_ref(str);
+		str << endl;
+  }
 }
 
 void CgenClassTable::bfs_init_classes_dispatch_table() {
@@ -766,6 +776,8 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
       }
       std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
       str << method_tag << LABEL;
+      // Update curr_method_actual_cnt.
+      this->curr_method_actual_cnt = m->formals->len();
       m->code(str, *this);
       store.exitscope();
       environment.exitscope();
@@ -856,6 +868,7 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
 {
   tag_cnt = 0;
   curr_let_cnt = 0;
+  curr_method_actual_cnt = 0;
 
   stringclasstag = -1;
   intclasstag =    -1;
@@ -1507,15 +1520,13 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
     emit_move(S2, ACC, s);
     // Add new location ($s2) to environment.
     cgenClassTable.environment.enterscope();
-    cgenClassTable.store.enterscope();
     MemAddr* var_addr = new MemAddr(S2, 0);
     cgenClassTable.environment.addid(curr_branch_class->name->get_string(), var_addr);
-    cgenClassTable.store.addid(*var_addr, new std::string(branch->type_decl->get_string()));
+    cgenClassTable.update_store(S2, 0, branch->type_decl);
     // Gen code for branch expression.
     branch->expr->code(s, cgenClassTable);
     // Gen code for branching to case_finish label.
     emit_branch(finish_label, s);
-    cgenClassTable.store.exitscope();
     cgenClassTable.environment.exitscope();
     // FIXME: May need to gen code here to handle NULL object.
   }
@@ -1539,20 +1550,16 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // Gen code for init expression.
   init->code(s, cgenClassTable);
-  // Move ACC to location of let var.
   int curr_let_cnt = cgenClassTable.get_curr_let_cnt();
-  emit_store(ACC, curr_let_cnt, S1, s);
+  // Store ACC on stack.
+  emit_store(ACC, curr_let_cnt + cgenClassTable.curr_method_actual_cnt, FP, s);
   // Update environment and store.
-  // FIXME: What's the difference between type from init and this->type_decl???
-  MemAddr* var_addr = new MemAddr(S1, curr_let_cnt);
+  MemAddr* var_addr = new MemAddr(FP, curr_let_cnt + cgenClassTable.curr_method_actual_cnt);
   cgenClassTable.environment.enterscope();
-  cgenClassTable.store.enterscope();
   cgenClassTable.environment.addid(this->identifier->get_string(), var_addr);
-  cgenClassTable.store.addid(*var_addr, new std::string(init->type->get_string()));
-  // Gen code for body.
+  cgenClassTable.update_store(FP, curr_let_cnt + cgenClassTable.curr_method_actual_cnt, init->type);
   body->code(s, cgenClassTable);
   cgenClassTable.environment.exitscope();
-  cgenClassTable.store.exitscope();
   cgenClassTable.dec_curr_let_cnt();
   cgenClassTable.update_store(ACC, 0, type);
 }

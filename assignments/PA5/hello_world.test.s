@@ -38,7 +38,7 @@ str_const17:
 	.word	7
 	.word	5
 	.word	String_dispTab
-	.word	int_const1
+	.word	int_const2
 	.ascii	"B"
 	.byte	0	
 	.align	2
@@ -47,7 +47,7 @@ str_const16:
 	.word	7
 	.word	5
 	.word	String_dispTab
-	.word	int_const1
+	.word	int_const2
 	.ascii	"A"
 	.byte	0	
 	.align	2
@@ -56,7 +56,7 @@ str_const15:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const3
+	.word	int_const4
 	.ascii	"Main"
 	.byte	0	
 	.align	2
@@ -65,7 +65,7 @@ str_const14:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const4
+	.word	int_const5
 	.ascii	"String"
 	.byte	0	
 	.align	2
@@ -74,7 +74,7 @@ str_const13:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const3
+	.word	int_const4
 	.ascii	"Bool"
 	.byte	0	
 	.align	2
@@ -83,7 +83,7 @@ str_const12:
 	.word	7
 	.word	5
 	.word	String_dispTab
-	.word	int_const5
+	.word	int_const1
 	.ascii	"Int"
 	.byte	0	
 	.align	2
@@ -101,7 +101,7 @@ str_const10:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const4
+	.word	int_const5
 	.ascii	"Object"
 	.byte	0	
 	.align	2
@@ -110,7 +110,7 @@ str_const9:
 	.word	7
 	.word	7
 	.word	String_dispTab
-	.word	int_const2
+	.word	int_const3
 	.ascii	"_prim_slot"
 	.byte	0	
 	.align	2
@@ -155,7 +155,7 @@ str_const4:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const4
+	.word	int_const5
 	.ascii	"B::i: "
 	.byte	0	
 	.align	2
@@ -173,7 +173,7 @@ str_const2:
 	.word	7
 	.word	6
 	.word	String_dispTab
-	.word	int_const4
+	.word	int_const5
 	.ascii	"A::i: "
 	.byte	0	
 	.align	2
@@ -182,7 +182,7 @@ str_const1:
 	.word	7
 	.word	5
 	.word	String_dispTab
-	.word	int_const1
+	.word	int_const2
 	.ascii	"\n"
 	.byte	0	
 	.align	2
@@ -230,31 +230,31 @@ int_const5:
 	.word	5
 	.word	4
 	.word	Int_dispTab
-	.word	3
+	.word	6
 	.word	-1
 int_const4:
 	.word	5
 	.word	4
 	.word	Int_dispTab
-	.word	6
+	.word	4
 	.word	-1
 int_const3:
 	.word	5
 	.word	4
 	.word	Int_dispTab
-	.word	4
+	.word	10
 	.word	-1
 int_const2:
 	.word	5
 	.word	4
 	.word	Int_dispTab
-	.word	10
+	.word	1
 	.word	-1
 int_const1:
 	.word	5
 	.word	4
 	.word	Int_dispTab
-	.word	1
+	.word	3
 	.word	-1
 int_const0:
 	.word	5
@@ -274,14 +274,14 @@ bool_const1:
 	.word	Bool_dispTab
 	.word	1
 class_nameTab:
-	.word	str_const17
-	.word	str_const16
-	.word	str_const15
-	.word	str_const14
-	.word	str_const13
-	.word	str_const12
-	.word	str_const11
 	.word	str_const10
+	.word	str_const11
+	.word	str_const15
+	.word	str_const16
+	.word	str_const17
+	.word	str_const12
+	.word	str_const13
+	.word	str_const14
 B_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
@@ -470,7 +470,7 @@ A_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	IO_init
-	la	$a0 int_const2
+	la	$a0 int_const3
 	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
@@ -571,36 +571,33 @@ Main.main:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 12
 	move	$s0 $a0
-loop_start_0:
-	lw	$a0 16($s0)
-	sw	$a0 0($sp)
+	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	addiu	$sp $sp 0
+	addiu	$sp $sp -8
+	la	$a0 int_const1
+	sw	$a0 4($sp)
+	la	$a0 int_const2
+	sw	$a0 8($sp)
 	addiu	$sp $sp 0
-	la	$a0 A_protObj
-	jal	Object.copy
-	jal	A_init
-	lw	$t1 8($a0)
-	lw	$t1 28($t1)
-	jalr		$t1
-	lw	$t1 4($sp)
-	addiu	$sp $sp 4
-	lw	$t1 12($t1)
-	lw	$t2 12($a0)
-	la	$a0 bool_const1
-	ble	$t1 $t2 leq_label_2
+	addiu	$sp $sp 0
+	move	$a0 $s0
+	beqz	$a0 is_void_true_0
 	la	$a0 bool_const0
-leq_label_2:
-	move	$t1 $a0
-	lw	$t1 12($t1)
-	beqz	$t1 loop_end_1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 16($s0)
+	b	is_void_finish_1
+is_void_true_0:
+	la	$a0 bool_const1
+is_void_finish_1:
+	lw	$t1 8($a0)
+	lw	$t1 4($t1)
+	jalr		$t1
+	lw	$t1 8($a0)
+	lw	$t1 20($t1)
+	jalr		$t1
 	sw	$a0 4($sp)
 	move	$a0 $s0
 	lw	$t1 8($a0)
-	lw	$t1 16($t1)
+	lw	$t1 12($t1)
 	jalr		$t1
 	addiu	$sp $sp 0
 	addiu	$sp $sp -4
@@ -610,20 +607,6 @@ leq_label_2:
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
-	lw	$a0 16($s0)
-	sw	$a0 0($sp)
-	addiu	$sp $sp -4
-	la	$a0 int_const1
-	jal	Object.copy
-	lw	$t1 4($sp)
-	addiu	$sp $sp 4
-	lw	$t1 12($t1)
-	lw	$t2 12($a0)
-	add	$t1 $t1 $t2
-	sw	$t1 12($a0)
-	sw	$a0 16($s0)
-	b	loop_start_0
-loop_end_1:
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)

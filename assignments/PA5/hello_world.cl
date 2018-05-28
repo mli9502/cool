@@ -23,15 +23,16 @@ class Main inherits IO {
             --     }
                 
             -- );
+            out_string((isvoid self).type_name());
+            out_string("\n");
+            out_string((isvoid self).type_name().substr(1, 3));
+            out_string("\n");
+            self;
 
-	       out_string((isvoid self).type_name().substr(3, 1));
-           out_string("\n");
-           self;
-
-            -- a.ma(1, 2);
-            -- out_int((new A).ma(3, 4));
-            -- out_string("\n");
-            -- self;
+            a.ma(1, 2);
+            out_int((new A).ma(3, 4));
+            out_string("\n");
+            self;
         }
     };
 };

@@ -747,7 +747,6 @@ void CgenClassTable::code_class_protObj() {
 }
 // emit method code for only the current class. 
 // this method will not emit code for parent classes of curr_class.
-// FIXME: 5/2/2018: Need to udpate a variable "self", that keeps track which class is currently being used. 
 // This is needed for self.<method> to work.
 void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
   // Set self_class.
@@ -770,14 +769,15 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
     for(auto& m : curr_class->get_target_features<method_class, true>()) {
       environment.enterscope();
       store.enterscope();
+      // Update curr_method_actual_cnt.
+      this->curr_method_actual_cnt = m->formals->len();
       // Add actual parameters to environment.
       for(int i = 0; i < m->formals->len(); i ++) {
-        environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, 1 + i));
+        int offset = this->curr_method_actual_cnt - (i + 1) + 1;
+        environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, offset));
       }
       std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
       str << method_tag << LABEL;
-      // Update curr_method_actual_cnt.
-      this->curr_method_actual_cnt = m->formals->len();
       m->code(str, *this);
       store.exitscope();
       environment.exitscope();
@@ -1238,11 +1238,12 @@ void CgenClassTable::code_caller_activation_record_setup(ostream& s, int let_var
   // Allocate space on stack for args.
   emit_addiu(SP, SP, -4 * arg_cnt, s);
   // Gen code for e1 through en and store args on stack.
-  for(int i = 0; i < args->len(); i ++) {
+  for(int i = 0; i < arg_cnt; i ++) {
     args->nth(i)->code(s, cgenClassTable);
+    int offset = arg_cnt - (i + 1) + 1;
     // Put arg on stack.
     // First arg in 4($sp), second arg in 8($sp)...
-    emit_store(ACC, i + 1, SP, s);
+    emit_store(ACC, offset, SP, s);
   }
 }
 
@@ -1254,8 +1255,8 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
   emit_store(SELF, 2, SP, os);
   emit_store(RA, 1, SP, os);
   // NOTE: 4/24/2018: How to access args and let vars: 
-  // To access first arg, use 4($fp). To accss the first let var, use (arg_cnt * 4 + 4)($fp)
-  // To access ith arg (starting from 1), use (4 * i)($fp).
+  // To accss the first let var, use (arg_cnt * 4 + 4)($fp)
+  // To access ith arg (starting from 1), use (4 * (arg_cnt - i + 1))($fp). This is the same convensition as the methods defined in trap_handler.
   // To access ith let var (starting from 1), use (4 * (arg_cnt + i))($fp).
   // Set new $fp to $sp + 12.
   emit_addiu(FP, SP, 12, os);

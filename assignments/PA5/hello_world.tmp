@@ -28,6 +28,29 @@ _program
       SELF_TYPE
       #5
       _block
+        #26
+        _dispatch
+          #26
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #26
+          _dispatch
+            #26
+            _isvoid
+              #26
+              _object
+                self
+              : SELF_TYPE
+            : Bool
+            type_name
+            (
+            )
+          : String
+          )
+        : SELF_TYPE
         #27
         _dispatch
           #27
@@ -37,31 +60,8 @@ _program
           out_string
           (
           #27
-          _dispatch
-            #27
-            _dispatch
-              #27
-              _isvoid
-                #27
-                _object
-                  self
-                : SELF_TYPE
-              : Bool
-              type_name
-              (
-              )
-            : String
-            substr
-            (
-            #27
-            _int
-              3
-            : Int
-            #27
-            _int
-              1
-            : Int
-            )
+          _string
+            "\n"
           : String
           )
         : SELF_TYPE
@@ -74,79 +74,166 @@ _program
           out_string
           (
           #28
-          _string
-            "\n"
+          _dispatch
+            #28
+            _dispatch
+              #28
+              _isvoid
+                #28
+                _object
+                  self
+                : SELF_TYPE
+              : Bool
+              type_name
+              (
+              )
+            : String
+            substr
+            (
+            #28
+            _int
+              1
+            : Int
+            #28
+            _int
+              3
+            : Int
+            )
           : String
           )
         : SELF_TYPE
         #29
-        _object
-          self
-        : SELF_TYPE
-      : SELF_TYPE
-    )
-  #39
-  _class
-    A
-    IO
-    "hello_world.cl"
-    (
-    #40
-    _attr
-      a
-      Int
-      #40
-      _int
-        10
-      : Int
-    #41
-    _method
-      getA
-      Int
-      #42
-      _object
-        a
-      : Int
-    #44
-    _method
-      ma
-      #44
-      _formal
-        i
-        Int
-      #44
-      _formal
-        j
-        Int
-      Int
-      #45
-      _block
-        #46
         _dispatch
-          #46
+          #29
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #46
+          #29
           _string
-            "A::i: "
+            "\n"
           : String
           )
         : SELF_TYPE
+        #30
+        _object
+          self
+        : SELF_TYPE
+        #32
+        _dispatch
+          #32
+          _object
+            a
+          : A
+          ma
+          (
+          #32
+          _int
+            1
+          : Int
+          #32
+          _int
+            2
+          : Int
+          )
+        : Int
+        #33
+        _dispatch
+          #33
+          _object
+            self
+          : SELF_TYPE
+          out_int
+          (
+          #33
+          _dispatch
+            #33
+            _new
+              A
+            : A
+            ma
+            (
+            #33
+            _int
+              3
+            : Int
+            #33
+            _int
+              4
+            : Int
+            )
+          : Int
+          )
+        : SELF_TYPE
+        #34
+        _dispatch
+          #34
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #34
+          _string
+            "\n"
+          : String
+          )
+        : SELF_TYPE
+        #35
+        _object
+          self
+        : SELF_TYPE
+      : SELF_TYPE
+    )
+  #40
+  _class
+    A
+    IO
+    "hello_world.cl"
+    (
+    #41
+    _attr
+      a
+      Int
+      #41
+      _int
+        10
+      : Int
+    #42
+    _method
+      getA
+      Int
+      #43
+      _object
+        a
+      : Int
+    #45
+    _method
+      ma
+      #45
+      _formal
+        i
+        Int
+      #45
+      _formal
+        j
+        Int
+      Int
+      #46
+      _block
         #47
         _dispatch
           #47
           _object
             self
           : SELF_TYPE
-          out_int
+          out_string
           (
           #47
-          _object
-            i
-          : Int
+          _string
+            "A::i: "
+          : String
           )
         : SELF_TYPE
         #48
@@ -155,12 +242,12 @@ _program
           _object
             self
           : SELF_TYPE
-          out_string
+          out_int
           (
           #48
-          _string
-            "\nA::j: "
-          : String
+          _object
+            i
+          : Int
           )
         : SELF_TYPE
         #49
@@ -169,12 +256,12 @@ _program
           _object
             self
           : SELF_TYPE
-          out_int
+          out_string
           (
           #49
-          _object
-            j
-          : Int
+          _string
+            "\nA::j: "
+          : String
           )
         : SELF_TYPE
         #50
@@ -183,66 +270,66 @@ _program
           _object
             self
           : SELF_TYPE
-          out_string
+          out_int
           (
           #50
-          _string
-            "\n"
-          : String
+          _object
+            j
+          : Int
           )
         : SELF_TYPE
         #51
-        _object
-          a
-        : Int
-      : Int
-    )
-  #55
-  _class
-    B
-    A
-    "hello_world.cl"
-    (
-    #56
-    _method
-      ma
-      #56
-      _formal
-        i
-        Int
-      #56
-      _formal
-        j
-        Int
-      Int
-      #57
-      _block
-        #58
         _dispatch
-          #58
+          #51
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #58
+          #51
           _string
-            "B::i: "
+            "\n"
           : String
           )
         : SELF_TYPE
+        #52
+        _object
+          a
+        : Int
+      : Int
+    )
+  #56
+  _class
+    B
+    A
+    "hello_world.cl"
+    (
+    #57
+    _method
+      ma
+      #57
+      _formal
+        i
+        Int
+      #57
+      _formal
+        j
+        Int
+      Int
+      #58
+      _block
         #59
         _dispatch
           #59
           _object
             self
           : SELF_TYPE
-          out_int
+          out_string
           (
           #59
-          _object
-            i
-          : Int
+          _string
+            "B::i: "
+          : String
           )
         : SELF_TYPE
         #60
@@ -251,12 +338,12 @@ _program
           _object
             self
           : SELF_TYPE
-          out_string
+          out_int
           (
           #60
-          _string
-            "\nB::j: "
-          : String
+          _object
+            i
+          : Int
           )
         : SELF_TYPE
         #61
@@ -265,12 +352,12 @@ _program
           _object
             self
           : SELF_TYPE
-          out_int
+          out_string
           (
           #61
-          _object
-            j
-          : Int
+          _string
+            "\nB::j: "
+          : String
           )
         : SELF_TYPE
         #62
@@ -279,15 +366,29 @@ _program
           _object
             self
           : SELF_TYPE
-          out_string
+          out_int
           (
           #62
+          _object
+            j
+          : Int
+          )
+        : SELF_TYPE
+        #63
+        _dispatch
+          #63
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #63
           _string
             "\n"
           : String
           )
         : SELF_TYPE
-        #63
+        #64
         _object
           a
         : Int

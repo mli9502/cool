@@ -22,6 +22,10 @@
 //
 //**************************************************************
 
+// FIXME: 5/28/2018: 
+// Need to combine let var cnt and case var cnt into local_var_cnt !!!!!!!!!!!
+
+
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
 // TODO: 5/13/2018: Need to handle case_class as the same as let_class.

@@ -51,6 +51,7 @@ private:
   // A map keeping track of which method of current class has been included in the dispatch table while going through the methods in parent class.
   std::map<std::string, std::pair<method_class*, bool>> method_included;
   // A map keeping track of let var cnt for methods.
+  // FIXME: 5/28/2018: Need to make this representing local_var_cnt. Which contains both let_var_cnt and case_var_cnt.
   std::map<std::string, int> let_var_map;
   // Dispatch table.
   // This includes all the methods from parent class and the current class.
@@ -267,7 +268,7 @@ public:
     std::map<CgenNodeP, std::pair<int, int>> _class_tags;
     // The parameter cnt for current method.
     // This is set at code_single_class_methods.
-    // This is needed for let expression to locate 
+    // This is needed for let expression to locate the starting location of the first let_var.
     int curr_method_actual_cnt;
 };
 

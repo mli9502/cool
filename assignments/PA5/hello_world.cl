@@ -28,19 +28,19 @@ class Main inherits IO {
 
             -- ************************************
             -- Test isvoid, type_name and dispatch to method in trap_handler.
-            -- out_string((isvoid self).type_name());
-            -- out_string("\n");
-            -- out_string((isvoid self).type_name().substr(1, 3));
-            -- out_string("\n");
-            -- self;
+            out_string((isvoid self).type_name());
+            out_string("\n");
+            out_string((isvoid self).type_name().substr(1, 3));
+            out_string("\n");
+            self;
             -- ************************************
 
             -- ************************************
             -- Test dynamic dispatch.
-            -- a.ma(1, 2);
-            -- out_int((new A).ma(3, 4));
-            -- out_string("\n");
-            -- self;
+            a.ma(1, 2);
+            out_int((new A).ma(3, 4));
+            out_string("\n");
+            self;
             -- ************************************
 
             -- ************************************
@@ -53,7 +53,29 @@ class Main inherits IO {
                     out_string("class type is now B\n");
                     case a of
                         a_B_A : A => out_string("a_B_A\n");
-                        a_B_B : B => out_string("a_B_B\n");
+                        a_B_B : B => {
+                            (let position : Int <- 1 in
+                                {
+                                    (let num : Int <- 2 in
+                                        (let temp : String <- "temp" in
+                                            {
+                                                out_int(position);
+                                                out_string("\n");
+                                                out_int(num);
+                                                out_string("\n");
+                                                out_string(temp);
+                                                out_string("\n");
+                                            }
+                                        ) 
+                                    );
+                                    out_string("first let\n");
+                                    out_int(position);
+                                    out_string("\n"); 
+                                    a_B.ma(2, 3);
+                                    a_B_B.ma(1, 4);
+                                }
+                            );    
+                        };
                         a_B_O : Object => out_string("a_B_O\n");
                     esac;
                 };

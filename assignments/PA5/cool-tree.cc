@@ -25,18 +25,10 @@ void program_class::dump(ostream& stream, int n)
    classes->dump(stream, n+2);
 }
 
-int program_class::count_max_let_vars() {
+int program_class::count_max_local_vars() {
   int rtn = 0;
   for(int i = 0; i < classes->len(); i ++) {
-    rtn = std::max(classes->nth(i)->count_max_let_vars(), rtn);
-  }
-  return rtn;
-}
-
-int program_class::count_max_case_vars() {
-  int rtn = 0;
-  for(int i = 0; i < classes->len(); i ++) {
-    rtn = std::max(classes->nth(i)->count_max_case_vars(), rtn);
+    rtn = std::max(classes->nth(i)->count_max_local_vars(), rtn);
   }
   return rtn;
 }
@@ -57,22 +49,13 @@ void class__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, filename);
 }
 
-int class__class::count_max_let_vars() {
+int class__class::count_max_local_vars() {
   int rtn = 0;
   for(int i = 0; i < features->len(); i ++) {
-    rtn = std::max(features->nth(i)->count_max_let_vars(), rtn);
+    rtn = std::max(features->nth(i)->count_max_local_vars(), rtn);
   }
   return rtn;
 }
-
-int class__class::count_max_case_vars() {
-  int rtn = 0;
-  for(int i = 0; i < features->len(); i ++) {
-    rtn = std::max(features->nth(i)->count_max_case_vars(), rtn);
-  }
-  return rtn;
-}
-
 
 Feature method_class::copy_Feature()
 {
@@ -89,18 +72,10 @@ void method_class::dump(ostream& stream, int n)
    expr->dump(stream, n+2);
 }
 
-int method_class::count_max_let_vars() {
-  int rtn = expr->count_max_let_vars();
+int method_class::count_max_local_vars() {
+  int rtn = expr->count_max_local_vars();
   for(int i = 0; i < formals->len(); i ++) {
-    rtn = std::max(formals->nth(i)->count_max_let_vars(), rtn);
-  }
-  return rtn;
-}
-
-int method_class::count_max_case_vars() {
-  int rtn = expr->count_max_case_vars();
-  for(int i = 0; i < formals->len(); i ++) {
-    rtn = std::max(formals->nth(i)->count_max_case_vars(), rtn);
+    rtn = std::max(formals->nth(i)->count_max_local_vars(), rtn);
   }
   return rtn;
 }
@@ -120,12 +95,8 @@ void attr_class::dump(ostream& stream, int n)
    init->dump(stream, n+2);
 }
 
-int attr_class::count_max_let_vars() {
-  return init->count_max_let_vars();
-}
-
-int attr_class::count_max_case_vars() {
-  return init->count_max_case_vars();
+int attr_class::count_max_local_vars() {
+  return init->count_max_local_vars();
 }
 
 Formal formal_class::copy_Formal()
@@ -141,11 +112,7 @@ void formal_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, type_decl);
 }
 
-int formal_class::count_max_let_vars() {
-  return 0;
-}
-
-int formal_class::count_max_case_vars() {
+int formal_class::count_max_local_vars() {
   return 0;
 }
 
@@ -163,12 +130,8 @@ void branch_class::dump(ostream& stream, int n)
    expr->dump(stream, n+2);
 }
 
-int branch_class::count_max_let_vars() {
-  return expr->count_max_let_vars();
-}
-
-int branch_class::count_max_case_vars() {
-  return expr->count_max_case_vars();
+int branch_class::count_max_local_vars() {
+  return expr->count_max_local_vars();
 }
 
 Expression assign_class::copy_Expression()
@@ -184,14 +147,9 @@ void assign_class::dump(ostream& stream, int n)
    expr->dump(stream, n+2);
 }
 
-int assign_class::count_max_let_vars() {
-  return expr->count_max_let_vars();
+int assign_class::count_max_local_vars() {
+  return expr->count_max_local_vars();
 }
-
-int assign_class::count_max_case_vars() {
-  return expr->count_max_case_vars();
-}
-
 
 Expression static_dispatch_class::copy_Expression()
 {
@@ -208,18 +166,10 @@ void static_dispatch_class::dump(ostream& stream, int n)
    actual->dump(stream, n+2);
 }
 
-int static_dispatch_class::count_max_let_vars() {
-  int rtn = expr->count_max_let_vars();
+int static_dispatch_class::count_max_local_vars() {
+  int rtn = expr->count_max_local_vars();
   for(int i = 0; i < actual->len(); i ++) {
-    rtn = std::max(actual->nth(i)->count_max_let_vars(), rtn);
-  }
-  return rtn;
-}
-
-int static_dispatch_class::count_max_case_vars() {
-  int rtn = expr->count_max_case_vars();
-  for(int i = 0; i < actual->len(); i ++) {
-    rtn = std::max(actual->nth(i)->count_max_case_vars(), rtn);
+    rtn = std::max(actual->nth(i)->count_max_local_vars(), rtn);
   }
   return rtn;
 }
@@ -239,18 +189,10 @@ void dispatch_class::dump(ostream& stream, int n)
    actual->dump(stream, n+2);
 }
 
-int dispatch_class::count_max_let_vars() {
-  int rtn = expr->count_max_let_vars();
+int dispatch_class::count_max_local_vars() {
+  int rtn = expr->count_max_local_vars();
   for(int i = 0; i < actual->len(); i ++) {
-    rtn = std::max(actual->nth(i)->count_max_let_vars(), rtn);
-  }
-  return rtn;
-}
-
-int dispatch_class::count_max_case_vars() {
-  int rtn = expr->count_max_case_vars();
-  for(int i = 0; i < actual->len(); i ++) {
-    rtn = std::max(actual->nth(i)->count_max_case_vars(), rtn);
+    rtn = std::max(actual->nth(i)->count_max_local_vars(), rtn);
   }
   return rtn;
 }
@@ -269,18 +211,11 @@ void cond_class::dump(ostream& stream, int n)
    else_exp->dump(stream, n+2);
 }
 
-int cond_class::count_max_let_vars() {
-  return std::max(pred->count_max_let_vars(),
-                    std::max(then_exp->count_max_let_vars(),
-                              else_exp->count_max_let_vars()));
+int cond_class::count_max_local_vars() {
+  return std::max(pred->count_max_local_vars(),
+                    std::max(then_exp->count_max_local_vars(),
+                              else_exp->count_max_local_vars()));
 }
-
-int cond_class::count_max_case_vars() {
-  return std::max(pred->count_max_case_vars(),
-                    std::max(then_exp->count_max_case_vars(),
-                              else_exp->count_max_case_vars()));
-}
-
 
 Expression loop_class::copy_Expression()
 {
@@ -295,17 +230,10 @@ void loop_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
-int loop_class::count_max_let_vars() {
-  return std::max(pred->count_max_let_vars(), 
-                  body->count_max_let_vars());
+int loop_class::count_max_local_vars() {
+  return std::max(pred->count_max_local_vars(), 
+                  body->count_max_local_vars());
 }
-
-
-int loop_class::count_max_case_vars() {
-  return std::max(pred->count_max_case_vars(), 
-                  body->count_max_case_vars());
-}
-
 
 Expression typcase_class::copy_Expression()
 {
@@ -320,18 +248,10 @@ void typcase_class::dump(ostream& stream, int n)
    cases->dump(stream, n+2);
 }
 
-int typcase_class::count_max_let_vars() {
-  int rtn = expr->count_max_let_vars();
+int typcase_class::count_max_local_vars() {
+  int rtn = expr->count_max_local_vars();
   for(int i = 0; i < cases->len(); i ++) {
-    rtn = std::max(cases->nth(i)->count_max_let_vars(), rtn);
-  }
-  return rtn;
-}
-
-int typcase_class::count_max_case_vars() {
-  int rtn = expr->count_max_let_vars();
-  for(int i = 0; i < cases->len(); i ++) {
-    rtn = std::max(cases->nth(i)->count_max_let_vars(), rtn);
+    rtn = std::max(cases->nth(i)->count_max_local_vars(), rtn);
   }
   return 1 + rtn;
 }
@@ -348,18 +268,10 @@ void block_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
-int block_class::count_max_let_vars() {
+int block_class::count_max_local_vars() {
   int rtn = 0;
   for(int i = 0; i < body->len(); i ++) {
-    rtn = std::max(rtn, body->nth(i)->count_max_let_vars());
-  }
-  return rtn;
-}
-
-int block_class::count_max_case_vars() {
-  int rtn = 0;
-  for(int i = 0; i < body->len(); i ++) {
-    rtn = std::max(rtn, body->nth(i)->count_max_case_vars());
+    rtn = std::max(rtn, body->nth(i)->count_max_local_vars());
   }
   return rtn;
 }
@@ -380,13 +292,9 @@ void let_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
-int let_class::count_max_let_vars() {
-  return 1 + std::max(init->count_max_let_vars(), 
-                      body->count_max_let_vars());
-}
-
-int let_class::count_max_case_vars() {
-  return std::max(init->count_max_case_vars(), body->count_max_case_vars());
+int let_class::count_max_local_vars() {
+  return 1 + std::max(init->count_max_local_vars(), 
+                      body->count_max_local_vars());
 }
 
 
@@ -403,14 +311,9 @@ void plus_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int plus_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
-}
-
-int plus_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
+int plus_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
 
 Expression sub_class::copy_Expression()
@@ -426,16 +329,10 @@ void sub_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int sub_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
+int sub_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
-
-int sub_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
-}
-
 
 Expression mul_class::copy_Expression()
 {
@@ -450,14 +347,9 @@ void mul_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int mul_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
-}
-
-int mul_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
+int mul_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
 
 Expression divide_class::copy_Expression()
@@ -473,14 +365,9 @@ void divide_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int divide_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
-}
-
-int divide_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
+int divide_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
 
 Expression neg_class::copy_Expression()
@@ -495,12 +382,8 @@ void neg_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
-int neg_class::count_max_let_vars() {
-  return e1->count_max_let_vars();
-}
-
-int neg_class::count_max_case_vars() {
-  return e1->count_max_case_vars();
+int neg_class::count_max_local_vars() {
+  return e1->count_max_local_vars();
 }
 
 Expression lt_class::copy_Expression()
@@ -516,14 +399,9 @@ void lt_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int lt_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
-}
-
-int lt_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
+int lt_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
 
 Expression eq_class::copy_Expression()
@@ -539,14 +417,9 @@ void eq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int eq_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(),
-                  e2->count_max_let_vars());
-}
-
-int eq_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(),
-                  e2->count_max_case_vars());
+int eq_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(),
+                  e2->count_max_local_vars());
 }
 
 Expression leq_class::copy_Expression()
@@ -562,14 +435,9 @@ void leq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-int leq_class::count_max_let_vars() {
-  return std::max(e1->count_max_let_vars(), 
-                  e2->count_max_let_vars());
-}
-
-int leq_class::count_max_case_vars() {
-  return std::max(e1->count_max_case_vars(), 
-                  e2->count_max_case_vars());
+int leq_class::count_max_local_vars() {
+  return std::max(e1->count_max_local_vars(), 
+                  e2->count_max_local_vars());
 }
 
 Expression comp_class::copy_Expression()
@@ -584,12 +452,8 @@ void comp_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
-int comp_class::count_max_let_vars() {
-  return e1->count_max_let_vars();
-}
-
-int comp_class::count_max_case_vars() {
-  return e1->count_max_case_vars();
+int comp_class::count_max_local_vars() {
+  return e1->count_max_local_vars();
 }
 
 Expression int_const_class::copy_Expression()
@@ -604,15 +468,9 @@ void int_const_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, token);
 }
 
-int int_const_class::count_max_let_vars() {
+int int_const_class::count_max_local_vars() {
   return 0;
 }
-
-int int_const_class::count_max_case_vars() {
-  return 0;
-}
-
-
 
 Expression bool_const_class::copy_Expression()
 {
@@ -626,11 +484,7 @@ void bool_const_class::dump(ostream& stream, int n)
    dump_Boolean(stream, n+2, val);
 }
 
-int bool_const_class::count_max_let_vars() {
-  return 0;
-}
-
-int bool_const_class::count_max_case_vars() {
+int bool_const_class::count_max_local_vars() {
   return 0;
 }
 
@@ -646,11 +500,7 @@ void string_const_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, token);
 }
 
-int string_const_class::count_max_let_vars() {
-  return 0;
-}
-
-int string_const_class::count_max_case_vars() {
+int string_const_class::count_max_local_vars() {
   return 0;
 }
 
@@ -666,11 +516,7 @@ void new__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, type_name);
 }
 
-int new__class::count_max_let_vars() {
-  return 0;
-}
-
-int new__class::count_max_case_vars() {
+int new__class::count_max_local_vars() {
   return 0;
 }
 
@@ -686,12 +532,8 @@ void isvoid_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
-int isvoid_class::count_max_let_vars() {
-  return e1->count_max_let_vars();
-}
-
-int isvoid_class::count_max_case_vars() {
-  return e1->count_max_case_vars();
+int isvoid_class::count_max_local_vars() {
+  return e1->count_max_local_vars();
 }
 
 Expression no_expr_class::copy_Expression()
@@ -704,11 +546,7 @@ void no_expr_class::dump(ostream& stream, int n)
    stream << pad(n) << "no_expr\n";
 }
 
-int no_expr_class::count_max_let_vars() {
-  return 0;
-}
-
-int no_expr_class::count_max_case_vars() {
+int no_expr_class::count_max_local_vars() {
   return 0;
 }
 
@@ -724,14 +562,9 @@ void object_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, name);
 }
 
-int object_class::count_max_let_vars() {
+int object_class::count_max_local_vars() {
   return 0;
 }
-
-int object_class::count_max_case_vars() {
-  return 0;
-}
-
 
 // interfaces used by Bison
 Classes nil_Classes()

@@ -51,8 +51,8 @@ private:
   // A map keeping track of which method of current class has been included in the dispatch table while going through the methods in parent class.
   std::map<std::string, std::pair<method_class*, bool>> method_included;
   // A map keeping track of let var cnt for methods.
-  // FIXME: 5/28/2018: Need to make this representing local_var_cnt. Which contains both let_var_cnt and case_var_cnt.
-  std::map<std::string, int> let_var_map;
+  // FIXME: 5/28/2018: Need to make this representing local_var_cnt. Which contains both local_var_cnt and case_var_cnt.
+  std::map<std::string, int> local_var_map;
   // Dispatch table.
   // This includes all the methods from parent class and the current class.
   // In the form of: <P, m1>, <C, m2>, <P, m3>, <P, m4>, <C, m5>, <C, m6>.
@@ -72,11 +72,11 @@ public:
   const std::vector<std::pair<CgenNodeP, method_class*>>& get_dispatch_table() {
     return this->dispatch_table;
   }
-  const std::map<std::string, int>& get_let_var_map() {
-    return this->let_var_map;
+  const std::map<std::string, int>& get_local_var_map() {
+    return this->local_var_map;
   }
-  void set_let_var_map(const std::string& key, int val) {
-    this->let_var_map[key] = val;
+  void set_local_var_map(const std::string& key, int val) {
+    this->local_var_map[key] = val;
   }
   void set_dispatch_table() {
     // First put all methods into method_included map.
@@ -115,18 +115,18 @@ public:
     }
   }
   // This depends on dispatch table.
-  // TODO: Call this method when doing BFS to correctly setup let var map.
-  // TODO: Do a bottom-up DFS to update let-var-cnt to max of a class's children.
-  void set_let_var_map() {
+  // TODO: Call this method when doing BFS to correctly setup local var map.
+  // TODO: Do a bottom-up DFS to update local-var-cnt to max of a class's children.
+  void set_local_var_map() {
     for(auto& entry : this->dispatch_table) {
       std::string method_name = entry.second->name->get_string();
       // If this method is inherited from a parent class.
-      // Use the let var cnt from parent class.
+      // Use the local var cnt from parent class.
       if(entry.first != this) {
-        auto& parent_let_var_map = entry.first->get_let_var_map();
-        this->let_var_map[method_name] = parent_let_var_map.at(method_name);
+        auto& parent_local_var_map = entry.first->get_local_var_map();
+        this->local_var_map[method_name] = parent_local_var_map.at(method_name);
       } else {
-        this->let_var_map[method_name] = entry.second->count_max_let_vars();
+        this->local_var_map[method_name] = entry.second->count_max_local_vars();
       }
     }
   }
@@ -145,11 +145,11 @@ private:
   // count for tag.
   int tag_cnt;
   // After entering let_expression, increase curr_let_cnt.
-  // Before exiting let_expression, decrease curr_let_cnt.
-  // To get the location of the let var for the current let expression, use (4 * curr_let_cnt)($s1).
+  // Before exiting let_expression, decrease curr_local_cnt.
+  // To get the location of the local var for the current let expression, use (4 * curr_let_cnt)($s1).
   // Setup activation record after method activation.
   // Initial value is 1.
-  int curr_let_cnt;
+  int curr_local_cnt;
 
   void code_global_data();
   void code_global_text();
@@ -163,7 +163,7 @@ private:
   void code_single_class_init(CgenNode* curr_class);
   void code_class_methods();
   void code_single_class_methods(CgenNode* curr_class);
-  void disp_count_let_vars();
+  void disp_count_local_vars();
   void set_class_tags_member();
   void set_class_tags_member_helper(CgenNodeP node, int& tag);
 
@@ -216,17 +216,17 @@ public:
     // Using BFS to initialize dispatch table for classes.
     // Note that BFS is needed because dispatch table for parent classes needs to be setup before proceeding to child classes.
     void bfs_init_classes_dispatch_table();
-    // Using BFS to initialize let var cnt map after dispatch table is set up.
-    void bfs_init_classes_let_var_cnt_map();
-    // Using bottom-up dfs to update let var cnt to correct value.
-    void dfs_correct_classes_let_var_cnt_map();
-    void dfs_correct_classes_let_var_cnt_map_helper(CgenNodeP node);
+    // Using BFS to initialize local var cnt map after dispatch table is set up.
+    void bfs_init_classes_local_var_cnt_map();
+    // Using bottom-up dfs to update local var cnt to correct value.
+    void dfs_correct_classes_local_var_cnt_map();
+    void dfs_correct_classes_local_var_cnt_map_helper(CgenNodeP node);
     void code_callee_activation_record_setup(ostream& s);
-    void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_let_var_cnt);
-    void code_caller_activation_record_setup(ostream& s, int let_var_cnt, Expressions args, CgenClassTable& cgenClassTable);
+    void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_local_var_cnt);
+    void code_caller_activation_record_setup(ostream& s, int local_var_cnt, Expressions args, CgenClassTable& cgenClassTable);
     int get_method_offset(const std::string& class_name, const std::string& method_name);
-    int get_method_let_var_cnt_dynamic(const std::string& class_name, const std::string& method_name);
-    int get_method_let_var_cnt_static(const std::string& class_name, const std::string& method_name);
+    int get_method_local_var_cnt_dynamic(const std::string& class_name, const std::string& method_name);
+    int get_method_local_var_cnt_static(const std::string& class_name, const std::string& method_name);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     CgenNodeP get_cgen_node_from_symbol(Symbol s);
     std::vector<branch_class*> sort_branches(Cases cases);
@@ -241,14 +241,14 @@ public:
     int get_tag_cnt() {
       return this->tag_cnt ++;
     }
-    void init_curr_let_cnt() {
-      this->curr_let_cnt = 1;
+    void init_curr_local_cnt() {
+      this->curr_local_cnt = 1;
     }
-    int get_curr_let_cnt() {
-      return this->curr_let_cnt ++;
+    int get_curr_local_cnt() {
+      return this->curr_local_cnt ++;
     }
-    void dec_curr_let_cnt() {
-      this->curr_let_cnt --;
+    void dec_curr_local_cnt() {
+      this->curr_local_cnt --;
     }
 
      /*

@@ -28,6 +28,162 @@ _program
       SELF_TYPE
       #5
       _block
+        #31
+        _dispatch
+          #31
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #31
+          _dispatch
+            #31
+            _isvoid
+              #31
+              _object
+                self
+              : SELF_TYPE
+            : Bool
+            type_name
+            (
+            )
+          : String
+          )
+        : SELF_TYPE
+        #32
+        _dispatch
+          #32
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #32
+          _string
+            "\n"
+          : String
+          )
+        : SELF_TYPE
+        #33
+        _dispatch
+          #33
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #33
+          _dispatch
+            #33
+            _dispatch
+              #33
+              _isvoid
+                #33
+                _object
+                  self
+                : SELF_TYPE
+              : Bool
+              type_name
+              (
+              )
+            : String
+            substr
+            (
+            #33
+            _int
+              1
+            : Int
+            #33
+            _int
+              3
+            : Int
+            )
+          : String
+          )
+        : SELF_TYPE
+        #34
+        _dispatch
+          #34
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #34
+          _string
+            "\n"
+          : String
+          )
+        : SELF_TYPE
+        #35
+        _object
+          self
+        : SELF_TYPE
+        #40
+        _dispatch
+          #40
+          _object
+            a
+          : A
+          ma
+          (
+          #40
+          _int
+            1
+          : Int
+          #40
+          _int
+            2
+          : Int
+          )
+        : Int
+        #41
+        _dispatch
+          #41
+          _object
+            self
+          : SELF_TYPE
+          out_int
+          (
+          #41
+          _dispatch
+            #41
+            _new
+              A
+            : A
+            ma
+            (
+            #41
+            _int
+              3
+            : Int
+            #41
+            _int
+              4
+            : Int
+            )
+          : Int
+          )
+        : SELF_TYPE
+        #42
+        _dispatch
+          #42
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #42
+          _string
+            "\n"
+          : String
+          )
+        : SELF_TYPE
+        #43
+        _object
+          self
+        : SELF_TYPE
         #48
         _typcase
           #48
@@ -54,314 +210,501 @@ _program
                 : String
                 )
               : SELF_TYPE
-              #51
-              _typcase
-                #51
-                _object
-                  a
-                : A
-                #52
-                _branch
-                  a_A_A
-                  A
-                  #52
-                  _dispatch
-                    #52
-                    _object
-                      self
-                    : SELF_TYPE
-                    out_string
-                    (
-                    #52
-                    _string
-                      "a_A_A\n"
-                    : String
-                    )
-                  : SELF_TYPE
-                #53
-                _branch
-                  a_A_B
-                  B
-                  #53
-                  _dispatch
-                    #53
-                    _object
-                      self
-                    : SELF_TYPE
-                    out_string
-                    (
-                    #53
-                    _string
-                      "a_A_B\n"
-                    : String
-                    )
-                  : SELF_TYPE
-                #54
-                _branch
-                  a_A_O
-                  Object
-                  #54
-                  _dispatch
-                    #54
-                    _object
-                      self
-                    : SELF_TYPE
-                    out_string
-                    (
-                    #54
-                    _string
-                      "a_A_O\n"
-                    : String
-                    )
-                  : SELF_TYPE
-              : SELF_TYPE
             : SELF_TYPE
-          #57
+          #52
           _branch
             a_B
             B
-            #57
-            _dispatch
-              #57
-              _object
-                self
+            #52
+            _block
+              #53
+              _dispatch
+                #53
+                _object
+                  self
+                : SELF_TYPE
+                out_string
+                (
+                #53
+                _string
+                  "class type is now B\n"
+                : String
+                )
               : SELF_TYPE
-              out_string
-              (
-              #57
-              _string
-                "class type is now B\n"
-              : String
-              )
-            : SELF_TYPE
-          #58
+              #54
+              _typcase
+                #54
+                _object
+                  a
+                : A
+                #55
+                _branch
+                  a_B_A
+                  A
+                  #55
+                  _dispatch
+                    #55
+                    _object
+                      self
+                    : SELF_TYPE
+                    out_string
+                    (
+                    #55
+                    _string
+                      "a_B_A\n"
+                    : String
+                    )
+                  : SELF_TYPE
+                #56
+                _branch
+                  a_B_B
+                  B
+                  #56
+                  _block
+                    #57
+                    _let
+                      position
+                      Int
+                      #57
+                      _int
+                        1
+                      : Int
+                      #58
+                      _block
+                        #59
+                        _let
+                          num
+                          Int
+                          #59
+                          _int
+                            2
+                          : Int
+                          #60
+                          _let
+                            temp
+                            String
+                            #60
+                            _string
+                              "temp"
+                            : String
+                            #61
+                            _block
+                              #62
+                              _dispatch
+                                #62
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_int
+                                (
+                                #62
+                                _object
+                                  position
+                                : Int
+                                )
+                              : SELF_TYPE
+                              #63
+                              _dispatch
+                                #63
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_string
+                                (
+                                #63
+                                _string
+                                  "\n"
+                                : String
+                                )
+                              : SELF_TYPE
+                              #64
+                              _dispatch
+                                #64
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_int
+                                (
+                                #64
+                                _object
+                                  num
+                                : Int
+                                )
+                              : SELF_TYPE
+                              #65
+                              _dispatch
+                                #65
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_string
+                                (
+                                #65
+                                _string
+                                  "\n"
+                                : String
+                                )
+                              : SELF_TYPE
+                              #66
+                              _dispatch
+                                #66
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_string
+                                (
+                                #66
+                                _object
+                                  temp
+                                : String
+                                )
+                              : SELF_TYPE
+                              #67
+                              _dispatch
+                                #67
+                                _object
+                                  self
+                                : SELF_TYPE
+                                out_string
+                                (
+                                #67
+                                _string
+                                  "\n"
+                                : String
+                                )
+                              : SELF_TYPE
+                            : SELF_TYPE
+                          : SELF_TYPE
+                        : SELF_TYPE
+                        #71
+                        _dispatch
+                          #71
+                          _object
+                            self
+                          : SELF_TYPE
+                          out_string
+                          (
+                          #71
+                          _string
+                            "first let\n"
+                          : String
+                          )
+                        : SELF_TYPE
+                        #72
+                        _dispatch
+                          #72
+                          _object
+                            self
+                          : SELF_TYPE
+                          out_int
+                          (
+                          #72
+                          _object
+                            position
+                          : Int
+                          )
+                        : SELF_TYPE
+                        #73
+                        _dispatch
+                          #73
+                          _object
+                            self
+                          : SELF_TYPE
+                          out_string
+                          (
+                          #73
+                          _string
+                            "\n"
+                          : String
+                          )
+                        : SELF_TYPE
+                        #74
+                        _dispatch
+                          #74
+                          _object
+                            a_B
+                          : B
+                          ma
+                          (
+                          #74
+                          _int
+                            2
+                          : Int
+                          #74
+                          _int
+                            3
+                          : Int
+                          )
+                        : Int
+                        #75
+                        _dispatch
+                          #75
+                          _object
+                            a_B_B
+                          : B
+                          ma
+                          (
+                          #75
+                          _int
+                            1
+                          : Int
+                          #75
+                          _int
+                            4
+                          : Int
+                          )
+                        : Int
+                      : Int
+                    : Int
+                  : Int
+                #79
+                _branch
+                  a_B_O
+                  Object
+                  #79
+                  _dispatch
+                    #79
+                    _object
+                      self
+                    : SELF_TYPE
+                    out_string
+                    (
+                    #79
+                    _string
+                      "a_B_O\n"
+                    : String
+                    )
+                  : SELF_TYPE
+              : Object
+            : Object
+          #82
           _branch
             a_O
             Object
-            #58
+            #82
             _dispatch
-              #58
+              #82
               _object
                 self
               : SELF_TYPE
               out_string
               (
-              #58
+              #82
               _string
                 "class type is Object\n"
               : String
               )
             : SELF_TYPE
-        : SELF_TYPE
-        #60
+        : Object
+        #84
         _object
           self
         : SELF_TYPE
       : SELF_TYPE
     )
-  #66
+  #90
   _class
     A
     IO
     "hello_world.cl"
     (
-    #67
+    #91
     _attr
       a
       Int
-      #67
+      #91
       _int
         10
       : Int
-    #68
+    #92
     _method
       getA
       Int
-      #69
+      #93
       _object
         a
       : Int
-    #71
+    #95
     _method
       ma
-      #71
+      #95
       _formal
         i
         Int
-      #71
+      #95
       _formal
         j
         Int
       Int
-      #72
+      #96
       _block
-        #73
+        #97
         _dispatch
-          #73
+          #97
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #73
+          #97
           _string
             "A::i: "
           : String
           )
         : SELF_TYPE
-        #74
+        #98
         _dispatch
-          #74
+          #98
           _object
             self
           : SELF_TYPE
           out_int
           (
-          #74
+          #98
           _object
             i
           : Int
           )
         : SELF_TYPE
-        #75
+        #99
         _dispatch
-          #75
+          #99
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #75
+          #99
           _string
             "\nA::j: "
           : String
           )
         : SELF_TYPE
-        #76
+        #100
         _dispatch
-          #76
+          #100
           _object
             self
           : SELF_TYPE
           out_int
           (
-          #76
+          #100
           _object
             j
           : Int
           )
         : SELF_TYPE
-        #77
+        #101
         _dispatch
-          #77
+          #101
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #77
+          #101
           _string
             "\n"
           : String
           )
         : SELF_TYPE
-        #78
+        #102
         _object
           a
         : Int
       : Int
     )
-  #82
+  #106
   _class
     B
     A
     "hello_world.cl"
     (
-    #83
+    #107
     _method
       ma
-      #83
+      #107
       _formal
         i
         Int
-      #83
+      #107
       _formal
         j
         Int
       Int
-      #84
+      #108
       _block
-        #85
+        #109
         _dispatch
-          #85
+          #109
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #85
+          #109
           _string
             "B::i: "
           : String
           )
         : SELF_TYPE
-        #86
+        #110
         _dispatch
-          #86
+          #110
           _object
             self
           : SELF_TYPE
           out_int
           (
-          #86
+          #110
           _object
             i
           : Int
           )
         : SELF_TYPE
-        #87
+        #111
         _dispatch
-          #87
+          #111
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #87
+          #111
           _string
             "\nB::j: "
           : String
           )
         : SELF_TYPE
-        #88
+        #112
         _dispatch
-          #88
+          #112
           _object
             self
           : SELF_TYPE
           out_int
           (
-          #88
+          #112
           _object
             j
           : Int
           )
         : SELF_TYPE
-        #89
+        #113
         _dispatch
-          #89
+          #113
           _object
             self
           : SELF_TYPE
           out_string
           (
-          #89
+          #113
           _string
             "\n"
           : String
           )
         : SELF_TYPE
-        #90
+        #114
         _object
           a
         : Int

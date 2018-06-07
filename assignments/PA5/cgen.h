@@ -204,14 +204,17 @@ public:
       }
       update_store(mem_addr, offset, type->get_string());
     }
-    void update_store(const std::string& mem_addr, int offset, const std::string& type) {
+
+    void update_store(const std::string& mem_addr, int offset, std::string type) {
+      if(cgen_debug) std::cout << "In update_store..." << endl;
       MemAddr addr(mem_addr, offset);
       auto store_rtn = this->store.lookup(addr);
       // If this address is not found, add it first.
       if(store_rtn == nullptr) {
-        store.addid(addr, new std::string(""));
+        if(cgen_debug) std::cout << "store_rtn is null" << endl;
+        store.addid(addr, nullptr);
       }
-      *(store.lookup(addr)) = type;
+      this->store.update(addr, new std::string(type));
     }
     // Using BFS to initialize dispatch table for classes.
     // Note that BFS is needed because dispatch table for parent classes needs to be setup before proceeding to child classes.

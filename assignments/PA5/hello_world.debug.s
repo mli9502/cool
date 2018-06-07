@@ -13,11 +13,11 @@ coding global data
 	.globl	_bool_tag
 	.globl	_string_tag
 _int_tag:
-	.word	5
+	.word	3
 _bool_tag:
-	.word	6
+	.word	4
 _string_tag:
-	.word	7
+	.word	5
 choosing gc
 	.globl	_MemMgr_INITIALIZER
 _MemMgr_INITIALIZER:
@@ -30,369 +30,227 @@ _MemMgr_TEST:
 	.word	0
 coding constants
 	.word	-1
-str_const25:
-	.word	7
+str_const14:
 	.word	5
-	.word	String_dispTab
-	.word	int_const0
-	.byte	0	
-	.align	2
-	.word	-1
-str_const24:
-	.word	7
-	.word	5
-	.word	String_dispTab
-	.word	int_const1
-	.ascii	"B"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const23:
-	.word	7
-	.word	5
-	.word	String_dispTab
-	.word	int_const1
-	.ascii	"A"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const22:
-	.word	7
-	.word	6
-	.word	String_dispTab
-	.word	int_const5
-	.ascii	"Main"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const21:
-	.word	7
-	.word	6
-	.word	String_dispTab
-	.word	int_const6
-	.ascii	"String"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const20:
-	.word	7
-	.word	6
-	.word	String_dispTab
-	.word	int_const5
-	.ascii	"Bool"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const19:
-	.word	7
 	.word	5
 	.word	String_dispTab
 	.word	int_const3
-	.ascii	"Int"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const18:
-	.word	7
-	.word	5
-	.word	String_dispTab
-	.word	int_const2
-	.ascii	"IO"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const17:
-	.word	7
-	.word	6
-	.word	String_dispTab
-	.word	int_const6
-	.ascii	"Object"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const16:
-	.word	7
-	.word	7
-	.word	String_dispTab
-	.word	int_const4
-	.ascii	"_prim_slot"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const15:
-	.word	7
-	.word	7
-	.word	String_dispTab
-	.word	int_const7
-	.ascii	"SELF_TYPE"
-	.byte	0	
-	.align	2
-	.word	-1
-str_const14:
-	.word	7
-	.word	7
-	.word	String_dispTab
-	.word	int_const7
-	.ascii	"_no_class"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const13:
-	.word	7
-	.word	8
+	.word	5
+	.word	6
 	.word	String_dispTab
-	.word	int_const8
-	.ascii	"<basic class>"
+	.word	int_const2
+	.ascii	"Main"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const12:
-	.word	7
+	.word	5
 	.word	6
 	.word	String_dispTab
-	.word	int_const9
-	.ascii	"\nB::j: "
+	.word	int_const4
+	.ascii	"String"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const11:
-	.word	7
+	.word	5
 	.word	6
 	.word	String_dispTab
-	.word	int_const6
-	.ascii	"B::i: "
+	.word	int_const2
+	.ascii	"Bool"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const10:
-	.word	7
-	.word	6
+	.word	5
+	.word	5
 	.word	String_dispTab
-	.word	int_const9
-	.ascii	"\nA::j: "
+	.word	int_const1
+	.ascii	"Int"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const9:
-	.word	7
-	.word	6
+	.word	5
+	.word	5
 	.word	String_dispTab
-	.word	int_const6
-	.ascii	"A::i: "
+	.word	int_const0
+	.ascii	"IO"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const8:
-	.word	7
-	.word	10
+	.word	5
+	.word	6
 	.word	String_dispTab
-	.word	int_const10
-	.ascii	"class type is Object\n"
+	.word	int_const4
+	.ascii	"Object"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const7:
+	.word	5
 	.word	7
-	.word	6
 	.word	String_dispTab
-	.word	int_const6
-	.ascii	"a_B_O\n"
+	.word	int_const5
+	.ascii	"_prim_slot"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const6:
-	.word	7
+	.word	5
 	.word	7
 	.word	String_dispTab
-	.word	int_const4
-	.ascii	"first let\n"
+	.word	int_const6
+	.ascii	"SELF_TYPE"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const5:
-	.word	7
 	.word	5
+	.word	7
 	.word	String_dispTab
-	.word	int_const1
-	.ascii	"\n"
+	.word	int_const6
+	.ascii	"_no_class"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const4:
-	.word	7
-	.word	6
+	.word	5
+	.word	8
 	.word	String_dispTab
-	.word	int_const5
-	.ascii	"temp"
+	.word	int_const7
+	.ascii	"<basic class>"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const3:
-	.word	7
-	.word	6
+	.word	5
+	.word	5
 	.word	String_dispTab
-	.word	int_const6
-	.ascii	"a_B_A\n"
+	.word	int_const8
+	.ascii	"\n"
 	.byte	0	
 	.align	2
 	.word	-1
 str_const2:
-	.word	7
-	.word	10
+	.word	5
+	.word	6
 	.word	String_dispTab
-	.word	int_const11
-	.ascii	"class type is now B\n"
+	.word	int_const2
+	.ascii	"\ny: "
 	.byte	0	
 	.align	2
 	.word	-1
 str_const1:
-	.word	7
-	.word	10
+	.word	5
+	.word	5
 	.word	String_dispTab
-	.word	int_const11
-	.ascii	"class type is now A\n"
+	.word	int_const1
+	.ascii	"x: "
 	.byte	0	
 	.align	2
 	.word	-1
 str_const0:
-	.word	7
+	.word	5
 	.word	8
 	.word	String_dispTab
-	.word	int_const12
+	.word	int_const9
 	.ascii	"hello_world.cl"
 	.byte	0	
 	.align	2
 	.word	-1
-int_const12:
-	.word	5
+int_const9:
+	.word	3
 	.word	4
 	.word	Int_dispTab
 	.word	14
 	.word	-1
-int_const11:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	20
-	.word	-1
-int_const10:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	21
-	.word	-1
-int_const9:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	7
-	.word	-1
 int_const8:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	13
-	.word	-1
-int_const7:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	9
-	.word	-1
-int_const6:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	6
-	.word	-1
-int_const5:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	4
-	.word	-1
-int_const4:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	10
-	.word	-1
-int_const3:
-	.word	5
-	.word	4
-	.word	Int_dispTab
 	.word	3
-	.word	-1
-int_const2:
-	.word	5
-	.word	4
-	.word	Int_dispTab
-	.word	2
-	.word	-1
-int_const1:
-	.word	5
 	.word	4
 	.word	Int_dispTab
 	.word	1
 	.word	-1
-int_const0:
-	.word	5
+int_const7:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	13
+	.word	-1
+int_const6:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	9
+	.word	-1
+int_const5:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	10
+	.word	-1
+int_const4:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	6
+	.word	-1
+int_const3:
+	.word	3
 	.word	4
 	.word	Int_dispTab
 	.word	0
 	.word	-1
+int_const2:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	4
+	.word	-1
+int_const1:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	3
+	.word	-1
+int_const0:
+	.word	3
+	.word	4
+	.word	Int_dispTab
+	.word	2
+	.word	-1
 bool_const0:
-	.word	6
+	.word	4
 	.word	4
 	.word	Bool_dispTab
 	.word	0
 	.word	-1
 bool_const1:
-	.word	6
+	.word	4
 	.word	4
 	.word	Bool_dispTab
 	.word	1
 coding class_nameTab
 class_nameTab:
-	.word	str_const17
-	.word	str_const18
-	.word	str_const22
-	.word	str_const23
-	.word	str_const24
-	.word	str_const19
-	.word	str_const20
-	.word	str_const21
------------------
-Class: B
-abort: 0
-copy: 0
-getA: 0
-in_int: 0
-in_string: 0
-ma: 0
-out_int: 0
-out_string: 0
-type_name: 0
------------------
------------------
-Class: A
-abort: 0
-copy: 0
-getA: 0
-in_int: 0
-in_string: 0
-ma: 0
-out_int: 0
-out_string: 0
-type_name: 0
------------------
+	.word	str_const8
+	.word	str_const9
+	.word	str_const13
+	.word	str_const10
+	.word	str_const11
+	.word	str_const12
 -----------------
 Class: Main
 abort: 0
 copy: 0
+f: 0
 in_int: 0
 in_string: 0
-main: 5
+main: 1
 out_int: 0
 out_string: 0
 type_name: 0
@@ -435,26 +293,6 @@ copy: 0
 type_name: 0
 -----------------
 coding class_dispTab
-B_dispTab:
-	.word	Object.abort
-	.word	Object.type_name
-	.word	Object.copy
-	.word	IO.out_string
-	.word	IO.out_int
-	.word	IO.in_string
-	.word	IO.in_int
-	.word	A.getA
-	.word	B.ma
-A_dispTab:
-	.word	Object.abort
-	.word	Object.type_name
-	.word	Object.copy
-	.word	IO.out_string
-	.word	IO.out_int
-	.word	IO.in_string
-	.word	IO.in_int
-	.word	A.getA
-	.word	A.ma
 Main_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
@@ -463,6 +301,7 @@ Main_dispTab:
 	.word	IO.out_int
 	.word	IO.in_string
 	.word	IO.in_int
+	.word	Main.f
 	.word	Main.main
 String_dispTab:
 	.word	Object.abort
@@ -493,40 +332,26 @@ Object_dispTab:
 	.word	Object.copy
 coding class_protObj
 	.word	-1
-B_protObj:
-	.word	4
-	.word	4
-	.word	B_dispTab
-	.word	int_const0
-	.word	-1
-A_protObj:
-	.word	3
-	.word	4
-	.word	A_dispTab
-	.word	int_const0
-	.word	-1
 Main_protObj:
 	.word	2
-	.word	5
+	.word	3
 	.word	Main_dispTab
-	.word	0
-	.word	int_const0
 	.word	-1
 String_protObj:
-	.word	7
+	.word	5
 	.word	5
 	.word	String_dispTab
-	.word	int_const0
+	.word	int_const3
 	.word	0
 	.word	-1
 Bool_protObj:
-	.word	6
+	.word	4
 	.word	4
 	.word	Bool_dispTab
 	.word	0
 	.word	-1
 Int_protObj:
-	.word	5
+	.word	3
 	.word	4
 	.word	Int_dispTab
 	.word	0
@@ -551,264 +376,13 @@ heap_start:
 	.globl	Bool_init
 	.globl	Main.main
 local var count for each class...
-B: 0
-A: 0
-Main: 5
+Main: 1
 String: 0
 Bool: 0
 Int: 0
 IO: 0
 Object: 0
 coding methods and inits for classes
-B_init:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 12
-	move	$s0 $a0
-	jal	A_init
-	move	$a0 $s0
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 12
-	jr	$ra	
-B.ma:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 12
-	move	$s0 $a0
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const11
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 8($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const12
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 4($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-	lw	$a0 12($s0)
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 20
-	jr	$ra	
-A_init:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 12
-	move	$s0 $a0
-	jal	IO_init
-	la	$a0 int_const4
-	sw	$a0 12($s0)
-	move	$a0 $s0
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 12
-	jr	$ra	
-A.getA:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 12
-	move	$s0 $a0
-	lw	$a0 12($s0)
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 12
-	jr	$ra	
-A.ma:
-	addiu	$sp $sp -12
-	sw	$fp 12($sp)
-	sw	$s0 8($sp)
-	sw	$ra 4($sp)
-	addiu	$fp $sp 12
-	move	$s0 $a0
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const9
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 8($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const10
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 4($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-	lw	$a0 12($s0)
-	lw	$fp 12($sp)
-	lw	$s0 8($sp)
-	lw	$ra 4($sp)
-	addiu	$sp $sp 20
-	jr	$ra	
 Main_init:
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
@@ -817,303 +391,19 @@ Main_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	IO_init
-	la	$a0 B_protObj
-	jal	Object.copy
-	jal	B_init
-	sw	$a0 12($s0)
-	la	$a0 int_const0
-	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)
 	addiu	$sp $sp 12
 	jr	$ra	
-Main.main:
+Main.f:
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
 	sw	$ra 4($sp)
 	addiu	$fp $sp 12
 	move	$s0 $a0
-	lw	$a0 12($s0)
-	lw	$t2 0($a0)
-coding branch: a_B
-branch_1:
-	blt	$t2 4 branch_2
-	bgt	$t2 5 branch_2
-	sw	$a0 4($fp)
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const2
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-	lw	$a0 12($s0)
-	lw	$t2 0($a0)
-coding branch: a_B_B
-branch_4:
-	blt	$t2 4 branch_5
-	bgt	$t2 5 branch_5
-	sw	$a0 8($fp)
-	la	$a0 int_const1
-	sw	$a0 12($fp)
-	la	$a0 int_const2
-	sw	$a0 16($fp)
-	la	$a0 str_const4
-	sw	$a0 20($fp)
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 12($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 16($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 20($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const6
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_int
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 4
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	lw	$a0 12($fp)
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 16($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const5
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-[dispatch_class::code]
-[dispatch_class::code]: method_name: ma
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 2
-[dispatch_class::code]: method_offset: 8
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 2
-	addiu	$sp $sp 0
-	addiu	$sp $sp -8
-	la	$a0 int_const2
-	sw	$a0 8($sp)
-	la	$a0 int_const3
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	lw	$a0 4($fp)
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 32($t1)
-	jalr		$t1
-	b	case_finish_3
-coding branch: a_B_A
-branch_5:
-	blt	$t2 3 branch_6
-	bgt	$t2 5 branch_6
-	sw	$a0 8($fp)
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const3
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-	b	case_finish_3
-coding branch: a_B_O
-branch_6:
-	blt	$t2 0 branch_7
-	bgt	$t2 8 branch_7
-	sw	$a0 8($fp)
-[dispatch_class::code]
-[dispatch_class::code]: method_name: out_string
-[dispatch_class::code]: local_var_cnt: 0
-[dispatch_class::code]: actual_size: 1
-[dispatch_class::code]: method_offset: 3
-[dispatch_class::code]: --- Before caller activation record setup ---
-[code_caller_activation_record_setup]: arg_cnt: 1
-	addiu	$sp $sp 0
-	addiu	$sp $sp -4
-	la	$a0 str_const7
-	sw	$a0 4($sp)
-[dispatch_class::code]: ---------------------------------------------
-[dispatch_class::code]: --------- Gen code for expr -----------------
-	move	$a0 $s0
-[dispatch_class::code]: ---------------------------------------------
-	lw	$t1 8($a0)
-	lw	$t1 12($t1)
-	jalr		$t1
-	b	case_finish_3
-branch_7:
-	jal	_case_abort
-case_finish_3:
-	b	case_finish_0
-coding branch: a_A
-branch_2:
-	blt	$t2 3 branch_8
-	bgt	$t2 5 branch_8
-	sw	$a0 4($fp)
 [dispatch_class::code]
 [dispatch_class::code]: method_name: out_string
 [dispatch_class::code]: local_var_cnt: 0
@@ -1124,20 +414,37 @@ branch_2:
 	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	la	$a0 str_const1
+In update_store...
+store_rtn is null
 	sw	$a0 4($sp)
 [dispatch_class::code]: ---------------------------------------------
 [dispatch_class::code]: --------- Gen code for expr -----------------
 	move	$a0 $s0
+In update_store...
 [dispatch_class::code]: ---------------------------------------------
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
-	b	case_finish_0
-coding branch: a_O
-branch_8:
-	blt	$t2 0 branch_9
-	bgt	$t2 8 branch_9
-	sw	$a0 4($fp)
+[dispatch_class::code]
+[dispatch_class::code]: method_name: out_int
+[dispatch_class::code]: local_var_cnt: 0
+[dispatch_class::code]: actual_size: 1
+[dispatch_class::code]: method_offset: 4
+[dispatch_class::code]: --- Before caller activation record setup ---
+[code_caller_activation_record_setup]: arg_cnt: 1
+	addiu	$sp $sp 0
+	addiu	$sp $sp -4
+	lw	$a0 8($fp)
+In update_store...
+	sw	$a0 4($sp)
+[dispatch_class::code]: ---------------------------------------------
+[dispatch_class::code]: --------- Gen code for expr -----------------
+	move	$a0 $s0
+In update_store...
+[dispatch_class::code]: ---------------------------------------------
+	lw	$t1 8($a0)
+	lw	$t1 16($t1)
+	jalr		$t1
 [dispatch_class::code]
 [dispatch_class::code]: method_name: out_string
 [dispatch_class::code]: local_var_cnt: 0
@@ -1147,24 +454,139 @@ branch_8:
 [code_caller_activation_record_setup]: arg_cnt: 1
 	addiu	$sp $sp 0
 	addiu	$sp $sp -4
-	la	$a0 str_const8
+	la	$a0 str_const2
+In update_store...
 	sw	$a0 4($sp)
 [dispatch_class::code]: ---------------------------------------------
 [dispatch_class::code]: --------- Gen code for expr -----------------
 	move	$a0 $s0
+In update_store...
 [dispatch_class::code]: ---------------------------------------------
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
-	b	case_finish_0
-branch_9:
-	jal	_case_abort
-case_finish_0:
+[dispatch_class::code]
+[dispatch_class::code]: method_name: out_int
+[dispatch_class::code]: local_var_cnt: 0
+[dispatch_class::code]: actual_size: 1
+[dispatch_class::code]: method_offset: 4
+[dispatch_class::code]: --- Before caller activation record setup ---
+[code_caller_activation_record_setup]: arg_cnt: 1
+	addiu	$sp $sp 0
+	addiu	$sp $sp -4
+	lw	$a0 4($fp)
+In update_store...
+	sw	$a0 4($sp)
+[dispatch_class::code]: ---------------------------------------------
+[dispatch_class::code]: --------- Gen code for expr -----------------
 	move	$a0 $s0
+In update_store...
+[dispatch_class::code]: ---------------------------------------------
+	lw	$t1 8($a0)
+	lw	$t1 16($t1)
+	jalr		$t1
+[dispatch_class::code]
+[dispatch_class::code]: method_name: out_string
+[dispatch_class::code]: local_var_cnt: 0
+[dispatch_class::code]: actual_size: 1
+[dispatch_class::code]: method_offset: 3
+[dispatch_class::code]: --- Before caller activation record setup ---
+[code_caller_activation_record_setup]: arg_cnt: 1
+	addiu	$sp $sp 0
+	addiu	$sp $sp -4
+	la	$a0 str_const3
+In update_store...
+	sw	$a0 4($sp)
+[dispatch_class::code]: ---------------------------------------------
+[dispatch_class::code]: --------- Gen code for expr -----------------
+	move	$a0 $s0
+In update_store...
+[dispatch_class::code]: ---------------------------------------------
+	lw	$t1 8($a0)
+	lw	$t1 12($t1)
+	jalr		$t1
+In update_store...
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)
-	addiu	$sp $sp 32
+	addiu	$sp $sp 20
+	jr	$ra	
+Main.main:
+	addiu	$sp $sp -12
+	sw	$fp 12($sp)
+	sw	$s0 8($sp)
+	sw	$ra 4($sp)
+	addiu	$fp $sp 12
+	move	$s0 $a0
+[let_class::code]
+	la	$a0 int_const0
+In update_store...
+store_rtn is null
+[let_class::code]: curr_local_cnt: 1
+[let_class::code]: curr_method_actual_cnt: 0
+[let_class::code]: identifier: x
+	sw	$a0 4($fp)
+In update_store...
+store_rtn is null
+[dispatch_class::code]
+[dispatch_class::code]: method_name: f
+[dispatch_class::code]: local_var_cnt: 0
+[dispatch_class::code]: actual_size: 2
+[dispatch_class::code]: method_offset: 7
+[dispatch_class::code]: --- Before caller activation record setup ---
+[code_caller_activation_record_setup]: arg_cnt: 2
+	addiu	$sp $sp 0
+	addiu	$sp $sp -8
+[assign_class]::code
+	la	$a0 int_const1
+In update_store...
+[assign_class]::code: after look up variable: x
+[assign_class]::code: after look up ACC.
+In update_store...
+	sw	$a0 4($fp)
+	sw	$a0 8($sp)
+[assign_class]::code
+	la	$a0 int_const2
+In update_store...
+[assign_class]::code: after look up variable: x
+[assign_class]::code: after look up ACC.
+In update_store...
+	sw	$a0 4($fp)
+	sw	$a0 4($sp)
+[dispatch_class::code]: ---------------------------------------------
+[dispatch_class::code]: --------- Gen code for expr -----------------
+	move	$a0 $s0
+In update_store...
+[dispatch_class::code]: ---------------------------------------------
+	lw	$t1 8($a0)
+	lw	$t1 28($t1)
+	jalr		$t1
+[dispatch_class::code]
+[dispatch_class::code]: method_name: out_int
+[dispatch_class::code]: local_var_cnt: 0
+[dispatch_class::code]: actual_size: 1
+[dispatch_class::code]: method_offset: 4
+[dispatch_class::code]: --- Before caller activation record setup ---
+[code_caller_activation_record_setup]: arg_cnt: 1
+	addiu	$sp $sp 0
+	addiu	$sp $sp -4
+	lw	$a0 4($fp)
+In update_store...
+	sw	$a0 4($sp)
+[dispatch_class::code]: ---------------------------------------------
+[dispatch_class::code]: --------- Gen code for expr -----------------
+	move	$a0 $s0
+In update_store...
+[dispatch_class::code]: ---------------------------------------------
+	lw	$t1 8($a0)
+	lw	$t1 16($t1)
+	jalr		$t1
+In update_store...
+In update_store...
+	lw	$fp 12($sp)
+	lw	$s0 8($sp)
+	lw	$ra 4($sp)
+	addiu	$sp $sp 16
 	jr	$ra	
 String_init:
 	addiu	$sp $sp -12

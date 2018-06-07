@@ -30,6 +30,7 @@ public:
   SymtabEntry(SYM x, DAT *y) : id(x), info(y) { }
   SYM get_id() const    { return id; }
   DAT *get_info() const { return info; }
+  void set_info(DAT* d) { this->info = d; }
 };
 
 //
@@ -136,6 +137,18 @@ public:
 	   }
        }
        return NULL;
+   }
+
+   DAT* update(SYM s, DAT* d) {
+        for(ScopeList *i = tbl; i != NULL; i=i->tl()) {
+            for( Scope *j = i->hd(); j != NULL; j = j->tl()) {
+                if (s == j->hd()->get_id()) {
+                    j->hd()->set_info(d);
+                    return (j->hd()->get_info());
+                }
+            }
+        }
+        return NULL;
    }
 
    // probe the symbol table.  Check the top scope (only) for the item

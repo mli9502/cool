@@ -1220,12 +1220,27 @@ void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
 }
 
 void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  if(cgen_debug) {
+    std::cout << "[assign_class]::code" << endl;
+  }
   // Gen code for expression. Result should be in ACC.
   expr->code(s, cgenClassTable);
   // Get the location of id from environment and value from ACC.
   MemAddr* addr_ptr = cgenClassTable.environment.lookup(this->name->get_string());
+  if(cgen_debug) {
+    cout << "[assign_class]::code: " << "after look up variable: " << this->name->get_string() << endl;
+    if(addr_ptr == nullptr) {
+      cout << "nullptr..." << endl;
+    }
+  }
   // Get the value from ACC.
   std::string* val = cgenClassTable.store.lookup(MemAddr(ACC, 0));
+  if(cgen_debug) {
+    cout << "[assign_class]::code: " << "after look up ACC." << endl;
+    if(val == nullptr) {
+      cout << "val from store is nullptr..." << endl;
+    }
+  }
   // Update value at addr_ptr in store.
   // TODO: This is needed because of dynamic type? Need to test this...
   cgenClassTable.update_store(addr_ptr->reg_name, addr_ptr->offset, *val);
@@ -1556,9 +1571,17 @@ void block_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  if(cgen_debug) {
+    cout << "[let_class::code]" << endl;
+  }
   // Gen code for init expression.
   init->code(s, cgenClassTable);
   int curr_local_cnt = cgenClassTable.get_curr_local_cnt();
+  if(cgen_debug) {
+    cout << "[let_class::code]: curr_local_cnt: " << curr_local_cnt << endl;
+    cout << "[let_class::code]: curr_method_actual_cnt: " << cgenClassTable.curr_method_actual_cnt << endl;
+    cout << "[let_class::code]: identifier: " << this->identifier->get_string() << endl;
+  }
   // Store ACC on stack.
   emit_store(ACC, curr_local_cnt + cgenClassTable.curr_method_actual_cnt, FP, s);
   // Update environment and store.
@@ -1793,14 +1816,18 @@ void int_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   // Need to be sure we have an IntEntry *, not an arbitrary Symbol
   //
   emit_load_int(ACC,inttable.lookup_string(token->get_string()),s);
+  // Update store.
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void string_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   emit_load_string(ACC,stringtable.lookup_string(token->get_string()),s);
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void bool_const_class::code(ostream& s, CgenClassTable& cgenClassTable) {
   emit_load_bool(ACC, BoolConst(val), s);
+  cgenClassTable.update_store(ACC, 0, type);
 }
 
 void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1817,7 +1844,7 @@ void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
   std::string class_init_name = t0->get_string() + std::string(CLASSINIT_SUFFIX);
   emit_jal((char*)class_init_name.c_str(), s);
   // Update store.
-  cgenClassTable.update_store(ACC, 0, t0->get_string());
+  cgenClassTable.update_store(ACC, 0, t0);
 }
 
 void isvoid_class::code(ostream &s, CgenClassTable& cgenClassTable) {

@@ -8,141 +8,29 @@ _program
     (
     #192
     _method
-      f
-      #192
-      _formal
-        x
-        Int
-      #192
-      _formal
-        y
-        Int
+      main
       Object
       #192
       _block
-        #193
-        _dispatch
-          #193
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
-          #193
-          _string
-            "x: "
-          : String
-          )
-        : SELF_TYPE
-        #194
-        _dispatch
-          #194
-          _object
-            self
-          : SELF_TYPE
-          out_int
-          (
-          #194
-          _object
-            x
-          : Int
-          )
-        : SELF_TYPE
-        #195
-        _dispatch
-          #195
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
-          #195
-          _string
-            "\ny: "
-          : String
-          )
-        : SELF_TYPE
-        #196
-        _dispatch
-          #196
-          _object
-            self
-          : SELF_TYPE
-          out_int
-          (
-          #196
-          _object
-            y
-          : Int
-          )
-        : SELF_TYPE
         #197
-        _dispatch
+        _let
+          a
+          String
+          #0
+          _no_expr
+          : _no_type
           #197
-          _object
-            self
-          : SELF_TYPE
-          out_string
-          (
-          #197
-          _string
-            "\n"
-          : String
-          )
-        : SELF_TYPE
-      : SELF_TYPE
-    #199
-    _method
-      main
-      Object
-      #200
-      _let
-        x
-        Int
-        #200
-        _int
-          2
-        : Int
-        #200
-        _block
-          #201
           _dispatch
-            #201
+            #197
             _object
               self
             : SELF_TYPE
-            f
+            out_string
             (
-            #201
-            _assign
-              x
-              #201
-              _int
-                3
-              : Int
-            : Int
-            #201
-            _assign
-              x
-              #201
-              _int
-                4
-              : Int
-            : Int
-            )
-          : Object
-          #202
-          _dispatch
-            #202
+            #197
             _object
-              self
-            : SELF_TYPE
-            out_int
-            (
-            #202
-            _object
-              x
-            : Int
+              a
+            : String
             )
           : SELF_TYPE
         : SELF_TYPE

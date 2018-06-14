@@ -22,12 +22,9 @@
 //
 //**************************************************************
 
-// FIXME: 5/28/2018: 
-// Need to combine let var cnt and case var cnt into local_var_cnt !!!!!!!!!!!
-
-
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
+// FIXME: 6/14/2018: Need to handle local variable initialization...
 // TODO: 5/13/2018: Need to handle case_class as the same as let_class.
 //                  The old approach does not work because in the expr for case, there could be another case...
 //                  As a result, we need to pre-allocate the local variables used by case also on stack.
@@ -775,9 +772,10 @@ void CgenClassTable::code_single_class_methods(CgenNode* curr_class) {
       store.enterscope();
       // Update curr_method_actual_cnt.
       this->curr_method_actual_cnt = m->formals->len();
+      this->curr_method_max_local_cnt = get_method_local_var_cnt_static(curr_class->name->get_string(), m->name->get_string());
       // Add actual parameters to environment.
       for(int i = 0; i < m->formals->len(); i ++) {
-        int offset = this->curr_method_actual_cnt - (i + 1) + 1;
+        int offset = this->curr_method_max_local_cnt + this->curr_method_actual_cnt - (i + 1) + 1;
         environment.addid(m->formals->nth(i)->get_name()->get_string(), new MemAddr(FP, offset));
       }
       std::string method_tag = std::string(curr_class->get_name()->get_string()) + "." + std::string(m->name->get_string());
@@ -811,7 +809,7 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   }
   CgenNode* parent_class = curr_class->get_parentnd();
   // First set up called activation record.
-  this->code_callee_activation_record_setup(str);
+  this->code_callee_activation_record_setup(str, 0);
   // If parent class is not NULL, init parent class first.
   if(parent_class != nullptr && curr_class->name->get_string() != Object->get_string()) {
     std::string parent_init_name = parent_class->get_name()->get_string() + std::string(CLASSINIT_SUFFIX);
@@ -873,6 +871,7 @@ CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
   tag_cnt = 0;
   curr_local_cnt = 0;
   curr_method_actual_cnt = 0;
+  curr_method_max_local_cnt = 0;
 
   stringclasstag = -1;
   intclasstag =    -1;
@@ -1195,6 +1194,7 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   // Do not do anything if there's no init presented.
   if(init->is_noexpr()) {
+    // FIXME: 6/7/2018: If type is string, need to call string init to set the default value to "".
     return;
   }
   // Code init first.
@@ -1206,16 +1206,12 @@ void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
 }
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
-  // Get method max local var cnt and arg cnt.
-  int arg_cnt = this->formals->len();
-  int local_var_cnt = cgenClassTable.get_method_local_var_cnt_static(cgenClassTable.self_class->get_string(), name->get_string());
-
   cgenClassTable.init_curr_local_cnt();
-  cgenClassTable.code_callee_activation_record_setup(os);
+  cgenClassTable.code_callee_activation_record_setup(os, cgenClassTable.curr_method_max_local_cnt);
   // if(cgen_debug) std::cout << "before coding expr" << std::endl;
   expr->code(os, cgenClassTable);
   // if(cgen_debug) std::cout << "after coding expr" << std::endl;
-  cgenClassTable.code_callee_activation_record_cleanup(os, arg_cnt, local_var_cnt);
+  cgenClassTable.code_callee_activation_record_cleanup(os, cgenClassTable.curr_method_actual_cnt, cgenClassTable.curr_method_max_local_cnt);
   // FIXME: update store? Probably not needed.
 }
 
@@ -1248,11 +1244,9 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
 }
 
-void CgenClassTable::code_caller_activation_record_setup(ostream& s, int local_var_cnt, Expressions args, CgenClassTable& cgenClassTable) {
+void CgenClassTable::code_caller_activation_record_setup(ostream& s, Expressions args, CgenClassTable& cgenClassTable) {
   int arg_cnt = args->len();
   if(cgen_debug) std::cout << "[code_caller_activation_record_setup]: arg_cnt: " << arg_cnt << std::endl;
-  // Allocate space on stack for local vars.
-  emit_addiu(SP, SP, -4 * local_var_cnt, s);
   // Allocate space on stack for args.
   emit_addiu(SP, SP, -4 * arg_cnt, s);
   // Gen code for e1 through en and store args on stack.
@@ -1265,7 +1259,9 @@ void CgenClassTable::code_caller_activation_record_setup(ostream& s, int local_v
   }
 }
 
-void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
+void CgenClassTable::code_callee_activation_record_setup(ostream& os, int local_var_cnt) {
+  // Allocate space on stack for local vars.
+  emit_addiu(SP, SP, -4 * local_var_cnt, os);
   // Allocate stack space for old $fp, $s0 and $ra.
   emit_addiu(SP, SP, -12, os);
   // Store old $fp, $s0 and $ra.
@@ -1273,9 +1269,9 @@ void CgenClassTable::code_callee_activation_record_setup(ostream& os) {
   emit_store(SELF, 2, SP, os);
   emit_store(RA, 1, SP, os);
   // NOTE: 4/24/2018: How to access args and local vars: 
-  // To accss the first local var, use (arg_cnt * 4 + 4)($fp)
-  // To access ith arg (starting from 1), use (4 * (arg_cnt - i + 1))($fp). This is the same convensition as the methods defined in trap_handler.
-  // To access ith local var (starting from 1), use (4 * (arg_cnt + i))($fp).
+  // To accss the first local var, use (4)($fp)
+  // To access ith arg (starting from 1), use (4 * (curr_method_max_local_cnt + arg_cnt - i + 1))($fp). This is the same convensition as the methods defined in trap_handler.
+  // To access ith local var (starting from 1), use (4 * i)($fp).
   // Set new $fp to $sp + 12.
   emit_addiu(FP, SP, 12, os);
   // Move $a0 to $s0 since $a0 stores SELF.
@@ -1354,10 +1350,8 @@ void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) cout << "[static_dispatch_class::code]: " << "static_dispatch_table is: " << static_dispatch_table << endl;
   // Get method offset based on the static type name.
   int method_offset = cgenClassTable.get_method_offset(class_name, name->get_string());
-  // Get method max local var cnt.
-  int local_var_cnt = cgenClassTable.get_method_local_var_cnt_static(class_name, name->get_string());
   // Set up activation record.
-  cgenClassTable.code_caller_activation_record_setup(s, local_var_cnt, actual, cgenClassTable);
+  cgenClassTable.code_caller_activation_record_setup(s, actual, cgenClassTable);
   // Gen code for e0.
   expr->code(s, cgenClassTable);
   // Load dispatch table to $t1.
@@ -1409,7 +1403,7 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) std::cout << "[dispatch_class::code]: method_offset: " << method_offset << std::endl;
   // Gen code for actuals and set up activation record.
   if(cgen_debug) std::cout << "[dispatch_class::code]: --- Before caller activation record setup ---" << std::endl;
-  cgenClassTable.code_caller_activation_record_setup(s, local_var_cnt, actual, cgenClassTable);
+  cgenClassTable.code_caller_activation_record_setup(s, actual, cgenClassTable);
   if(cgen_debug) std::cout << "[dispatch_class::code]: ---------------------------------------------" << std::endl;
   // Gen code for e0. 
   if(cgen_debug) std::cout << "[dispatch_class::code]: --------- Gen code for expr -----------------" << std::endl;
@@ -1539,12 +1533,12 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
     emit_bgti(T2, greatest_child_class_tag, next_label, s);
     int curr_local_cnt = cgenClassTable.get_curr_local_cnt();
     // Store ACC on stack.
-    emit_store(ACC, curr_local_cnt + cgenClassTable.curr_method_actual_cnt, FP, s);
+    emit_store(ACC, curr_local_cnt, FP, s);
     // Update environment and store.
-    MemAddr* var_addr = new MemAddr(FP, curr_local_cnt + cgenClassTable.curr_method_actual_cnt);
+    MemAddr* var_addr = new MemAddr(FP, curr_local_cnt);
     cgenClassTable.environment.enterscope();
     cgenClassTable.environment.addid(branch->name->get_string(), var_addr);
-    cgenClassTable.update_store(FP, curr_local_cnt + cgenClassTable.curr_method_actual_cnt, curr_branch_class->name);
+    cgenClassTable.update_store(FP, curr_local_cnt, curr_branch_class->name);
     // Gen code for branch expression.
     branch->expr->code(s, cgenClassTable);
     // Gen code for branching to case_finish label.
@@ -1574,8 +1568,13 @@ void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) {
     cout << "[let_class::code]" << endl;
   }
+  // FIXME: 6/7/2018: If init is no_expr, need to call code_single_class_init to initialize the local variable to a valid initial value.
+  // FIXME: 6/7/2018: Do we need to do this also for local variables used by case? Maybe not because local variables for case should all have initial value.
   // Gen code for init expression.
   init->code(s, cgenClassTable);
+  if(cgen_debug) {
+    cout << "[let_class::code]: after init code..." << endl;
+  }
   int curr_local_cnt = cgenClassTable.get_curr_local_cnt();
   if(cgen_debug) {
     cout << "[let_class::code]: curr_local_cnt: " << curr_local_cnt << endl;
@@ -1583,12 +1582,12 @@ void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
     cout << "[let_class::code]: identifier: " << this->identifier->get_string() << endl;
   }
   // Store ACC on stack.
-  emit_store(ACC, curr_local_cnt + cgenClassTable.curr_method_actual_cnt, FP, s);
+  emit_store(ACC, curr_local_cnt, FP, s);
   // Update environment and store.
-  MemAddr* var_addr = new MemAddr(FP, curr_local_cnt + cgenClassTable.curr_method_actual_cnt);
+  MemAddr* var_addr = new MemAddr(FP, curr_local_cnt);
   cgenClassTable.environment.enterscope();
   cgenClassTable.environment.addid(this->identifier->get_string(), var_addr);
-  cgenClassTable.update_store(FP, curr_local_cnt + cgenClassTable.curr_method_actual_cnt, init->type);
+  cgenClassTable.update_store(FP, curr_local_cnt, init->type);
   body->code(s, cgenClassTable);
   cgenClassTable.environment.exitscope();
   cgenClassTable.dec_curr_local_cnt();

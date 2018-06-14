@@ -85,6 +85,16 @@ test_hello:
 	@echo "------------------------ Official cgen output --------------------"
 	spim hello_world.s	
 
+test_%:
+	$(MAKE) cgen
+	lexer ./grading/$*.cl | parser | semant > $*.tmp
+	./cgen < $*.tmp > $*.test.s
+	cgen < $*.tmp > $*.s
+	@echo "------------------------ My cgen output --------------------------"
+	spim $*.test.s
+	@echo "------------------------ Official cgen output --------------------"
+	spim $*.s	
+
 debug_hello:
 	$(MAKE) cgen
 	lexer hello_world.cl | parser | semant > hello_world.tmp

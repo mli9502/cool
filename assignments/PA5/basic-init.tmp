@@ -1,0 +1,145 @@
+#1
+_program
+  #1
+  _class
+    Main
+    IO
+    "./grading/basic-init.cl"
+    (
+    #2
+    _attr
+      i
+      Int
+      #0
+      _no_expr
+      : _no_type
+    #3
+    _attr
+      s
+      String
+      #0
+      _no_expr
+      : _no_type
+    #4
+    _attr
+      b
+      Bool
+      #0
+      _no_expr
+      : _no_type
+    #5
+    _attr
+      io
+      IO
+      #0
+      _no_expr
+      : _no_type
+    #7
+    _method
+      main
+      Object
+      #7
+      _block
+        #8
+        _dispatch
+          #8
+          _object
+            self
+          : SELF_TYPE
+          out_int
+          (
+          #8
+          _object
+            i
+          : Int
+          )
+        : SELF_TYPE
+        #9
+        _dispatch
+          #9
+          _object
+            self
+          : SELF_TYPE
+          out_string
+          (
+          #9
+          _object
+            s
+          : String
+          )
+        : SELF_TYPE
+        #10
+        _cond
+          #10
+          _object
+            b
+          : Bool
+          #11
+          _dispatch
+            #11
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #11
+            _string
+              "true"
+            : String
+            )
+          : SELF_TYPE
+          #13
+          _dispatch
+            #13
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #13
+            _string
+              "false"
+            : String
+            )
+          : SELF_TYPE
+        : SELF_TYPE
+        #15
+        _cond
+          #15
+          _isvoid
+            #15
+            _object
+              io
+            : IO
+          : Bool
+          #16
+          _dispatch
+            #16
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #16
+            _string
+              "void"
+            : String
+            )
+          : SELF_TYPE
+          #18
+          _dispatch
+            #18
+            _object
+              self
+            : SELF_TYPE
+            out_string
+            (
+            #18
+            _string
+              "not void"
+            : String
+            )
+          : SELF_TYPE
+        : SELF_TYPE
+      : SELF_TYPE
+    )

@@ -188,18 +188,14 @@
 -- };
 
 
-class Main inherits IO {
-  f(x : Int, y : Int) : Object { {
-    out_string("x: ");
-    out_int(x);
-    out_string("\ny: ");
-    out_int(y);
-    out_string("\n");
-  } };
-  main() : Object {
-    let x : Int <- 2 in {
-      f(x <- 3, x <- 4);
-      out_int(x);
-    }
-  };
+class Main inherits IO{
+	main():Object {{
+		-- if (true = false) then abort() else 0 fi;
+		-- if (true = true) then 0 else abort() fi;
+		-- if ("hello" = "hello".copy()) then 0 else abort() fi;
+		-- let a:String in if (a = "") then 0 else abort() fi;
+		let a:String in out_string(a);
+    -- if 5 = 6 then abort() else 0 fi;
+	}};
+
 };

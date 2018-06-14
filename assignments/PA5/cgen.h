@@ -144,9 +144,9 @@ private:
   // constants and global declarations.
   // count for tag.
   int tag_cnt;
-  // After entering let_expression, increase curr_let_cnt.
-  // Before exiting let_expression, decrease curr_local_cnt.
-  // To get the location of the local var for the current let expression, use (4 * curr_let_cnt)($s1).
+  // After entering let_expression or case expression, increase curr_local_cnt.
+  // Before exiting let_expression or case expression, decrease curr_local_cnt.
+  // To get the location of the local var, use (4 * curr_local_cnt)($s1).
   // Setup activation record after method activation.
   // Initial value is 1.
   int curr_local_cnt;
@@ -224,9 +224,9 @@ public:
     // Using bottom-up dfs to update local var cnt to correct value.
     void dfs_correct_classes_local_var_cnt_map();
     void dfs_correct_classes_local_var_cnt_map_helper(CgenNodeP node);
-    void code_callee_activation_record_setup(ostream& s);
+    void code_callee_activation_record_setup(ostream& s, int local_var_cnt);
     void code_callee_activation_record_cleanup(ostream& s, int curr_arg_cnt, int curr_local_var_cnt);
-    void code_caller_activation_record_setup(ostream& s, int local_var_cnt, Expressions args, CgenClassTable& cgenClassTable);
+    void code_caller_activation_record_setup(ostream& s, Expressions args, CgenClassTable& cgenClassTable);
     int get_method_offset(const std::string& class_name, const std::string& method_name);
     int get_method_local_var_cnt_dynamic(const std::string& class_name, const std::string& method_name);
     int get_method_local_var_cnt_static(const std::string& class_name, const std::string& method_name);
@@ -273,6 +273,7 @@ public:
     // This is set at code_single_class_methods.
     // This is needed for let expression to locate the starting location of the first let_var.
     int curr_method_actual_cnt;
+    int curr_method_max_local_cnt;
 };
 
 class BoolConst 

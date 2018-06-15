@@ -28,14 +28,6 @@ _MemMgr_TEST:
 	.word	-1
 str_const11:
 	.word	5
-	.word	5
-	.word	String_dispTab
-	.word	int_const0
-	.byte	0	
-	.align	2
-	.word	-1
-str_const10:
-	.word	5
 	.word	6
 	.word	String_dispTab
 	.word	int_const1
@@ -43,7 +35,7 @@ str_const10:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const9:
+str_const10:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -52,7 +44,7 @@ str_const9:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const8:
+str_const9:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -61,7 +53,7 @@ str_const8:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const7:
+str_const8:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -70,7 +62,7 @@ str_const7:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const6:
+str_const7:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -79,7 +71,7 @@ str_const6:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const5:
+str_const6:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -88,7 +80,7 @@ str_const5:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const4:
+str_const5:
 	.word	5
 	.word	7
 	.word	String_dispTab
@@ -97,7 +89,7 @@ str_const4:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const3:
+str_const4:
 	.word	5
 	.word	7
 	.word	String_dispTab
@@ -106,7 +98,7 @@ str_const3:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const2:
+str_const3:
 	.word	5
 	.word	7
 	.word	String_dispTab
@@ -115,12 +107,20 @@ str_const2:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const1:
+str_const2:
 	.word	5
 	.word	8
 	.word	String_dispTab
 	.word	int_const7
 	.ascii	"<basic class>"
+	.byte	0	
+	.align	2
+	.word	-1
+str_const1:
+	.word	5
+	.word	5
+	.word	String_dispTab
+	.word	int_const0
 	.byte	0	
 	.align	2
 	.word	-1
@@ -199,12 +199,12 @@ bool_const1:
 	.word	Bool_dispTab
 	.word	1
 class_nameTab:
-	.word	str_const5
 	.word	str_const6
-	.word	str_const10
 	.word	str_const7
+	.word	str_const11
 	.word	str_const8
 	.word	str_const9
+	.word	str_const10
 Main_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
@@ -307,14 +307,31 @@ Main.main:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 12
 	move	$s0 $a0
+	la	$a0 str_const1
 	sw	$a0 4($fp)
-	addiu	$sp $sp -4
 	lw	$a0 4($fp)
-	sw	$a0 4($sp)
+	sw	$a0 0($sp)
+	addiu	$sp $sp -4
+	la	$a0 str_const1
+	move	$t2 $a0
+	lw	$t1 4($sp)
+	addiu	$sp $sp 4
+	la	$a0 bool_const1
+	la	$a1 bool_const0
+	jal	equality_test
+	move	$t1 $a0
+	lw	$t1 12($t1)
+	beqz	$t1 cond_false_1
+cond_true_0:
+	la	$a0 int_const0
+	b	cond_finish_2
+cond_false_1:
+	addiu	$sp $sp 0
 	move	$a0 $s0
 	lw	$t1 8($a0)
-	lw	$t1 12($t1)
+	lw	$t1 0($t1)
 	jalr		$t1
+cond_finish_2:
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)
@@ -329,6 +346,8 @@ String_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
+	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -344,6 +363,7 @@ Bool_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -359,6 +379,7 @@ Int_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)

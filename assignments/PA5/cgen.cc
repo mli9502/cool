@@ -452,7 +452,7 @@ void StringEntry::code_def(ostream& s, int stringclasstag)
       << WORD << stringclasstag << endl                                 // tag
       << WORD << (DEFAULT_OBJFIELDS + STRING_SLOTS + (len+4)/4) << endl // size
       << WORD;
-	  s << STRINGNAME << DISPTAB_SUFFIX;
+      s << STRINGNAME << DISPTAB_SUFFIX;
       s << endl;                                              // dispatch table
       s << WORD;  lensym->code_ref(s);  s << endl;            // string length
   emit_string_constant(s,str);                                // ascii string
@@ -492,7 +492,7 @@ void IntEntry::code_def(ostream &s, int intclasstag)
       << WORD << intclasstag << endl                      // class tag
       << WORD << (DEFAULT_OBJFIELDS + INT_SLOTS) << endl  // object size
       << WORD; 
-	  s << INTNAME << DISPTAB_SUFFIX;
+      s << INTNAME << DISPTAB_SUFFIX;
       s << endl;                                          // dispatch table
       s << WORD << str << endl;                           // integer value
 }
@@ -534,7 +534,7 @@ void BoolConst::code_def(ostream& s, int boolclasstag)
       << WORD << boolclasstag << endl                       // class tag
       << WORD << (DEFAULT_OBJFIELDS + BOOL_SLOTS) << endl   // object size
       << WORD;
-	  s << BOOLNAME << DISPTAB_SUFFIX;
+      s << BOOLNAME << DISPTAB_SUFFIX;
       s << endl;                                            // dispatch table
       s << WORD << val << endl;                             // value (0 or 1)
 }
@@ -662,21 +662,21 @@ void CgenClassTable::code_constants()
 }
 
 void CgenClassTable::code_class_nameTab() {
-	str << CLASSNAMETAB << LABEL;
+    str << CLASSNAMETAB << LABEL;
   unsigned max_class_tag = 0;
   for(List<CgenNode>* l = nds; l; l = l->tl()) {
     max_class_tag = std::max(max_class_tag, l->hd()->class_tag);
   }
   std::vector<StringEntry*> class_name_entries(max_class_tag + 1, nullptr);
-	for(List<CgenNode>* l = nds; l; l = l->tl()) {
-		std::string class_name = l->hd()->get_name()->get_string();
-		StringEntry* class_name_entry = stringtable.lookup_string(const_cast<char*>(class_name.c_str()));
-		class_name_entries[l->hd()->class_tag] = class_name_entry;
-	}
+    for(List<CgenNode>* l = nds; l; l = l->tl()) {
+        std::string class_name = l->hd()->get_name()->get_string();
+        StringEntry* class_name_entry = stringtable.lookup_string(const_cast<char*>(class_name.c_str()));
+        class_name_entries[l->hd()->class_tag] = class_name_entry;
+    }
   for(auto entry : class_name_entries) {
     str << WORD;
-		entry->code_ref(str);
-		str << endl;
+        entry->code_ref(str);
+        str << endl;
   }
 }
 
@@ -730,7 +730,7 @@ void CgenClassTable::dfs_correct_classes_local_var_cnt_map_helper(CgenNodeP node
 }
 
 void CgenClassTable::code_class_dispTab() {
-	for(List<CgenNode>* l = nds; l; l = l->tl()) {
+    for(List<CgenNode>* l = nds; l; l = l->tl()) {
     const auto& dispatch_table = l->hd()->get_dispatch_table();
     str << l->hd()->get_name()->get_string() << DISPTAB_SUFFIX << LABEL;
     for(const auto& class_method_pair : dispatch_table) {
@@ -738,13 +738,13 @@ void CgenClassTable::code_class_dispTab() {
       std::string method_name = class_method_pair.second->name->get_string();
       str << WORD << class_name << METHOD_SEP << method_name << endl;
     }
-	}
+    }
 }
 
 void CgenClassTable::code_class_protObj() {
-	for(List<CgenNode>* l = nds; l; l = l->tl()) {
-		code_single_class_protObj(l->hd());
-	}
+    for(List<CgenNode>* l = nds; l; l = l->tl()) {
+        code_single_class_protObj(l->hd());
+    }
 }
 // emit method code for only the current class. 
 // this method will not emit code for parent classes of curr_class.
@@ -832,38 +832,38 @@ void CgenClassTable::disp_count_local_vars() {
 }
 
 void CgenClassTable::code_single_class_protObj(CgenNodeP curr_class) {
-	// Add -1 eye catcher
+    // Add -1 eye catcher
   str << WORD << "-1" << endl;
-	// Emit <object>_protObj: 
-	emit_protobj_ref(curr_class->get_name(), str); str << LABEL;
-	// Emit class tag.
-	str << WORD << curr_class->class_tag << endl;
-	// Get all attributes and calculate size.
-	unsigned prot_size = DEFAULT_OBJFIELDS; // Base size, containing tag, size and dispatch table.
-	const std::vector<std::pair<CgenNodeP, attr_class*>>& class_attrs = get_all_attrs(curr_class);
-	prot_size += class_attrs.size();
-	// Emit prototype size.
-	str << WORD << prot_size << endl;
-	// Emit dispatch table.
-	str << WORD; emit_disptable_ref(curr_class->get_name(), str); str << endl;
-	// Emit attributes.
-	StringEntryP defaultStringSym = stringtable.add_string("");
-	IntEntryP defaultIntSym = inttable.add_int(0);
-	BoolConst* defaultBoolPtr = &falsebool;
-	for(const auto& class_attr : class_attrs) {
-		const std::string& class_name = class_attr.second->type_decl->get_string();
-		str << WORD;
-		if(class_name == "Int") {
-			defaultIntSym->code_ref(str);
-		} else if(class_name == "String") {
-			defaultStringSym->code_ref(str);
-		} else if(class_name == "Bool") {
-			defaultBoolPtr->code_ref(str);
-		} else {
-			str << 0;
-		}
-		str << endl;
-	}
+    // Emit <object>_protObj: 
+    emit_protobj_ref(curr_class->get_name(), str); str << LABEL;
+    // Emit class tag.
+    str << WORD << curr_class->class_tag << endl;
+    // Get all attributes and calculate size.
+    unsigned prot_size = DEFAULT_OBJFIELDS; // Base size, containing tag, size and dispatch table.
+    const std::vector<std::pair<CgenNodeP, attr_class*>>& class_attrs = get_all_attrs(curr_class);
+    prot_size += class_attrs.size();
+    // Emit prototype size.
+    str << WORD << prot_size << endl;
+    // Emit dispatch table.
+    str << WORD; emit_disptable_ref(curr_class->get_name(), str); str << endl;
+    // Emit attributes.
+    StringEntryP defaultStringSym = stringtable.add_string("");
+    IntEntryP defaultIntSym = inttable.add_int(0);
+    BoolConst* defaultBoolPtr = &falsebool;
+    for(const auto& class_attr : class_attrs) {
+        const std::string& class_name = class_attr.second->type_decl->get_string();
+        str << WORD;
+        if(class_name == "Int") {
+            defaultIntSym->code_ref(str);
+        } else if(class_name == "String") {
+            defaultStringSym->code_ref(str);
+        } else if(class_name == "Bool") {
+            defaultBoolPtr->code_ref(str);
+        } else {
+            str << 0;
+        }
+        str << endl;
+    }
 }
 
 CgenClassTable::CgenClassTable(Classes classes, ostream& s) : nds(NULL) , str(s)
@@ -914,14 +914,14 @@ void CgenClassTable::install_basic_classes()
 // prim_slot is a class known to the code generator.
 //
   addid(No_class,
-	new CgenNode(class_(No_class,No_class,nil_Features(),filename),
-			    Basic,this));
+    new CgenNode(class_(No_class,No_class,nil_Features(),filename),
+                Basic,this));
   addid(SELF_TYPE,
-	new CgenNode(class_(SELF_TYPE,No_class,nil_Features(),filename),
-			    Basic,this));
+    new CgenNode(class_(SELF_TYPE,No_class,nil_Features(),filename),
+                Basic,this));
   addid(prim_slot,
-	new CgenNode(class_(prim_slot,No_class,nil_Features(),filename),
-			    Basic,this));
+    new CgenNode(class_(prim_slot,No_class,nil_Features(),filename),
+                Basic,this));
 
 // 
 // The Object class has no parent class. Its methods are
@@ -935,13 +935,13 @@ void CgenClassTable::install_basic_classes()
   install_class(
    new CgenNode(
     class_(Object, 
-	   No_class,
-	   append_Features(
+       No_class,
+       append_Features(
            append_Features(
            single_Features(method(cool_abort, nil_Formals(), Object, no_expr())),
            single_Features(method(type_name, nil_Formals(), Str, no_expr()))),
            single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
-	   filename),
+       filename),
     Basic,this));
 
 // 
@@ -964,7 +964,7 @@ void CgenClassTable::install_basic_classes()
                         SELF_TYPE, no_expr()))),
             single_Features(method(in_string, nil_Formals(), Str, no_expr()))),
             single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
-	   filename),	    
+       filename),	    
     Basic,this));
 
 //
@@ -974,9 +974,9 @@ void CgenClassTable::install_basic_classes()
    install_class(
     new CgenNode(
      class_(Int, 
-	    Object,
+        Object,
             single_Features(attr(val, prim_slot, no_expr())),
-	    filename),
+        filename),
      Basic,this));
 
 //
@@ -998,7 +998,7 @@ void CgenClassTable::install_basic_classes()
    install_class(
     new CgenNode(
       class_(Str, 
-	     Object,
+         Object,
              append_Features(
              append_Features(
              append_Features(
@@ -1007,15 +1007,15 @@ void CgenClassTable::install_basic_classes()
             single_Features(attr(str_field, prim_slot, no_expr()))),
             single_Features(method(length, nil_Formals(), Int, no_expr()))),
             single_Features(method(concat, 
-				   single_Formals(formal(arg, Str)),
-				   Str, 
-				   no_expr()))),
-	    single_Features(method(substr, 
-				   append_Formals(single_Formals(formal(arg, Int)), 
-						  single_Formals(formal(arg2, Int))),
-				   Str, 
-				   no_expr()))),
-	     filename),
+                   single_Formals(formal(arg, Str)),
+                   Str, 
+                   no_expr()))),
+        single_Features(method(substr, 
+                   append_Formals(single_Formals(formal(arg, Int)), 
+                          single_Formals(formal(arg2, Int))),
+                   Str, 
+                   no_expr()))),
+         filename),
         Basic,this));
 
 }
@@ -1084,7 +1084,7 @@ void CgenNode::set_parentnd(CgenNodeP p)
 
 void CgenClassTable::code()
 {
-	if (cgen_debug) cout << "coding global data" << endl;
+    if (cgen_debug) cout << "coding global data" << endl;
     code_global_data();
 
     if (cgen_debug) cout << "choosing gc" << endl;
@@ -1192,11 +1192,6 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //*****************************************************************
 
 void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
-  // Do not do anything if there's no init presented.
-  if(init->is_noexpr()) {
-    // FIXME: 6/7/2018: If type is string, need to call string init to set the default value to "".
-    return;
-  }
   // Code init first.
   init->code(os, cgenClassTable);
   // Lookup attribute from environment.
@@ -1339,6 +1334,21 @@ CgenNodeP CgenClassTable::get_cgen_node_from_class_name(const std::string& class
 
 CgenNodeP CgenClassTable::get_cgen_node_from_symbol(Symbol s) {
   return probe(s);
+}
+
+void CgenClassTable::init_local_var(const std::string& type_name, ostream& os) {
+    StringEntryP defaultStringSym = stringtable.add_string("");
+    IntEntryP defaultIntSym = inttable.add_int(0);
+    BoolConst* defaultBoolPtr = &falsebool;
+    if(type_name == "Int") {
+        emit_load_int(ACC, defaultIntSym, os);
+    } else if(type_name == "String") {
+        emit_load_string(ACC, defaultStringSym, os);
+    } else if(type_name == "Bool") {
+        emit_load_bool(ACC, *defaultBoolPtr, os);
+    } else {
+        emit_move(ACC, ZERO, os);
+    }
 }
 
 void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
@@ -1568,10 +1578,13 @@ void let_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) {
     cout << "[let_class::code]" << endl;
   }
-  // FIXME: 6/7/2018: If init is no_expr, need to call code_single_class_init to initialize the local variable to a valid initial value.
-  // FIXME: 6/7/2018: Do we need to do this also for local variables used by case? Maybe not because local variables for case should all have initial value.
+  // NOTE: 6/15/2018: Do we need to do this also for local variables used by case? Maybe not because local variables for case should all have initial value.
   // Gen code for init expression.
-  init->code(s, cgenClassTable);
+  if(init->is_noexpr()) {
+    cgenClassTable.init_local_var(this->type_decl->get_string(), s);
+  } else {
+    init->code(s, cgenClassTable);
+  }
   if(cgen_debug) {
     cout << "[let_class::code]: after init code..." << endl;
   }

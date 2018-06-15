@@ -3,7 +3,7 @@ _program
   #1
   _class
     Main
-    IO
+    Object
     "./grading/basicequality.cl"
     (
     #2
@@ -104,53 +104,31 @@ _program
         : Object
         #6
         _let
-          test
-          String
-          #0
-          _no_expr
-          : _no_type
-          #6
-          _dispatch
-            #6
-            _object
-              self
-            : SELF_TYPE
-            out_string
-            (
-            #6
-            _object
-              test
-            : String
-            )
-          : SELF_TYPE
-        : SELF_TYPE
-        #7
-        _let
           a
           String
           #0
           _no_expr
           : _no_type
-          #7
+          #6
           _cond
-            #7
+            #6
             _eq
-              #7
+              #6
               _object
                 a
               : String
-              #7
+              #6
               _string
                 ""
               : String
             : Bool
-            #7
+            #6
             _int
               0
             : Int
-            #7
+            #6
             _dispatch
-              #7
+              #6
               _object
                 self
               : SELF_TYPE
@@ -159,6 +137,34 @@ _program
               )
             : Object
           : Object
+        : Object
+        #7
+        _cond
+          #7
+          _eq
+            #7
+            _int
+              5
+            : Int
+            #7
+            _int
+              6
+            : Int
+          : Bool
+          #7
+          _dispatch
+            #7
+            _object
+              self
+            : SELF_TYPE
+            abort
+            (
+            )
+          : Object
+          #7
+          _int
+            0
+          : Int
         : Object
       : Object
     )

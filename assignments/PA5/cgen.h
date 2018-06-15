@@ -230,6 +230,7 @@ public:
     int get_method_offset(const std::string& class_name, const std::string& method_name);
     int get_method_local_var_cnt_dynamic(const std::string& class_name, const std::string& method_name);
     int get_method_local_var_cnt_static(const std::string& class_name, const std::string& method_name);
+    void init_local_var(const std::string& type_name, ostream& os);
     CgenNodeP get_cgen_node_from_class_name(const std::string& class_name);
     CgenNodeP get_cgen_node_from_symbol(Symbol s);
     std::vector<branch_class*> sort_branches(Cases cases);

@@ -12,27 +12,41 @@ _program
       Object
       #192
       _block
-        #197
+        #196
         _let
           a
           String
           #0
           _no_expr
           : _no_type
-          #197
-          _dispatch
-            #197
-            _object
-              self
-            : SELF_TYPE
-            out_string
-            (
-            #197
-            _object
-              a
-            : String
-            )
-          : SELF_TYPE
-        : SELF_TYPE
-      : SELF_TYPE
+          #196
+          _cond
+            #196
+            _eq
+              #196
+              _object
+                a
+              : String
+              #196
+              _string
+                ""
+              : String
+            : Bool
+            #196
+            _int
+              0
+            : Int
+            #196
+            _dispatch
+              #196
+              _object
+                self
+              : SELF_TYPE
+              abort
+              (
+              )
+            : Object
+          : Object
+        : Object
+      : Object
     )

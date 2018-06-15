@@ -27,14 +27,6 @@ _MemMgr_TEST:
 	.word	-1
 str_const8:
 	.word	5
-	.word	5
-	.word	String_dispTab
-	.word	int_const0
-	.byte	0	
-	.align	2
-	.word	-1
-str_const7:
-	.word	5
 	.word	6
 	.word	String_dispTab
 	.word	int_const1
@@ -42,7 +34,7 @@ str_const7:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const6:
+str_const7:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -51,7 +43,7 @@ str_const6:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const5:
+str_const6:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -60,7 +52,7 @@ str_const5:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const4:
+str_const5:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -69,7 +61,7 @@ str_const4:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const3:
+str_const4:
 	.word	5
 	.word	5
 	.word	String_dispTab
@@ -78,7 +70,7 @@ str_const3:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const2:
+str_const3:
 	.word	5
 	.word	6
 	.word	String_dispTab
@@ -87,12 +79,20 @@ str_const2:
 	.byte	0	
 	.align	2
 	.word	-1
-str_const1:
+str_const2:
 	.word	5
 	.word	8
 	.word	String_dispTab
 	.word	int_const5
 	.ascii	"<basic class>"
+	.byte	0	
+	.align	2
+	.word	-1
+str_const1:
+	.word	5
+	.word	5
+	.word	String_dispTab
+	.word	int_const0
 	.byte	0	
 	.align	2
 	.word	-1
@@ -159,12 +159,12 @@ bool_const1:
 	.word	Bool_dispTab
 	.word	1
 class_nameTab:
-	.word	str_const2
 	.word	str_const3
 	.word	str_const4
 	.word	str_const5
 	.word	str_const6
 	.word	str_const7
+	.word	str_const8
 class_objTab:
 	.word	Object_protObj
 	.word	Object_init
@@ -341,28 +341,42 @@ Main_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 Main.main:
-	addiu	$sp $sp -16
-	sw	$fp 16($sp)
-	sw	$s0 12($sp)
-	sw	$ra 8($sp)
+	addiu	$sp $sp -20
+	sw	$fp 20($sp)
+	sw	$s0 16($sp)
+	sw	$ra 12($sp)
 	addiu	$fp $sp 4
 	move	$s0 $a0
-	sw	$s1 0($fp)
-	la	$s1 str_const8
-	sw	$s1 0($sp)
-	addiu	$sp $sp -4
-	move	$a0 $s0
-	bne	$a0 $zero label0
-	la	$a0 str_const0
-	li	$t1 197
-	jal	_dispatch_abort
+	sw	$s1 4($fp)
+	sw	$s2 0($fp)
+	la	$s2 str_const1
+	move	$s1 $s2
+	la	$t2 str_const1
+	move	$t1 $s1
+	la	$a0 bool_const1
+	beq	$t1 $t2 label2
+	la	$a1 bool_const0
+	jal	equality_test
+label2:
+	lw	$t1 12($a0)
+	beqz	$t1 label0
+	la	$a0 int_const0
+	b	label1
 label0:
+	move	$a0 $s0
+	bne	$a0 $zero label3
+	la	$a0 str_const0
+	li	$t1 196
+	jal	_dispatch_abort
+label3:
 	lw	$t1 8($a0)
-	lw	$t1 12($t1)
+	lw	$t1 0($t1)
 	jalr		$t1
-	lw	$s1 0($fp)
-	lw	$fp 16($sp)
-	lw	$s0 12($sp)
-	lw	$ra 8($sp)
-	addiu	$sp $sp 16
+label1:
+	lw	$s1 4($fp)
+	lw	$s2 0($fp)
+	lw	$fp 20($sp)
+	lw	$s0 16($sp)
+	lw	$ra 12($sp)
+	addiu	$sp $sp 20
 	jr	$ra	

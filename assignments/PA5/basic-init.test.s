@@ -337,6 +337,7 @@ heap_start:
 	.globl	Bool_init
 	.globl	Main.main
 Main_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
@@ -344,6 +345,10 @@ Main_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	IO_init
+	sw	$a0 12($s0)
+	sw	$a0 16($s0)
+	sw	$a0 20($s0)
+	sw	$a0 24($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -351,13 +356,13 @@ Main_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 Main.main:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
 	sw	$ra 4($sp)
 	addiu	$fp $sp 12
 	move	$s0 $a0
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	lw	$a0 12($s0)
 	sw	$a0 4($sp)
@@ -365,7 +370,6 @@ Main.main:
 	lw	$t1 8($a0)
 	lw	$t1 16($t1)
 	jalr		$t1
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	lw	$a0 16($s0)
 	sw	$a0 4($sp)
@@ -378,7 +382,6 @@ Main.main:
 	lw	$t1 12($t1)
 	beqz	$t1 cond_false_1
 cond_true_0:
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	la	$a0 str_const1
 	sw	$a0 4($sp)
@@ -388,7 +391,6 @@ cond_true_0:
 	jalr		$t1
 	b	cond_finish_2
 cond_false_1:
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	la	$a0 str_const2
 	sw	$a0 4($sp)
@@ -408,7 +410,6 @@ is_void_finish_7:
 	lw	$t1 12($t1)
 	beqz	$t1 cond_false_4
 cond_true_3:
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	la	$a0 str_const3
 	sw	$a0 4($sp)
@@ -418,7 +419,6 @@ cond_true_3:
 	jalr		$t1
 	b	cond_finish_5
 cond_false_4:
-	addiu	$sp $sp 0
 	addiu	$sp $sp -4
 	la	$a0 str_const4
 	sw	$a0 4($sp)
@@ -433,6 +433,7 @@ cond_finish_5:
 	addiu	$sp $sp 12
 	jr	$ra	
 String_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
@@ -440,6 +441,8 @@ String_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
+	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -447,6 +450,7 @@ String_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 Bool_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
@@ -454,6 +458,7 @@ Bool_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -461,6 +466,7 @@ Bool_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 Int_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
@@ -468,6 +474,7 @@ Int_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
+	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -475,6 +482,7 @@ Int_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 IO_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)
@@ -489,6 +497,7 @@ IO_init:
 	addiu	$sp $sp 12
 	jr	$ra	
 Object_init:
+	addiu	$sp $sp 0
 	addiu	$sp $sp -12
 	sw	$fp 12($sp)
 	sw	$s0 8($sp)

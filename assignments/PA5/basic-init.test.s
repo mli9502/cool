@@ -345,10 +345,6 @@ Main_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	IO_init
-	sw	$a0 12($s0)
-	sw	$a0 16($s0)
-	sw	$a0 20($s0)
-	sw	$a0 24($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -441,8 +437,6 @@ String_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
-	sw	$a0 12($s0)
-	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -458,7 +452,6 @@ Bool_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
-	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -474,7 +467,6 @@ Int_init:
 	addiu	$fp $sp 12
 	move	$s0 $a0
 	jal	Object_init
-	sw	$a0 12($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)

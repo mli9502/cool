@@ -1192,7 +1192,11 @@ CgenNode::CgenNode(Class_ nd, Basicness bstatus, CgenClassTableP ct) :
 //*****************************************************************
 
 void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
+  // FIXME: 6/15/2018: Currently, we do not do anything if init is null. Do we have to set up string, int and bool default using init_local_var ???
   // Code init first.
+  if(init->is_noexpr()) {
+      return;
+  }
   init->code(os, cgenClassTable);
   // Lookup attribute from environment.
   MemAddr* addr_ptr = cgenClassTable.environment.lookup(this->name->get_string());

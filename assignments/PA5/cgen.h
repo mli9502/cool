@@ -156,11 +156,13 @@ private:
   void code_bools(int);
   void code_select_gc();
   void code_constants();
+  std::vector<StringEntry*> get_class_name_entries_sorted_by_class_tag();
   void code_class_nameTab();
   void code_class_dispTab();
   void code_class_protObj();
   void code_single_class_protObj(CgenNode* curr_class);
   void code_single_class_init(CgenNode* curr_class);
+  void code_class_objTab();
   void code_class_methods();
   void code_single_class_methods(CgenNode* curr_class);
   void disp_count_local_vars();

@@ -661,23 +661,39 @@ void CgenClassTable::code_constants()
   code_bools(boolclasstag);
 }
 
-void CgenClassTable::code_class_nameTab() {
-    str << CLASSNAMETAB << LABEL;
-  unsigned max_class_tag = 0;
-  for(List<CgenNode>* l = nds; l; l = l->tl()) {
-    max_class_tag = std::max(max_class_tag, l->hd()->class_tag);
-  }
-  std::vector<StringEntry*> class_name_entries(max_class_tag + 1, nullptr);
+std::vector<StringEntry*> CgenClassTable::get_class_name_entries_sorted_by_class_tag() {
+    unsigned max_class_tag = 0;
+    for(List<CgenNode>* l = nds; l; l = l->tl()) {
+        max_class_tag = std::max(max_class_tag, l->hd()->class_tag);
+    }
+    std::vector<StringEntry*> class_name_entries(max_class_tag + 1, nullptr);
     for(List<CgenNode>* l = nds; l; l = l->tl()) {
         std::string class_name = l->hd()->get_name()->get_string();
         StringEntry* class_name_entry = stringtable.lookup_string(const_cast<char*>(class_name.c_str()));
         class_name_entries[l->hd()->class_tag] = class_name_entry;
     }
-  for(auto entry : class_name_entries) {
-    str << WORD;
+    return class_name_entries;
+}
+
+void CgenClassTable::code_class_nameTab() {
+    const auto& class_name_entries = get_class_name_entries_sorted_by_class_tag();
+    str << CLASSNAMETAB << LABEL;
+    for(auto entry : class_name_entries) {
+        str << WORD;
         entry->code_ref(str);
         str << endl;
-  }
+    }
+}
+
+// objTab is needed for new__class when we do "new SELF_TYPE".
+// At runtime, we need to find out which _protObj and _init we need to call based on object id.
+void CgenClassTable::code_class_objTab() {
+    const auto& class_name_entries = get_class_name_entries_sorted_by_class_tag();
+    str << CLASSOBJTAB << LABEL;
+    for(auto entry : class_name_entries) {
+        str << WORD; emit_protobj_ref(entry, str); str << std::endl;
+        str << WORD; emit_init_ref(entry, str); str << std::endl;
+    }
 }
 
 void CgenClassTable::bfs_init_classes_dispatch_table() {
@@ -1098,6 +1114,7 @@ void CgenClassTable::code()
     // class_nameTab
     if(cgen_debug) cout << "coding class_nameTab" << endl;
     code_class_nameTab();
+    code_class_objTab();
     // Initialize class dispatch tables.
     bfs_init_classes_dispatch_table();
     // Initialize and correctly set local var cnt for each method in each class.
@@ -1850,15 +1867,38 @@ void new__class::code(ostream &s, CgenClassTable& cgenClassTable) {
   Symbol t0 = this->type_name;
   if(t0->get_string() == SELF_TYPE->get_string()) {
     t0 = cgenClassTable.self_class;
+    // Load class_objTab into $T1.
+    emit_load_address(T1, "class_objTab", s);
+    // Load object tag from SELF (S0) into $T2.
+    emit_load(T2, TAG_OFFSET, SELF, s);
+    // Shift T2 left by 3 to locate the corresponding protObj and init label in class_objTab.
+    emit_sll(T2, T2, 3, s);
+    // Move T1 to point to the protObj for current class tag.
+    emit_addu(T1, T1, T2, s);
+    // Push T1 on stack.
+    emit_store(T1, 0, SP, s);
+    emit_addiu(SP, SP, -4, s);
+    // From address stored in T1, load word to ACC. So, ACC will hold the address to the name of the protObj.
+    emit_load(ACC, 0, T1, s);
+    // Call Object.copy.
+    emit_jal("Object.copy", s);
+    // Get back T1 and pop stack.
+    emit_load(T1, 1, SP, s);
+    emit_addiu(SP, SP, 4, s);
+    // Load the init method from T1.
+    emit_load(T1, 1, T1, s);
+    // Jump to init method.
+    emit_jalr(T1, s);
+  } else {
+    // Load <class>_protObj into $a0.
+    std::string class_protObj_name = t0->get_string() + std::string(PROTOBJ_SUFFIX);
+    emit_load_address(ACC, (char*)(class_protObj_name.c_str()), s);
+    // Call Object.copy.
+    emit_jal("Object.copy", s);
+    // Call <class>_init.
+    std::string class_init_name = t0->get_string() + std::string(CLASSINIT_SUFFIX);
+    emit_jal((char*)class_init_name.c_str(), s);
   }
-  // Load <class>_protObj into $a0.
-  std::string class_protObj_name = t0->get_string() + std::string(PROTOBJ_SUFFIX);
-  emit_load_address(ACC, (char*)(class_protObj_name.c_str()), s);
-  // Call Object.copy.
-  emit_jal("Object.copy", s);
-  // Call <class>_init.
-  std::string class_init_name = t0->get_string() + std::string(CLASSINIT_SUFFIX);
-  emit_jal((char*)class_init_name.c_str(), s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, t0);
 }

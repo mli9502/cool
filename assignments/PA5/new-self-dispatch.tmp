@@ -1,78 +1,78 @@
-#214
+#5
 _program
-  #214
+  #5
   _class
     Base
     IO
-    "hello_world.cl"
+    "./grading/new-self-dispatch.cl"
     (
-    #216
+    #7
     _method
       identify
       Object
-      #218
+      #9
       _dispatch
-        #218
+        #9
         _object
           self
         : SELF_TYPE
         out_string
         (
-        #218
+        #9
         _string
           "base\n"
         : String
         )
       : SELF_TYPE
-    #221
+    #12
     _method
       duplicate
       Base
-      #223
+      #14
       _new
         SELF_TYPE
       : SELF_TYPE
     )
-  #228
+  #19
   _class
     Derived
     Base
-    "hello_world.cl"
+    "./grading/new-self-dispatch.cl"
     (
-    #230
+    #21
     _method
       identify
       Object
-      #232
+      #23
       _dispatch
-        #232
+        #23
         _object
           self
         : SELF_TYPE
         out_string
         (
-        #232
+        #23
         _string
           "derived\n"
         : String
         )
       : SELF_TYPE
     )
-  #237
+  #28
   _class
     Main
     Object
-    "hello_world.cl"
+    "./grading/new-self-dispatch.cl"
     (
-    #239
+    #30
     _method
       main
       Object
-      #241
+      #32
       _dispatch
-        #241
+        #32
         _dispatch
-          #241
+          #32
           _new
             Derived
           : Derived

@@ -134,10 +134,10 @@ str_const1:
 	.word	-1
 str_const0:
 	.word	6
-	.word	8
+	.word	12
 	.word	String_dispTab
 	.word	int_const9
-	.ascii	"hello_world.cl"
+	.ascii	"./grading/new-self-dispatch.cl"
 	.byte	0	
 	.align	2
 	.word	-1
@@ -145,7 +145,7 @@ int_const9:
 	.word	4
 	.word	4
 	.word	Int_dispTab
-	.word	14
+	.word	30
 	.word	-1
 int_const8:
 	.word	4
@@ -466,7 +466,7 @@ Main.main:
 	jal	Derived_init
 	bne	$a0 $zero label0
 	la	$a0 str_const0
-	li	$t1 241
+	li	$t1 32
 	jal	_dispatch_abort
 label0:
 	lw	$t1 8($a0)
@@ -474,7 +474,7 @@ label0:
 	jalr		$t1
 	bne	$a0 $zero label1
 	la	$a0 str_const0
-	li	$t1 241
+	li	$t1 32
 	jal	_dispatch_abort
 label1:
 	lw	$t1 8($a0)
@@ -498,7 +498,7 @@ Base.identify:
 	move	$a0 $s0
 	bne	$a0 $zero label2
 	la	$a0 str_const0
-	li	$t1 218
+	li	$t1 9
 	jal	_dispatch_abort
 label2:
 	lw	$t1 8($a0)
@@ -545,7 +545,7 @@ Derived.identify:
 	move	$a0 $s0
 	bne	$a0 $zero label3
 	la	$a0 str_const0
-	li	$t1 232
+	li	$t1 23
 	jal	_dispatch_abort
 label3:
 	lw	$t1 8($a0)

@@ -211,33 +211,24 @@
 
 
 
-class Base inherits IO
-{
-  identify() : Object
-  {
-    out_string( "base\n" )
-  };
-
-  duplicate() : Base
-  {
-    new SELF_TYPE
-  };
+class A inherits IO {
+	x:Int <- 5;
+	foo(y:Int):SELF_TYPE { { x <- y; self; } };
+};
+class B inherits A {
 };
 
-
-class Derived inherits Base
-{
-  identify() : Object
-  {
-    out_string( "derived\n" )
-  };
-};
-
-
-class Main 
-{
-  main() : Object
-  {
-    (new Derived).duplicate().identify()
-  };
+class Main {
+	main():Object {{
+		let x:B <- new B in {
+			if x = x then 0 else abort() fi;
+			if x = new B then abort() else 0 fi;
+			if new A = new A then abort() else 0 fi;
+			let y:A <- x in {
+				if y = x then 0 else abort() fi;
+				if y.foo(3) = x then 0 else abort() fi;
+			};
+		};
+		let x:A, y:B in if x = y then 0 else abort() fi; 
+	}};
 };

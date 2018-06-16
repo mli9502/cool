@@ -298,6 +298,10 @@ static void emit_beq(char *src1, char *src2, int label, ostream &s)
   s << endl;
 }
 
+static void emit_beq(char* src1, char* src2, const std::string& label, ostream& s) {
+  s << BEQ << src1 << " " << src2 << " " << label << endl;
+}
+
 static void emit_bne(char *src1, char *src2, int label, ostream &s)
 {
   s << BNE << src1 << " " << src2 << " ";
@@ -1778,6 +1782,8 @@ void lt_class::code(ostream &s, CgenClassTable& cgenClassTable) {
 }
 
 void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
+  int label_cnt = cgenClassTable.get_tag_cnt();
+  std::string eq_finish_label = "eq_finish_" + std::to_string(label_cnt);
   // Emit code for the left expression.
   e1->code(s, cgenClassTable);
   // Store result on stack.
@@ -1792,9 +1798,12 @@ void eq_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_addiu(SP, SP, 4, s);
   // Move true to ACC, false to A1.
   emit_load_bool(ACC, BoolConst(1), s);
+  emit_beq(T1, T2, eq_finish_label, s);
   emit_load_bool(A1, BoolConst(0), s);
   // Call equality_test.
   emit_jal("equality_test", s);
+  // Emit end label.
+  emit_label_def(eq_finish_label, s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, type);
 }

@@ -827,9 +827,13 @@ void CgenClassTable::code_single_class_init(CgenNode* curr_class) {
   for(const auto& attr : attributes) {
     local_var_cnt = std::max(local_var_cnt, attr->init->count_max_local_vars());
   }
+  if(cgen_debug) {
+    std::cout << "[code_single_class_init]::local_var_cnt: " << local_var_cnt << std::endl;
+  }
+  this->curr_method_max_local_cnt = local_var_cnt;
   CgenNode* parent_class = curr_class->get_parentnd();
   // First set up called activation record.
-  this->code_callee_activation_record_setup(str, 0);
+  this->code_callee_activation_record_setup(str, local_var_cnt);
   // If parent class is not NULL, init parent class first.
   if(parent_class != nullptr && curr_class->name->get_string() != Object->get_string()) {
     std::string parent_init_name = parent_class->get_name()->get_string() + std::string(CLASSINIT_SUFFIX);

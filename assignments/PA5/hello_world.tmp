@@ -1,279 +1,447 @@
-#214
+#249
 _program
-  #214
+  #249
   _class
-    A
-    IO
+    Foo
+    Bazz
     "hello_world.cl"
     (
-    #215
+    #250
     _attr
-      x
-      Int
-      #215
-      _int
-        5
-      : Int
-    #216
-    _method
-      foo
-      #216
-      _formal
-        y
-        Int
-      SELF_TYPE
-      #216
-      _block
-        #216
-        _assign
-          x
-          #216
-          _object
-            y
-          : Int
-        : Int
-        #216
+      a
+      Razz
+      #250
+      _typcase
+        #250
         _object
           self
         : SELF_TYPE
-      : SELF_TYPE
+        #251
+        _branch
+          n
+          Razz
+          #251
+          _new
+            Bar
+          : Bar
+        #252
+        _branch
+          n
+          Foo
+          #252
+          _new
+            Razz
+          : Razz
+        #253
+        _branch
+          n
+          Bar
+          #253
+          _object
+            n
+          : Bar
+      : Razz
+    #256
+    _attr
+      b
+      Int
+      #256
+      _plus
+        #256
+        _plus
+          #256
+          _plus
+            #256
+            _dispatch
+              #256
+              _object
+                a
+              : Razz
+              doh
+              (
+              )
+            : Int
+            #256
+            _dispatch
+              #256
+              _object
+                g
+              : Foo
+              doh
+              (
+              )
+            : Int
+          : Int
+          #256
+          _dispatch
+            #256
+            _object
+              self
+            : SELF_TYPE
+            doh
+            (
+            )
+          : Int
+        : Int
+        #256
+        _dispatch
+          #256
+          _object
+            self
+          : SELF_TYPE
+          printh
+          (
+          )
+        : Int
+      : Int
+    #258
+    _method
+      doh
+      Int
+      #258
+      _let
+        i
+        Int
+        #258
+        _object
+          h
+        : Int
+        #258
+        _block
+          #258
+          _assign
+            h
+            #258
+            _plus
+              #258
+              _object
+                h
+              : Int
+              #258
+              _int
+                2
+              : Int
+            : Int
+          : Int
+          #258
+          _object
+            i
+          : Int
+        : Int
+      : Int
     )
-  #218
+  #262
   _class
-    B
-    A
+    Bar
+    Razz
     "hello_world.cl"
     (
+    #264
+    _attr
+      c
+      Int
+      #264
+      _dispatch
+        #264
+        _object
+          self
+        : SELF_TYPE
+        doh
+        (
+        )
+      : Int
+    #266
+    _attr
+      d
+      Object
+      #266
+      _dispatch
+        #266
+        _object
+          self
+        : SELF_TYPE
+        printh
+        (
+        )
+      : Int
     )
-  #221
+  #270
+  _class
+    Razz
+    Foo
+    "hello_world.cl"
+    (
+    #272
+    _attr
+      e
+      Bar
+      #272
+      _typcase
+        #272
+        _object
+          self
+        : SELF_TYPE
+        #273
+        _branch
+          n
+          Razz
+          #273
+          _new
+            Bar
+          : Bar
+        #274
+        _branch
+          n
+          Bar
+          #274
+          _object
+            n
+          : Bar
+      : Bar
+    #277
+    _attr
+      f
+      Int
+      #277
+      _plus
+        #277
+        _plus
+          #277
+          _plus
+            #277
+            _plus
+              #277
+              _static_dispatch
+                #277
+                _object
+                  a
+                : Razz
+                Bazz
+                doh
+                (
+                )
+              : Int
+              #277
+              _dispatch
+                #277
+                _object
+                  g
+                : Foo
+                doh
+                (
+                )
+              : Int
+            : Int
+            #277
+            _dispatch
+              #277
+              _object
+                e
+              : Bar
+              doh
+              (
+              )
+            : Int
+          : Int
+          #277
+          _dispatch
+            #277
+            _object
+              self
+            : SELF_TYPE
+            doh
+            (
+            )
+          : Int
+        : Int
+        #277
+        _dispatch
+          #277
+          _object
+            self
+          : SELF_TYPE
+          printh
+          (
+          )
+        : Int
+      : Int
+    )
+  #281
+  _class
+    Bazz
+    IO
+    "hello_world.cl"
+    (
+    #283
+    _attr
+      h
+      Int
+      #283
+      _int
+        1
+      : Int
+    #285
+    _attr
+      g
+      Foo
+      #285
+      _typcase
+        #285
+        _object
+          self
+        : SELF_TYPE
+        #286
+        _branch
+          n
+          Bazz
+          #286
+          _new
+            Foo
+          : Foo
+        #287
+        _branch
+          n
+          Razz
+          #287
+          _new
+            Bar
+          : Bar
+        #288
+        _branch
+          n
+          Foo
+          #288
+          _new
+            Razz
+          : Razz
+        #289
+        _branch
+          n
+          Bar
+          #289
+          _object
+            n
+          : Bar
+      : Foo
+    #292
+    _attr
+      i
+      Object
+      #292
+      _dispatch
+        #292
+        _object
+          self
+        : SELF_TYPE
+        printh
+        (
+        )
+      : Int
+    #294
+    _method
+      printh
+      Int
+      #294
+      _block
+        #294
+        _dispatch
+          #294
+          _object
+            self
+          : SELF_TYPE
+          out_int
+          (
+          #294
+          _object
+            h
+          : Int
+          )
+        : SELF_TYPE
+        #294
+        _int
+          0
+        : Int
+      : Int
+    #296
+    _method
+      doh
+      Int
+      #296
+      _let
+        i
+        Int
+        #296
+        _object
+          h
+        : Int
+        #296
+        _block
+          #296
+          _assign
+            h
+            #296
+            _plus
+              #296
+              _object
+                h
+              : Int
+              #296
+              _int
+                1
+              : Int
+            : Int
+          : Int
+          #296
+          _object
+            i
+          : Int
+        : Int
+      : Int
+    )
+  #300
   _class
     Main
     Object
     "hello_world.cl"
     (
-    #222
+    #301
+    _attr
+      a
+      Bazz
+      #301
+      _new
+        Bazz
+      : Bazz
+    #302
+    _attr
+      b
+      Foo
+      #302
+      _new
+        Foo
+      : Foo
+    #303
+    _attr
+      c
+      Razz
+      #303
+      _new
+        Razz
+      : Razz
+    #304
+    _attr
+      d
+      Bar
+      #304
+      _new
+        Bar
+      : Bar
+    #306
     _method
       main
-      Object
-      #222
-      _block
-        #223
-        _let
-          x
-          B
-          #223
-          _new
-            B
-          : B
-          #223
-          _block
-            #224
-            _cond
-              #224
-              _eq
-                #224
-                _object
-                  x
-                : B
-                #224
-                _object
-                  x
-                : B
-              : Bool
-              #224
-              _int
-                0
-              : Int
-              #224
-              _dispatch
-                #224
-                _object
-                  self
-                : SELF_TYPE
-                abort
-                (
-                )
-              : Object
-            : Object
-            #225
-            _cond
-              #225
-              _eq
-                #225
-                _object
-                  x
-                : B
-                #225
-                _new
-                  B
-                : B
-              : Bool
-              #225
-              _dispatch
-                #225
-                _object
-                  self
-                : SELF_TYPE
-                abort
-                (
-                )
-              : Object
-              #225
-              _int
-                0
-              : Int
-            : Object
-            #226
-            _cond
-              #226
-              _eq
-                #226
-                _new
-                  A
-                : A
-                #226
-                _new
-                  A
-                : A
-              : Bool
-              #226
-              _dispatch
-                #226
-                _object
-                  self
-                : SELF_TYPE
-                abort
-                (
-                )
-              : Object
-              #226
-              _int
-                0
-              : Int
-            : Object
-            #227
-            _let
-              y
-              A
-              #227
-              _object
-                x
-              : B
-              #227
-              _block
-                #228
-                _cond
-                  #228
-                  _eq
-                    #228
-                    _object
-                      y
-                    : A
-                    #228
-                    _object
-                      x
-                    : B
-                  : Bool
-                  #228
-                  _int
-                    0
-                  : Int
-                  #228
-                  _dispatch
-                    #228
-                    _object
-                      self
-                    : SELF_TYPE
-                    abort
-                    (
-                    )
-                  : Object
-                : Object
-                #229
-                _cond
-                  #229
-                  _eq
-                    #229
-                    _dispatch
-                      #229
-                      _object
-                        y
-                      : A
-                      foo
-                      (
-                      #229
-                      _int
-                        3
-                      : Int
-                      )
-                    : A
-                    #229
-                    _object
-                      x
-                    : B
-                  : Bool
-                  #229
-                  _int
-                    0
-                  : Int
-                  #229
-                  _dispatch
-                    #229
-                    _object
-                      self
-                    : SELF_TYPE
-                    abort
-                    (
-                    )
-                  : Object
-                : Object
-              : Object
-            : Object
-          : Object
-        : Object
-        #232
-        _let
-          x
-          A
-          #0
-          _no_expr
-          : _no_type
-          #232
-          _let
-            y
-            B
-            #0
-            _no_expr
-            : _no_type
-            #232
-            _cond
-              #232
-              _eq
-                #232
-                _object
-                  x
-                : A
-                #232
-                _object
-                  y
-                : B
-              : Bool
-              #232
-              _int
-                0
-              : Int
-              #232
-              _dispatch
-                #232
-                _object
-                  self
-                : SELF_TYPE
-                abort
-                (
-                )
-              : Object
-            : Object
-          : Object
-        : Object
-      : Object
+      String
+      #306
+      _string
+        "do nothing"
+      : String
     )

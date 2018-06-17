@@ -211,24 +211,106 @@
 
 
 
-class A inherits IO {
-	x:Int <- 5;
-	foo(y:Int):SELF_TYPE { { x <- y; self; } };
-};
-class B inherits A {
+-- (* hairy  . . .*)
+
+-- class Second inherits First {};
+
+-- class First inherits IO {
+
+--     --  h : Int <- ({out_string("First::h\n"); 1;});
+
+--      g : Second  <- case self of
+-- 		     	n : First => ({out_string("First::First\n"); new Second;});
+-- 				n : Second  => ({out_string("First::Second\n"); n;});
+-- 		  		esac;
+
+--     --  i : Object <- ({out_string("First::i\n");});
+
+--     --  printh() : Int { { out_int(h); 0; } };
+
+--     --  doh() : Int { (let i: Int <- h in { h <- h + 1; i; } ) };
+-- };
+
+-- (* scary . . . *)
+-- class Main {
+--   a : First <- new First;
+-- --   b : Second <- new Second;
+-- --   c : Third <- new Third;
+-- --   d : Fourth <- new Fourth;
+
+--   main(): String { "do nothing" };
+
+-- };
+
+
+
+(* hairy  . . .*)
+
+class Foo inherits Bazz {
+     a : Razz <- case self of
+		      n : Razz => (new Bar);
+		      n : Foo => (new Razz);
+		      n : Bar => n;
+   	         esac;
+
+     b : Int <- a.doh() + g.doh() + doh() + printh();
+
+     doh() : Int { (let i : Int <- h in { h <- h + 2; i; } ) };
+
 };
 
-class Main {
-	main():Object {{
-		let x:B <- new B in {
-			if x = x then 0 else abort() fi;
-			if x = new B then abort() else 0 fi;
-			if new A = new A then abort() else 0 fi;
-			let y:A <- x in {
-				if y = x then 0 else abort() fi;
-				if y.foo(3) = x then 0 else abort() fi;
-			};
-		};
-		let x:A, y:B in if x = y then 0 else abort() fi; 
-	}};
+class Bar inherits Razz {
+
+     c : Int <- doh();
+
+     d : Object <- printh();
 };
+
+
+class Razz inherits Foo {
+
+     e : Bar <- case self of
+		  n : Razz => (new Bar);
+		  n : Bar => n;
+		esac;
+
+     f : Int <- a@Bazz.doh() + g.doh() + e.doh() + doh() + printh();
+
+};
+
+class Bazz inherits IO {
+
+     h : Int <- 1;
+
+     g : Foo  <- case self of
+		     	n : Bazz => (new Foo);
+		     	n : Razz => (new Bar);
+			n : Foo  => (new Razz);
+			n : Bar => n;
+		  esac;
+
+     i : Object <- printh();
+
+     printh() : Int { { out_int(h); 0; } };
+
+     doh() : Int { (let i: Int <- h in { h <- h + 1; i; } ) };
+};
+
+(* scary . . . *)
+class Main {
+  a : Bazz <- new Bazz;
+  b : Foo <- new Foo;
+  c : Razz <- new Razz;
+  d : Bar <- new Bar;
+
+  main(): String { "do nothing" };
+
+};
+
+
+
+
+
+
+
+

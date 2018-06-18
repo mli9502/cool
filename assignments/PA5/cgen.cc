@@ -309,6 +309,10 @@ static void emit_bne(char *src1, char *src2, int label, ostream &s)
   s << endl;
 }
 
+static void emit_bne(char* src1, char* src2, const std::string& label, ostream& s) {
+  s << BNE << src1 << " " << src2 << " " << label << endl;
+}
+
 static void emit_bleq(char *src1, char *src2, int label, ostream &s)
 {
   s << BLEQ << src1 << " " << src2 << " ";
@@ -1393,6 +1397,13 @@ void static_dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   cgenClassTable.code_caller_activation_record_setup(s, actual, cgenClassTable);
   // Gen code for e0.
   expr->code(s, cgenClassTable);
+  std::string not_void_tag = "static_dispatch_not_void_" + std::to_string(cgenClassTable.get_tag_cnt());
+  // Check for disptaching on void.
+  emit_bne(ACC, ZERO, not_void_tag, s);
+  emit_load_address(ACC, "str_const0", s);
+  emit_load_imm(T1, expr->get_line_number(), s);
+  emit_jal("_dispatch_abort", s);
+  emit_label_def(not_void_tag, s);
   // Load dispatch table to $t1.
   emit_load_address(T1, (char*)static_dispatch_table.c_str(), s);
   // Load method tag into $t1.
@@ -1448,6 +1459,13 @@ void dispatch_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) std::cout << "[dispatch_class::code]: --------- Gen code for expr -----------------" << std::endl;
   expr->code(s, cgenClassTable);
   if(cgen_debug) std::cout << "[dispatch_class::code]: ---------------------------------------------" << std::endl;
+  std::string not_void_tag = "dispatch_not_void_" + std::to_string(cgenClassTable.get_tag_cnt());
+  // Check for disptaching on void.
+  emit_bne(ACC, ZERO, not_void_tag, s);
+  emit_load_address(ACC, "str_const0", s);
+  emit_load_imm(T1, expr->get_line_number(), s);
+  emit_jal("_dispatch_abort", s);
+  emit_label_def(not_void_tag, s);
   // Load dispatch table to $t1.
   emit_load(T1, DISPTABLE_OFFSET, ACC, s);
   // Load method tag into $t1.
@@ -1511,8 +1529,8 @@ void loop_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   emit_branch(loop_start_tag, s);
   // Emit loop end label.
   emit_label_def(loop_end_tag, s);
-  // Need to update store with the result of if statement.
-  // FIXME: Do we need this? Loop will always have NULL as type?
+  // Move $ZERO to ACC.
+  emit_move(ACC, ZERO, s);
   // Update store.
   cgenClassTable.update_store(ACC, 0, type);
 }
@@ -1551,7 +1569,14 @@ void typcase_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   // 2. Go through these cases and generate code based on their class tag and the max tag value representing the most decendent child class.
   // Gen code for expression.
   expr->code(s, cgenClassTable);
-  // FIXME: Check for null object.
+  // Check for void object.
+  std::string not_void_tag = "typcase_not_void_" + std::to_string(cgenClassTable.get_tag_cnt());
+  // Check for disptaching on void.
+  emit_bne(ACC, ZERO, not_void_tag, s);
+  emit_load_address(ACC, "str_const0", s);
+  emit_load_imm(T1, expr->get_line_number(), s);
+  emit_jal("_case_abort2", s);
+  emit_label_def(not_void_tag, s);
   // Load class tag of expression result to $t2.
   emit_load(T2, TAG_OFFSET, ACC, s);
   // Gen code for branches.
@@ -1941,7 +1966,7 @@ void no_expr_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   if(cgen_debug) std::cout << "[no_expr_class::code]: no_expr" << std::endl;
   // FIXME: Not sure what to do about this...
   // // For now, just put 0 in ACC.
-  // emit_load_imm(ACC, 0, s);
+  emit_move(ACC, ZERO, s);
   // // Update store.
   // cgenClassTable.update_store(ACC, 0, type);
 }

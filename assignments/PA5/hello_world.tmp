@@ -1,38 +1,120 @@
-#323
+#328
 _program
-  #323
+  #328
   _class
     Main
-    Object
+    IO
     "hello_world.cl"
     (
-    #324
+    #329
     _attr
-      x
-      Main
+      y
+      Int
       #0
       _no_expr
       : _no_type
-    #325
+    #330
+    _method
+      f
+      #330
+      _formal
+        x
+        Int
+      Int
+      #330
+      _assign
+        y
+        #330
+        _plus
+          #330
+          _plus
+            #330
+            _plus
+              #330
+              _plus
+                #330
+                _object
+                  x
+                : Int
+                #330
+                _int
+                  6
+                : Int
+              : Int
+              #330
+              _int
+                7
+              : Int
+            : Int
+            #330
+            _int
+              8
+            : Int
+          : Int
+          #330
+          _int
+            9
+          : Int
+        : Int
+      : Int
+    #331
     _method
       main
       Object
-      #325
-      _block
-        #325
-        _typcase
-          #325
-          _object
-            x
-          : Main
-          #325
-          _branch
-            m
-            Main
-            #325
-            _int
-              0
+      #331
+      _dispatch
+        #331
+        _object
+          self
+        : SELF_TYPE
+        out_int
+        (
+        #331
+        _assign
+          y
+          #331
+          _plus
+            #331
+            _plus
+              #331
+              _plus
+                #331
+                _plus
+                  #331
+                  _int
+                    1
+                  : Int
+                  #331
+                  _int
+                    2
+                  : Int
+                : Int
+                #331
+                _int
+                  3
+                : Int
+              : Int
+              #331
+              _int
+                4
+              : Int
             : Int
+            #331
+            _dispatch
+              #331
+              _object
+                self
+              : SELF_TYPE
+              f
+              (
+              #331
+              _int
+                5
+              : Int
+              )
+            : Int
+          : Int
         : Int
-      : Int
+        )
+      : SELF_TYPE
     )

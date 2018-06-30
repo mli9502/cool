@@ -1188,7 +1188,8 @@ void CgenClassTable::set_class_tags_member_helper(CgenNodeP node, int& tag) {
   for(List<CgenNode>* l = node->get_children(); l; l = l->tl()) {
     set_class_tags_member_helper(l->hd(), tag);
   }
-  _class_tags[node] = std::make_pair(class_tag, tag);
+  // This range is inclusive on both ends. So, we need to use (tag - 1) as the max number.
+  _class_tags[node] = std::make_pair(class_tag, tag - 1);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1231,6 +1232,11 @@ void attr_class::code(ostream& os, CgenClassTable& cgenClassTable) {
   MemAddr* addr_ptr = cgenClassTable.environment.lookup(this->name->get_string());
   // Store init result into addr.
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), os);
+  // If GC is enabled, need to register assignment with _GenGC_Assign.
+  if(cgen_Memmgr != GC_NOGC) {
+    emit_addiu(A1, (char*)(addr_ptr->reg_name.c_str()), 4 * addr_ptr->offset, os);
+    emit_jal("_GenGC_Assign", os);
+  }
 }
 
 void method_class::code(ostream& os, CgenClassTable& cgenClassTable) {
@@ -1270,6 +1276,11 @@ void assign_class::code(ostream &s, CgenClassTable& cgenClassTable) {
   cgenClassTable.update_store(addr_ptr->reg_name, addr_ptr->offset, *val);
   // emit store.
   emit_store(ACC, addr_ptr->offset, (char*)(addr_ptr->reg_name.c_str()), s);
+  // If GC is enabled, need to register assignment with _GenGC_Assign.
+  if(cgen_Memmgr != GC_NOGC) {
+    emit_addiu(A1, (char*)(addr_ptr->reg_name.c_str()), 4 * addr_ptr->offset, s);
+    emit_jal("_GenGC_Assign", s);
+  }
 }
 
 void CgenClassTable::code_caller_activation_record_setup(ostream& s, Expressions args, CgenClassTable& cgenClassTable) {

@@ -85,6 +85,7 @@ test_hello:
 	@echo "------------------------ Official cgen output --------------------"
 	spim hello_world.s	
 
+
 test_gc:
 	$(MAKE) cgen
 	lexer hello_world.cl | parser | semant > hello_world.tmp
@@ -99,23 +100,22 @@ test_gc:
 	# Enable gc and perform frequent garbage collection.
 	cgen -g -t < hello_world.tmp > hello_world.gc_gt.s
 	@echo "------------------------ My cgen output --------------------------"
-	spim hello_world.test.s
-	@echo "------------------------ Official cgen output --------------------"
-	spim hello_world.nogc.s
-	@echo "------------------------ Official cgen with -g -------------------"
-	spim hello_world.gc_g.s
+	spim hello_world.test.gc_gt.s
 	@echo "------------------------ Official cgen with -g -t ----------------"
 	spim hello_world.gc_gt.s	
 
 test_%:
 	$(MAKE) cgen
 	lexer ./grading/$*.cl | parser | semant > $*.tmp
-	./cgen < $*.tmp > $*.test.s
-	cgen < $*.tmp > $*.s
+	./cgen -g -t < $*.tmp > $*.test.s
+	cgen -g -t < $*.tmp > $*.s
 	@echo "------------------------ My cgen output --------------------------"
 	spim $*.test.s
+	@echo "------------------------ My cgen output finish -------------------"
+	@read arg
 	@echo "------------------------ Official cgen output --------------------"
 	spim $*.s	
+	@echo "------------------------ Official cgen output finish -------------"
 
 debug_hello:
 	$(MAKE) cgen

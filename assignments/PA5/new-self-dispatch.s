@@ -17,13 +17,13 @@ _string_tag:
 	.word	6
 	.globl	_MemMgr_INITIALIZER
 _MemMgr_INITIALIZER:
-	.word	_NoGC_Init
+	.word	_GenGC_Init
 	.globl	_MemMgr_COLLECTOR
 _MemMgr_COLLECTOR:
-	.word	_NoGC_Collect
+	.word	_GenGC_Collect
 	.globl	_MemMgr_TEST
 _MemMgr_TEST:
-	.word	0
+	.word	1
 	.word	-1
 str_const12:
 	.word	6

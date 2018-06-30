@@ -18,13 +18,13 @@ _string_tag:
 	.word	6
 	.globl	_MemMgr_INITIALIZER
 _MemMgr_INITIALIZER:
-	.word	_NoGC_Init
+	.word	_GenGC_Init
 	.globl	_MemMgr_COLLECTOR
 _MemMgr_COLLECTOR:
-	.word	_NoGC_Collect
+	.word	_GenGC_Collect
 	.globl	_MemMgr_TEST
 _MemMgr_TEST:
-	.word	0
+	.word	1
 	.word	-1
 str_const15:
 	.word	6
@@ -261,6 +261,23 @@ class_nameTab:
 	.word	str_const10
 	.word	str_const11
 	.word	str_const14
+class_objTab:
+	.word	Object_protObj
+	.word	Object_init
+	.word	IO_protObj
+	.word	IO_init
+	.word	Base_protObj
+	.word	Base_init
+	.word	Derived_protObj
+	.word	Derived_init
+	.word	Int_protObj
+	.word	Int_init
+	.word	Bool_protObj
+	.word	Bool_init
+	.word	String_protObj
+	.word	String_init
+	.word	Main_protObj
+	.word	Main_init
 Main_dispTab:
 	.word	Object.abort
 	.word	Object.type_name
@@ -394,9 +411,19 @@ Main.main:
 	la	$a0 Derived_protObj
 	jal	Object.copy
 	jal	Derived_init
+	bne	$a0 $zero dispatch_not_void_0
+	la	$a0 str_const0
+	li	$t1 32
+	jal	_dispatch_abort
+dispatch_not_void_0:
 	lw	$t1 8($a0)
 	lw	$t1 32($t1)
 	jalr		$t1
+	bne	$a0 $zero dispatch_not_void_1
+	la	$a0 str_const0
+	li	$t1 32
+	jal	_dispatch_abort
+dispatch_not_void_1:
 	lw	$t1 8($a0)
 	lw	$t1 28($t1)
 	jalr		$t1
@@ -432,6 +459,11 @@ Derived.identify:
 	la	$a0 str_const2
 	sw	$a0 4($sp)
 	move	$a0 $s0
+	bne	$a0 $zero dispatch_not_void_2
+	la	$a0 str_const0
+	li	$t1 23
+	jal	_dispatch_abort
+dispatch_not_void_2:
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
@@ -467,6 +499,11 @@ Base.identify:
 	la	$a0 str_const1
 	sw	$a0 4($sp)
 	move	$a0 $s0
+	bne	$a0 $zero dispatch_not_void_3
+	la	$a0 str_const0
+	li	$t1 9
+	jal	_dispatch_abort
+dispatch_not_void_3:
 	lw	$t1 8($a0)
 	lw	$t1 12($t1)
 	jalr		$t1
@@ -483,9 +520,18 @@ Base.duplicate:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 12
 	move	$s0 $a0
-	la	$a0 Base_protObj
+	la	$t1 class_objTab
+	lw	$t2 0($s0)
+	sll	$t2 $t2 3
+	addu	$t1 $t1 $t2
+	sw	$t1 0($sp)
+	addiu	$sp $sp -4
+	lw	$a0 0($t1)
 	jal	Object.copy
-	jal	Base_init
+	lw	$t1 4($sp)
+	addiu	$sp $sp 4
+	lw	$t1 4($t1)
+	jalr		$t1
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)

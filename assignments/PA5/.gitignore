@@ -15,3 +15,5 @@ official_semant
 pout
 examples/*
 grading/*
+*.tmp
+*.s

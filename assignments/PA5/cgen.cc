@@ -22,6 +22,8 @@
 //
 //**************************************************************
 
+// NOTE: Some information about LA, LW, and MOVE: https://stackoverflow.com/questions/49550512/confusion-about-load-word-lw-vs-load-addressla-and-offsets-in-mips-assembly
+
 // FIXME: 3/29/2018: Need to handle empty class case (ACC == 0)
 // FIXME: 5/7/2018: Need to handle divide by 0.
 // FIXME: 6/14/2018: Need to handle local variable initialization...
